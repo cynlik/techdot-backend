@@ -1,23 +1,24 @@
 import { Schema } from 'mongoose';
 
 interface Component {
-    name: string;
-    description: string;
-    componentType: ComponentType;
-    manufacturer: string; //MARCA QUE FAZ O COMPONENTE
-    price: number;
-    specifications: { // estas abaixo sao opcionais 
-        year: Date;
-        socketType: string;
-        graphicsType: string;
-        capacity: string;
-        watts: string;
-        speed: string; //in MhZ Ghz IOPS MB/s
-    }
+  name: string;
+  description: string;
+  componentType: ComponentType;
+  manufacturer: string; //MARCA QUE FAZ O COMPONENTE
+  price: number;
+  specifications: {
+    // estas abaixo sao opcionais
+    date: Date;
+    socketType: string;
+    graphicsType: string;
+    capacity: string;
+    watts: string;
+    speed: string; //in MhZ Ghz IOPS MB/s
+  };
 }
 
 interface ComponentType {
-    name: 'CPU' |  'PSU' |  'GPU' |  'MOTHERBOARD' |  'RAM' |  'SSD' |  'HDD';
+  name: 'CPU' | 'PSU' | 'GPU' | 'MOTHERBOARD' | 'RAM' | 'SSD' | 'HDD';
 }
 
 // Define a schema for component types
@@ -31,16 +32,18 @@ const componentType = new Schema<ComponentType>({
 
 // Define a schema for PC components
 const componentSchema = new Schema<Component>({
-  name: String,
+  name: { type: String, required: true },
   description: String,
-  componentType: { //usar isto para filtrar entre os diferentes componentes nas queries no menu
+  componentType: {
+    //usar isto para filtrar entre os diferentes componentes nas queries no menu
     type: Schema.Types.ObjectId,
     ref: 'ComponentType',
   },
-  manufacturer: String, //MARCA QUE FAZ O COMPONENTE
-  price: Number,
-  specifications: { // estas abaixo sao opcionais 
-    year: Date,
+  manufacturer: { type: String, required: true }, //MARCA QUE FAZ O COMPONENTE
+  price: { type: Number, required: true },
+  specifications: {
+		date: Date,
+    // estas abaixo sao opcionais
     socketType: String,
     graphicsType: String,
     capacity: String,
