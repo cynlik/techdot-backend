@@ -1,5 +1,6 @@
 export default { 
     "Member": "member",
-    "Admin": "admin",
+    "GerirProdutos": "admin_products",
+    "GerirClientes": "admin_clients",
     "NonMember": "nonmember",
 }
