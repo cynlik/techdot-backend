@@ -1,14 +1,12 @@
-import dotenv from 'dotenv';
 import cors from "cors";
 import express from "express";
 import http from "http";
 import { routes } from "./api/routes";
-
-dotenv.config();
+import "./config";
 
 const app = express();
 const hostname = process.env.HOST ?? "127.0.0.1";
-const port = process.env.PORT ?? 3001;
+const port = process.env.PORT ?? 3000;
 const server = http.createServer(app);
 
 app.use(cors());
