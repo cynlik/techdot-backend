@@ -1,6 +1,6 @@
-import { Schema } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
 
-interface Component {
+interface IComponent extends Document {
   name: string;
   description?: string;
   componentType: 'CPU' | 'PSU' | 'GPU' | 'MOTHERBOARD' | 'RAM' | 'SSD' | 'HDD';
@@ -18,7 +18,7 @@ interface Component {
 }
 
 // Define a schema for PC components
-const componentSchema = new Schema<Component>({
+const componentSchema = new Schema<IComponent>({
   name: { type: String, required: true },
   description: String,
   componentType: {
@@ -39,8 +39,4 @@ const componentSchema = new Schema<Component>({
   //image: String, //a ser adicionado futuramente
 });
 
-const Component = mongoose.model('Component', componentSchema);
-
-module.exports = {
-  Component,
-};
+export const Component = model<IComponent>('Component', componentSchema);

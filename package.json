@@ -1,4 +1,11 @@
 {
+  "name": "pchub-backend",
+  "description": "",
+  "version": "1.0.0",
+  "main": "out/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
@@ -21,13 +28,6 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.2"
   },
-  "name": "pchub-backend",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start": "ts-node index.ts"
-  },
   "author": "Grupo backend de LP",
-  "license": "ISC",
-  "description": ""
+  "license": "ISC"
 }

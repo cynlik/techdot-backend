@@ -1,8 +1,7 @@
-import SaleController from '../../controllers/saleController';
-import UserController from '../../controllers/userController';
+import SaleController from '@src/controllers/saleController';
+import UserController from '@src/controllers/userController';
 import bodyParser from 'body-parser';
 import express from 'express';
-import scopes from '../../models/userScopes';
 import { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
@@ -17,7 +16,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 
 //real-all => means that user is logged in
 
-router.route('/create').post(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
+router.route('/create').post(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
   res.send('');
 });
 

@@ -1,6 +1,6 @@
-import saleRouter from "./routers/saleRouter";
-import userRouter from "./routers/userRouter";
-import authRouter from "./routers/authRouter";
+import saleRouter from "@src/api/routers/saleRouter";
+import userRouter from "@src/api/routers/userRouter";
+import authRouter from "@src/api/routers/authRouter";
 
 export const routes = [
   { path: "/api/sale", router: saleRouter },

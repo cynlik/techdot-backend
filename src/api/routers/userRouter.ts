@@ -1,7 +1,6 @@
-import UserController from '../../controllers/userController';
+import UserController from '@src/controllers/userController';
 import bodyParser from 'body-parser';
 import express from 'express';
-import scopes from '../../models/userScopes';
 import { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
@@ -22,12 +21,12 @@ router
   .post(async (req: Request, res: Response, next: NextFunction) => {
     res.send('');
   })
-  .delete(UserController.authorize([scopes['Admin']]), async (req: Request, res: Response, next: NextFunction) => {
+  .delete(UserController.authorize(['manage-clients']), async (req: Request, res: Response, next: NextFunction) => {
     res.send('');
   });
 
 //NO FIELDS = GET ALL
-router.route('/search').get(UserController.authorize(['Member']), (req: Request, res: Response, next: NextFunction) => {
+router.route('/search').get(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
   res.send('');
 });
 
