@@ -13,21 +13,21 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-router
-  .route('/id/:userId')
-  .get(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('');
-  })
-  .post(async (req: Request, res: Response, next: NextFunction) => {
-    res.send('');
-  })
-  .delete(UserController.authorize(['manage-clients']), async (req: Request, res: Response, next: NextFunction) => {
-    res.send('');
-  });
+// router
+//   .route('/id/:userId')
+//   .get(async (req: Request, res: Response, next: NextFunction) => {
+//     res.send('');
+//   })
+//   .post(async (req: Request, res: Response, next: NextFunction) => {
+//     res.send('');
+//   })
+//   .delete(UserController.authorize(['manage-clients']), async (req: Request, res: Response, next: NextFunction) => {
+//     res.send('');
+//   });
 
-//NO FIELDS = GET ALL
-router.route('/search').get(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
-  res.send('');
-});
+// //NO FIELDS = GET ALL
+// router.route('/search').get(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
+//   res.send('');
+// });
 
 export default router
