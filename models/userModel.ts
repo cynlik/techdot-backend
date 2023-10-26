@@ -1,36 +1,30 @@
-let mongoose = require("mongoose");
-let scopes = require("./scopes");
+import { Schema, Document, model } from 'mongoose';
 
-let Schema = mongoose.Schema;
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  role: 'manage-products' | 'manage-clients' | 'member' | 'nonmember';
+  age: number;
+  address: string;
+  country: string;
+}
 
-let RoleSchema = new Schema({
+const userSchema = new Schema<IUser>({
   name: { type: String, required: true },
-  scopes: [
-    {
-      type: String,
-      enum: [scopes.Admin, scopes.Member, scopes.NonMember, scopes.Anonimous],
-    },
-  ],
-});
-
-// create a schema
-let UserSchema = new Schema({
-  name: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: RoleSchema },
-  age: { type: Number },
+  role: {
+    type: String,
+    required: true,
+    default: 'member',
+    enum: ['manage-products', 'manage-clients', 'member', 'nonmember'],
+  },
+  age: { type: Number, required: true },
   address: { type: String, required: true },
   country: { type: String, required: true },
-  memberId: { type: mongoose.Schema.Types.ObjectId, ref: "Member" },
-  tickets: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Ticket" },
-  ],
 });
 
-// the schema is useless so far
-// we need to create a model using it
-let User = mongoose.model("User", UserSchema);
+const UserModel = model<IUser>('User', userSchema);
 
-// make this available to our users in our Node applications
-module.exports = User;
+export default UserModel;
