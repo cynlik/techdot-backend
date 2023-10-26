@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+
 dotenv.config();
 
 class Database {
@@ -25,4 +26,4 @@ export const config = {
   saltRounds: 10,
 };
 
-module.exports.db = new Database();
+export const db = new Database();

@@ -16,22 +16,22 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 
 //real-all => means that user is logged in
 
-router.route('/create').post(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
-  res.send('');
-});
+// router.route('/create').post(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
+//   res.send('');
+// });
 
-router
-  .route('/id/:saleId')
-  .get(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
-    res.send('');
-  })
-  .delete(UserController.authorize([scopes['Admin']]), (req: Request, res: Response, next: NextFunction) => {
-    res.send('');
-  });
+// router
+//   .route('/id/:saleId')
+//   .get(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
+//     res.send('');
+//   })
+//   .delete(UserController.authorize([scopes['Admin']]), (req: Request, res: Response, next: NextFunction) => {
+//     res.send('');
+//   });
 
-//NO FIELDS = GET ALL
-router.route('/search').get(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
-  res.send('');
-});
+// //NO FIELDS = GET ALL
+// router.route('/search').get(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
+//   res.send('');
+// });
 
 export default router;
