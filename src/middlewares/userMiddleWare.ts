@@ -33,4 +33,5 @@ export { roleMiddleware };
  * 
  * @param {string}
  * const productManagerMiddleware = roleMiddleware('manage-products');
+ * const clientManagerMiddleware = roleMiddleware('manage-clients');
 */
