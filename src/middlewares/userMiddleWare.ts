@@ -1,19 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUser } from '@src/models/userModel';
+import { IUser } from '@src/models/userModel'; 
+import { UserRole } from '@src/utility/roles'; 
 
 interface CustomRequest extends Request {
   user: IUser;
 }
 
-const roleMiddleware = (allowedRole: string) => {
+const roleMiddleware = (allowedRole: UserRole) => {
   return async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized access' });
       }
 
-      const role = req.user.role;
-      if (role !== allowedRole) {
+      const roles = req.user.roles;
+
+      if (!roles.includes(allowedRole)) {
         return res
           .status(403)
           .json({ message: `Access denied. Only ${allowedRole} users allowed.` });
@@ -28,10 +30,10 @@ const roleMiddleware = (allowedRole: string) => {
 
 export { roleMiddleware };
 
-/** 
- * Exemplo utilizaçao
+/**
+ * Create a new role
  * 
- * @param {string}
- * const productManagerMiddleware = roleMiddleware('manage-products');
- * const clientManagerMiddleware = roleMiddleware('manage-clients');
-*/
+ * @param {UserRole.role}
+ * const productManagerMiddleware = roleMiddleware(UserRole.ManageProducts);
+ * const clientManagerMiddleware = roleMiddleware(UserRole.ManageClients);
+ */
