@@ -6,6 +6,7 @@ import { routes } from "@src/api/routes";
 dotenv.config();
 
 const app = express();
+
 const hostname = String(process.env.HOST ?? "127.0.0.1");
 const port = Number(process.env.PORT ?? 3001);
 

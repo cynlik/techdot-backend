@@ -6,3 +6,6 @@ import { Request, Response } from 'express';
 //@desc Get all Products details
 //@route GET //api/product/
 //@access private
+export default class ProductController {
+
+}
