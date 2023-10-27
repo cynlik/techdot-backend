@@ -1,7 +1,10 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Response } from 'express';
 import { config } from '@src/config';
 import { User, IUser } from '@src/models/userModel';
+import { sendMail } from '@src/utility/emails';
+import { EmailType } from '@src/utility/emailType';
 
 export default class UserController {
   static hashPassword(password: string) {
@@ -18,17 +21,26 @@ export default class UserController {
     return (await User.find({ email: newUser.email }).exec()).length <= 0;
   }
 
-  static async create(newUser: IUser) {
+  static async create(newUser: IUser, res: Response) {
     if (!(await this.isEmailUnique(newUser))) {
       return Promise.reject(new Error("Email already exists."));
     }
-
+  
     let newUserWithPassword = {
       ...newUser,
-      password: this.hashPassword(newUser.password),
+      password: await this.hashPassword(newUser.password),
     };
-
-    return this.save(new User(newUserWithPassword));
+  
+    const createdUser = new User(newUserWithPassword);
+    await this.save(createdUser);
+  
+    try {
+      sendMail(EmailType.Welcome, newUser.email, res);
+      return createdUser;
+    } catch (error) {
+      console.error(error);
+      return Promise.reject(new Error("Failed to send welcome email"));
+    }
   }
 
   static save(doc: IUser) {
