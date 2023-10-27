@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "main": "out/index.js",
   "scripts": {
-    "start": "npm run build && node .",
-    "dev": "ts-node-dev -r tsconfig-paths/register src/index.ts",
+    "start": "ts-node-dev -r tsconfig-paths/register src/index.ts",
+    "dev": "npm run build && node .",
     "build": "tsc && tsc-alias"
   },
   "dependencies": {
