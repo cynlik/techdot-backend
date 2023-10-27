@@ -10,7 +10,7 @@ class Database {
 
   _connect() {
     mongoose
-      .connect(process.env.DBURL)
+      .connect(process.env.DBURL as string)
       .then(() => {
         console.log('Database connection successful');
       })
