@@ -1,4 +1,4 @@
-import SaleController from '@src/controllers/saleController';
+//import SaleController from '@src/controllers/saleController';
 import UserController from '@src/controllers/userController';
 import bodyParser from 'body-parser';
 import express from 'express';
