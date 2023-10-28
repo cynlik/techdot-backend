@@ -39,6 +39,9 @@ export class ProductController {
     const { id } = req.params;
     const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId } = req.body;
 
+    // Adicionar funcionalidade para que ao alterar a subcategoruia ela seja eliminada na base de dados da tabela 
+    // "Subcategorie" e seja adicionado há nova subcategoria
+
     try {
       const product = await Product.findByIdAndUpdate(
         id,
