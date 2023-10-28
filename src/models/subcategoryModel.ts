@@ -1,9 +1,8 @@
 import mongoose, { Document, Schema, model } from "mongoose";
-import { IProduct } from "./productModel";
 
 export interface ISubcategory extends Document {
     name: string;
-    products: IProduct[];
+    products: mongoose.Types.ObjectId[];
 }
 
 const subcategorySchema = new Schema<ISubcategory>({
