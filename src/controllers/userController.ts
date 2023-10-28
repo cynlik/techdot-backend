@@ -52,7 +52,7 @@ export default class UserController {
   }
 
   public async verifyAccount(req: Request, res: Response) {
-    //
+    //test
   }
 
   private hashPassword(password: string) {
