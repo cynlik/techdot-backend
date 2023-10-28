@@ -4,7 +4,7 @@ import UserController from '@src/controllers/userController';
 const router = express.Router();
 const userController = new UserController();
 
-router.post('/register', (req, res) => userController.registerUser(req, res));
-router.post('/verify', (req, res) => userController.verifyAccount(req, res));
+router.post('/register', userController.registerUser);
+router.post('/verify', userController.verifyAccount);
 
 export default router;
