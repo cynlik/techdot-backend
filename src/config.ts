@@ -22,7 +22,7 @@ class Database {
 
 export const config = {
   secret: process.env.SECRET as string,
-  expiresIn: Number(process.env.EXPIREPASSWORD),
+  expiresIn: Number(process.env.EXPIRESIN),
   saltRounds: 10,
 };
 
