@@ -3,25 +3,12 @@ import jwt from 'jsonwebtoken';
 import { Response } from 'express';
 import { config } from '@src/config';
 import { User, IUser } from '@src/models/userModel';
-import { sendMail } from '@src/utility/emails';
+import { sendMail } from '@src/services/emailConfig';
 import { EmailType } from '@src/utility/emailType';
 
 export default class UserController {
-  static hashPassword(password: string) {
-    return bcrypt.hash(password, config.saltRounds).catch((err) => {
-      return Promise.reject(new Error(`Password not hashed, error: \n ${err}`));
-    });
-  }
-  
-  static comparePassword(newPassword: string, hash: string) {
-    return bcrypt.compare(newPassword, hash);
-  }
 
-  static async isEmailUnique(newUser: IUser) {
-    return (await User.find({ email: newUser.email }).exec()).length <= 0;
-  }
-
-  static async create(newUser: IUser, res: Response) {
+  public async create(newUser: IUser, res: Response) {
     if (!(await this.isEmailUnique(newUser))) {
       return Promise.reject(new Error("Email already exists."));
     }
@@ -43,7 +30,21 @@ export default class UserController {
     }
   }
 
-  static save(doc: IUser) {
+  private hashPassword(password: string) {
+    return bcrypt.hash(password, config.saltRounds).catch((err) => {
+      return Promise.reject(new Error(`Password not hashed, error: \n ${err}`));
+    });
+  }
+  
+  private comparePassword(newPassword: string, hash: string) {
+    return bcrypt.compare(newPassword, hash);
+  }
+
+  private async isEmailUnique(newUser: IUser) {
+    return (await User.find({ email: newUser.email }).exec()).length <= 0;
+  }
+
+  public save(doc: IUser) {
     return doc
       .save()
       .catch((err: Error) =>
@@ -51,7 +52,7 @@ export default class UserController {
       );
   }
 
-  static createToken(user: IUser, expiresIn = config.expiresIn) {
+  private createToken(user: IUser, expiresIn = config.expiresIn) {
     let token = jwt.sign(
       {
         id: user._id,
@@ -65,7 +66,7 @@ export default class UserController {
     return { auth: true, token };
   }
 
-  static verifyToken(token: string) {
+  private verifyToken(token: string) {
     return new Promise((resolve, reject) => {
       jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
