@@ -12,6 +12,7 @@ export interface IUser extends Document {
   country: string;
   verifyAccountToken: string | null;
   verifyAccountTokenExpires: Date | null;
+  isVerified: boolean | false;
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -31,10 +32,11 @@ export const UserSchema = new Schema<IUser>(
     country: { type: String, default: null },
     verifyAccountToken: { type: String, default: null },
     verifyAccountTokenExpires: { type: Date, default: null },
+    isVerified: { type: Boolean, default: false },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const User = model<IUser>('User', UserSchema);
