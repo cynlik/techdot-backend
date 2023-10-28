@@ -1,19 +1,23 @@
-import express from "express";
+import express, { Router } from "express";
 import UserController from '@src/controllers/userController';
 import asyncHandler from "express-async-handler";
 import { IUser } from "@src/models/userModel";
 
 const router = express.Router();
+const userController = new UserController();
 
-router.post('/register', UserController.registerUser);
-router.post('/verify', UserController.verifyAccount);
+
+router.post('/register', userController.registerUser);
+
+router.put('/verify', userController.verifyAccount);
+
 router.route('/id/:userId')
     .get(asyncHandler(async (req, res, next) => {
         console.log("Get a user with user Id");
         let userId = req.params.userId;
 
         try {
-            let user = await UserController.findById(userId);
+            let user = await userController.findById(userId);
             res.status(200).send(user);
         }catch(err: any) {
             err = (err instanceof Error ? err : new Error(err));
@@ -27,7 +31,7 @@ router.route('/id/:userId')
         let newUser: Partial<IUser> = req.body;
 
         try {
-            const user = await UserController.updateById(userId, newUser);
+            const user = await userController.updateById(userId, newUser);
             res.status(200).send(user);
         } catch (err: any) {
             err = (err instanceof Error ? err : new Error(err));
@@ -40,7 +44,7 @@ router.route('/id/:userId')
         let userId = req.params.userId;
 
         try {
-            const user = await UserController.removeById(userId);
+            const user = await userController.removeById(userId);
             res.status(200).send(user);
         } catch (err: any) {
             err = (err instanceof Error ? err : new Error(err));

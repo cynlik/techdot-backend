@@ -8,7 +8,7 @@ import { EmailType } from '@src/utils/emailType';
 
 export default class UserController {
 
-  static async registerUser(req: Request, res: Response) {
+  public async registerUser(req: Request, res: Response) {
     try {
       const { name, email, password } = req.body;
       if (!name || !email || !password) {
@@ -23,7 +23,6 @@ export default class UserController {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("Hashed Password: ", hashedPassword);
       const user = new User({
         name,
         email,
@@ -36,7 +35,7 @@ export default class UserController {
         expiresIn: "15m",
       });
       user.verifyAccountToken = token;
-      user.verifyAccountTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      user.verifyAccountTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 15 minutes
 
       await user.save();
 
@@ -51,11 +50,32 @@ export default class UserController {
     }
   }
 
-  static async verifyAccount(req: Request, res: Response) {
-    //
-  }
+  public async verifyAccount(req: Request, res: Response) {
+    const token = req.query.token as string;
 
-  static async findById(id: string): Promise<IUser> {
+    try {
+        const user = await User.findOne({
+            verifyAccountToken: token,
+            verifyAccountTokenExpires: { $gt: new Date() },
+        });
+
+        if (!user) {
+            console.log("Token inválido ou expirado: Token não encontrado no banco de dados.");
+            return res.status(400).json({ error: "Token inválido ou expirado!" });
+        }
+
+        user.isVerified = true;
+        user.verifyAccountToken = null;
+        await user.save();
+
+        return res.status(200).json({ message: "Account verified successfully." });
+    } catch (error) {
+        console.error("Erro durante a verificação da conta:", error);
+        return res.status(500).json({ error: "An error occurred while verifying the account." });
+    }
+}
+
+  public async findById(id: string): Promise<IUser> {
     try {
       const user = await User.findById(id).exec();
       
@@ -69,7 +89,7 @@ export default class UserController {
     }
   }
 
-  static async updateById(id: string, newUser: Partial<IUser>): Promise<IUser> {
+  public async updateById(id: string, newUser: Partial<IUser>): Promise<IUser> {
     try {
       const dbUser = await User.findById(id).exec();
 
@@ -93,7 +113,7 @@ export default class UserController {
     }
   }
 
-  static async removeById(id: string): Promise<IUser> {
+  public async removeById(id: string): Promise<IUser> {
     try {
       const user = await User.findByIdAndRemove(id).exec();
 
@@ -140,7 +160,7 @@ export default class UserController {
   //   }
   // }
 
-  private static async hashPassword(password: string): Promise<string> {
+  private async hashPassword(password: string): Promise<string> {
     try {
       return await bcrypt.hash(password, config.saltRounds);
     }catch (err: any) {
@@ -150,19 +170,19 @@ export default class UserController {
     }
   }
   
-  private static comparePassword(newPassword: string, hash: string) {
+  private comparePassword(newPassword: string, hash: string) {
     return bcrypt.compare(newPassword, hash);
   }
 
-  private static async isEmailUnique(email: string): Promise<boolean> {
+  private async isEmailUnique(email: string): Promise<boolean> {
     return (await User.find({ email }).exec()).length <= 0;
   }
 
-  private static async save(doc: IUser) {
+  private async save(doc: IUser) {
     return doc.save();
   }
 
-  private static createToken(user: IUser, expiresIn = config.expiresIn) {
+  private createToken(user: IUser, expiresIn = config.expiresIn) {
     let token = jwt.sign(
       {
         id: user._id,
