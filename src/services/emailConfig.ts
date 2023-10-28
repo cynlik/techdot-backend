@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { Response } from 'express';
-import { emailContent, EmailType } from '@src/utility/emailType';
+import { emailContent, EmailType } from '@src/utils/emailType';
 
 interface MailOptions {
   to: string;

@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { config } from '@src/config';
 import { User, IUser } from '@src/models/userModel';
 import { sendMail } from '@src/services/emailConfig';
-import { EmailType } from '@src/utility/emailType';
+import { EmailType } from '@src/utils/emailType';
 
 export default class UserController {
 

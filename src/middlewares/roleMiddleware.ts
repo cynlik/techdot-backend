@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel'; 
-import { UserRole } from '@src/utility/roles'; 
+import { UserRole } from '@src/utils/roles'; 
 
 interface CustomRequest extends Request {
   user: IUser;
