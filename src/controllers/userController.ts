@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { config } from '@src/config';
 import { User, IUser } from '@src/models/userModel';
 import { sendMail } from '@src/services/emailConfig';
@@ -8,26 +8,51 @@ import { EmailType } from '@src/utils/emailType';
 
 export default class UserController {
 
-  public async create(newUser: IUser, res: Response) {
-    if (!(await this.isEmailUnique(newUser))) {
-      return Promise.reject(new Error("Email already exists."));
-    }
-  
-    let newUserWithPassword = {
-      ...newUser,
-      password: await this.hashPassword(newUser.password),
-    };
-  
-    const createdUser = new User(newUserWithPassword);
-    await this.save(createdUser);
-  
+  public async registerUser(req: Request, res: Response) {
     try {
-      sendMail(EmailType.Welcome, newUser.email, res);
-      return createdUser;
+      const { name, email, password } = req.body;
+      if (!name || !email || !password) {
+        res.status(400).json({ message: "All fields are mandatory!" });
+        return;
+      }
+
+      const userAvailable = await User.findOne({ email });
+      if (userAvailable) {
+        res.status(400).json({ message: "User already registered!" });
+        return;
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      console.log("Hashed Password: ", hashedPassword);
+      const user = new User({
+        name,
+        email,
+        password: hashedPassword,
+      });
+
+      console.log(`User created ${user}`);
+
+      const token = jwt.sign({ _id: user._id }, process.env.SECRET as string, {
+        expiresIn: "15m",
+      });
+      user.verifyAccountToken = token;
+      user.verifyAccountTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      await user.save();
+
+      sendMail(EmailType.VerifyAccount, user.email, res, token);
+
+      res.status(201).json({
+        message: `Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`,
+      });
     } catch (error) {
       console.error(error);
-      return Promise.reject(new Error("Failed to send welcome email"));
+      res.status(500).json({ message: "Failed to register the user" });
     }
+  }
+
+  public async verifyAccount(req: Request, res: Response) {
+    //
   }
 
   private hashPassword(password: string) {
@@ -44,12 +69,8 @@ export default class UserController {
     return (await User.find({ email: newUser.email }).exec()).length <= 0;
   }
 
-  public save(doc: IUser) {
-    return doc
-      .save()
-      .catch((err: Error) =>
-        Promise.reject(new Error(`There is a problem with saving information, error: \n ${err}`))
-      );
+  private async save(doc: IUser) {
+    return doc.save();
   }
 
   private createToken(user: IUser, expiresIn = config.expiresIn) {

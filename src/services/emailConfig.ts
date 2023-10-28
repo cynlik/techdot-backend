@@ -17,11 +17,20 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-export function sendMail(emailType: EmailType, to: string, res: Response) {
-  const mailOptions: MailOptions = {
+export function sendMail(emailType: EmailType, to: string, res: Response, token?: string) {
+  const emailInfo = emailContent[emailType];
+  let text: string;
+
+  if (typeof emailInfo.text === 'function') {
+    text = emailInfo.text(token || '');
+  } else {
+    text = emailInfo.text as string;
+  }
+
+  const mailOptions = {
     to,
-    subject: emailContent[emailType].subject,
-    text: emailContent[emailType].text
+    subject: emailInfo.subject,
+    text,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
