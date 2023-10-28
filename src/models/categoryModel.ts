@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, model } from 'mongoose' ;
 
 export interface ICategory extends Document {
-    name: string; //adicionar array enum
+    name: string;
     subcategory: mongoose.Types.ObjectId[];
 }
 

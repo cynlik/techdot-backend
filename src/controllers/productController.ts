@@ -3,42 +3,9 @@ import { Product } from "../models/productModel";
 import { Subcategory } from "../models/subcategoryModel";
 
 export class ProductController {
-  
-  private validateRequest(req: Request): { isValid: boolean; message?: string } {
-    const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId } = req.body;
-
-    if (!name || !description || !imageUrl || !manufacturer || stockQuantity == null || price == null) {
-      return { isValid: false, message: "All fields are required" };
-    }
-
-    if (typeof price !== 'number' || price <= 0) {
-      return { isValid: false, message: "Price must be a positive number" };
-    }
-
-    if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
-      return { isValid: false, message: "Stock quantity must be a non-negative integer" };
-    }
-
-    if (!subcategoryId || !/^[0-9a-fA-F]{24}$/.test(subcategoryId)) {
-      return { isValid: false, message: "Invalid subcategory ID" };
-    }
-
-    try {
-      new URL(imageUrl);
-    } catch (_) {
-      return { isValid: false, message: "Invalid image URL" };
-    }
-
-    return { isValid: true };
-  }
 
   public async createProduct(req: Request, res: Response): Promise<Response> {
     const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId } = req.body;
-
-    const { isValid, message } = this.validateRequest(req);
-    if (!isValid) {
-      return res.status(400).send({ message });
-    }
 
     try {
       const subcategory = await Subcategory.findById(subcategoryId);
@@ -67,4 +34,72 @@ export class ProductController {
       return res.status(500).send({ message: "Internal Server Error" });
     }
   }
+
+  public async updateProduct(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+    const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId } = req.body;
+
+    try {
+      const product = await Product.findByIdAndUpdate(
+        id,
+        { name, description, imageUrl, manufacturer, stockQuantity, price },
+        { new: true },
+      );
+
+      if (!product) {
+        return res.status(404).send({ message: "Product not found" });
+      }
+
+      return res.status(200).send(product);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+
+  public async deleteProduct(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+
+    try {
+      const product = await Product.findByIdAndDelete(id);
+
+      if (!product) {
+        return res.status(404).send({ message: "Product not found" });
+      }
+
+      return res.status(204).send();
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+
+  public async getProductById(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+
+    try {
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res.status(404).send({ message: "Product not found" });
+      }
+
+      return res.status(200).send(product);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+
+  public async getAllProducts(req: Request, res: Response): Promise<Response> {
+    try {
+      const products = await Product.find();
+
+      return res.status(200).send(products);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
 }
+
