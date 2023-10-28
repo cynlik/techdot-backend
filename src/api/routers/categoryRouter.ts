@@ -4,7 +4,7 @@ import { CategoryController } from "@src/controllers/categoryController";
 const router = express.Router();
 const categoryController = new CategoryController();
 
-// Rota para devolver todos os Produtos
+// Rota para cirar uma Categoria 
 router.post('/', categoryController.createCategory);
 
 export default router;

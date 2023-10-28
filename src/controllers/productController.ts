@@ -89,6 +89,9 @@ export class ProductController {
       if (response) return response;
     }
 
+    // Adicionar funcionalidade para que ao alterar a subcategoruia ela seja eliminada na base de dados da tabela 
+    // "Subcategorie" e seja adicionado há nova subcategoria
+
     try {
       const product = await this.findProductById(id);
       if (!product) {
