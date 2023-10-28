@@ -86,15 +86,4 @@ export default class UserController {
 
     return { auth: true, token };
   }
-
-  private verifyToken(token: string) {
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, config.secret, (err, decoded) => {
-        if (err) {
-          reject(err);
-        }
-        return resolve(decoded);
-      });
-    });
-  }
 }

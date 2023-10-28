@@ -47,3 +47,4 @@ export function sendMail(emailType: EmailType, to: string, res: Response, token?
 // Exemplo de uso:
 // sendMail(EmailType.Tipo, user.email, res);
 // sendMail(EmailType.Welcome, user.email, res);
+// sendMail(EmailType.VerifyAccount, user.email, res, token); Caso seja VerifyAccount
