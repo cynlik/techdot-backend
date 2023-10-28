@@ -44,7 +44,7 @@ export default class UserController {
       {
         id: user._id,
         name: user.name,
-        roles: user.role,
+        roles: user.roles,
       },
       config.secret,
       { expiresIn }
