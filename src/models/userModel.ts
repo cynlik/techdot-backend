@@ -14,22 +14,27 @@ export interface IUser extends Document {
   verifyAccountTokenExpires: Date | null;
 }
 
-export const UserSchema = new Schema<IUser>({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  roles: {
-    type: [String],
-    required: true,
-    default: [UserRole.Member],
-    enum: Object.values(UserRole),
+export const UserSchema = new Schema<IUser>(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    roles: {
+      type: [String],
+      required: true,
+      default: [UserRole.Member],
+      enum: Object.values(UserRole),
+    },
+    picture: { type: String },
+    age: { type: Number },
+    address: { type: String, default: null },
+    country: { type: String, default: null },
+    verifyAccountToken: { type: String, default: null },
+    verifyAccountTokenExpires: { type: Date, default: null },
   },
-  picture: { type: String },
-  age: { type: Number },
-  address: { type: String, default: null },
-  country: { type: String, default: null },
-  verifyAccountToken: { type: String, default: null },
-  verifyAccountTokenExpires: { type: Date, default: null },
-});
+  {
+    timestamps: true,
+  }
+);
 
 export const User = model<IUser>('User', UserSchema);
