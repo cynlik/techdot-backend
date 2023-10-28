@@ -5,6 +5,6 @@ const router = express.Router();
 const productController = new ProductController();
 
 // Rota para devolver todos os Produtos
-router.post('/', productController.createProduct);
+router.post('/', productController.createProduct.bind(productController));
 
 export default router;
