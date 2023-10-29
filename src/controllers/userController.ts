@@ -7,6 +7,7 @@ import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 
 export default class UserController {
+
 	public async registerUser(req: Request, res: Response) {
 		try {
 			const { name, email, password } = req.body;
@@ -28,7 +29,7 @@ export default class UserController {
 				password: hashedPassword,
 			});
 
-			console.log(user)
+			console.log(user);
 
 			const token = UserController.createToken(user, config.expiresIn);
 			user.verifyAccountToken = token.token;
@@ -120,23 +121,25 @@ export default class UserController {
 		}
 	}
 
-	public async findById(id: string): Promise<IUser> {
+	public async getUserById(req: Request, res: Response) {
 		try {
-			const user = await User.findById(id).exec();
+			const user = await User.findById(req.params.userId).exec();
 
 			if (user === null) {
 				throw new Error("User not found!");
 			}
 
-			return user;
-		} catch (err) {
-			return Promise.reject(err);
+			res.status(200).send(user);
+		} catch (error) {
+			console.error(error);
+			res.status(404).json({ message: "User not found." });
 		}
 	}
 
-	public async updateById(id: string, newUser: Partial<IUser>): Promise<IUser> {
+	public async updateUserById(req: Request, res: Response) {
 		try {
-			const dbUser = await User.findById(id).exec();
+			const newUser: Partial<IUser> = req.body;
+			const dbUser = await User.findById(req.params.userId).exec();
 
 			if (dbUser === null) {
 				throw new Error("User not found!");
@@ -148,50 +151,64 @@ export default class UserController {
 
 			if (
 				newUser.password &&
-				!(await bcrypt.compare(newUser.password, dbUser.password))
+				!(await this.comparePassword(newUser.password, dbUser.password))
 			) {
-				newUser.password = await bcrypt.hash(
-					newUser.password,
-					config.saltRounds
-				);
+				newUser.password = await this.hashPassword(newUser.password);
 			} else {
 				newUser.password = dbUser.password;
 			}
 
-			return (await User.findByIdAndUpdate(id, newUser).exec()) as IUser;
-		} catch (err) {
-			return Promise.reject(err);
+			res.status(200).send(newUser);
+		} catch (error) {
+			console.error(error);
+			res.status(404).json({ message: "Failed to update user." });
 		}
 	}
 
-	public async removeById(id: string): Promise<IUser> {
+	public async deleteUserById(req: Request, res: Response) {
 		try {
-			const user = await User.findByIdAndRemove(id).exec();
+			const user = await User.findByIdAndDelete(req.params.userId);
 
 			if (user === null) {
 				throw new Error("User not found!");
 			}
 
-			return user;
-		} catch (err) {
-			return Promise.reject(err);
+			res.status(200).send(user);
+		} catch (error) {
+			res.status(404).json({ message: "Failed to delete user." });
 		}
 	}
 
 	private static createToken(user: IUser, expiresIn = config.expiresIn) {
 		let token = jwt.sign(
-		  {
-			id: user._id,
-			name: user.name,
-			email: user.email,
-			roles: user.roles,
-		  },
-		  config.secret,
-		  { expiresIn }
+			{
+				id: user._id,
+				name: user.name,
+				email: user.email,
+				roles: user.roles,
+			},
+			config.secret,
+			{ expiresIn }
 		);
-	  
+
 		return { auth: true, token };
-	  }
+	}
+
+	private async hashPassword(password: string): Promise<string> {
+		try {
+			return await bcrypt.hash(password, config.saltRounds);
+		} catch (err: any) {
+			err = err instanceof Error ? err : new Error(err);
+
+			return Promise.reject(
+				new Error(`Password not hashed, error: \n ${err.message}`)
+			);
+		}
+	}
+
+	private async comparePassword(newPassword: string, hash: string) {
+		return bcrypt.compare(newPassword, hash);
+	}
 
 	private async isEmailUnique(email: string): Promise<boolean> {
 		return (await User.find({ email }).exec()).length <= 0;
