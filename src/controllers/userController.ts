@@ -78,7 +78,7 @@ export default class UserController {
 			return;
 		  }
 	  
-		  const passwordMatch = await bcrypt.compare(password, user.password);
+		  const passwordMatch = await this.comparePassword(password, user.password);
 	  
 		  if (passwordMatch) {
 			const accessToken = UserController.createToken(user, config.expiresIn);
@@ -125,7 +125,7 @@ export default class UserController {
 
 	public async getUserById(req: Request, res: Response) {
 		try {
-			const user = await User.findById(req.params.userId).exec();
+			const user = await User.findById(req.params.userId);
 
 			if (user === null) {
 				throw new Error("User not found!");
@@ -141,7 +141,7 @@ export default class UserController {
 	public async updateUserById(req: Request, res: Response) {
 		try {
 			const newUser: Partial<IUser> = req.body;
-			const dbUser = await User.findById(req.params.userId).exec();
+			const dbUser = await User.findById(req.params.userId);
 
 			if (dbUser === null) {
 				throw new Error("User not found!");
