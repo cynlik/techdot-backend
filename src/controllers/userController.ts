@@ -30,9 +30,7 @@ export default class UserController {
 
 			console.log(`User created ${user}`);
 
-			const token = jwt.sign({ _id: user._id }, process.env.SECRET as string, {
-				expiresIn: "15m",
-			});
+			const token = this.createToken(user, config.secret, config.expiresIn);
 			user.verifyAccountToken = token;
 			user.verifyAccountTokenExpires = new Date(
 				Date.now() + 24 * 60 * 60 * 1000
@@ -67,7 +65,7 @@ export default class UserController {
 				throw new Error("User not found!");
 			}
 			if (!user.isVerified) {
-				const token = this.createToken(user, config.expiresIn);
+				const token = this.createToken(user, config.secret, config.expiresIn);
 				user.verifyAccountToken = token;
 				user.verifyAccountTokenExpires = new Date(
 					Date.now() + 24 * 60 * 60 * 1000
@@ -77,15 +75,15 @@ export default class UserController {
 
 				sendMail(EmailType.VerifyAccount, user.email, res, token);
 
-				res.status(400);
-				throw new Error(
-					`Por favor verifique a sua conta através da mensagem enviada para o seu email: ${user.email}`
-				);
+				res.status(401).json({ error: "Verify ur email" });
 			}
 
 			if (user && (await bcrypt.compare(password, user.password))) {
-				const accessToken = this.createToken(user, config.expiresIn);
-        console.log('accessToken:', accessToken);
+				const accessToken = this.createToken(
+					user,
+					config.secret,
+					config.expiresIn
+				);
 				res.status(200).json({ accessToken: accessToken });
 			} else {
 				res.status(401).json({ error: "Invalid email or password" });
@@ -184,14 +182,17 @@ export default class UserController {
 		}
 	}
 
-	private createToken(user: IUser, expiresIn: number) {
+	private createToken(user: IUser, secret: string, expiresIn: string | number) {
 		return jwt.sign(
 			{
-				id: user._id,
-				name: user.name,
-				roles: user.roles,
+				user: {
+					id: user._id,
+					name: user.name,
+					email: user.email,
+					roles: user.roles,
+				},
 			},
-			config.secret,
+			secret,
 			{ expiresIn }
 		);
 	}
