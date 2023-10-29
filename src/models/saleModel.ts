@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, model } from "mongoose";
 import { IProduct } from "./productModel";
 
 export interface ISale extends Document {
-        usaer: string;
+        user: string;
         products: Array<IProduct | string>;
         purchaseDate: Date;
         totalAmount: number;
