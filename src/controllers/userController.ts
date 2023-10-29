@@ -178,7 +178,7 @@ export default class UserController {
 		}
 	}
 
-	static createToken(user: IUser, expiresIn = config.expiresIn) {
+	private static createToken(user: IUser, expiresIn = config.expiresIn) {
 		let token = jwt.sign(
 		  {
 			id: user._id,
