@@ -7,7 +7,6 @@ import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 
 export default class UserController {
-
 	public async registerUser(req: Request, res: Response) {
 		try {
 			const { name, email, password } = req.body;
@@ -29,13 +28,11 @@ export default class UserController {
 				password: hashedPassword,
 			});
 
-			console.log(user);
-
 			const token = UserController.createToken(user, config.expiresIn);
 			user.verifyAccountToken = token.token;
 			user.verifyAccountTokenExpires = new Date(
 				Date.now() + 24 * 60 * 60 * 1000
-			); // 15 minutes
+			); // 24 hours
 
 			await user.save();
 
@@ -52,43 +49,48 @@ export default class UserController {
 
 	public async loginUser(req: Request, res: Response) {
 		try {
-			const { email, password } = req.body;
-
-			if (!email || !password) {
-				res.status(400);
-				throw new Error("All fields are mandatory!");
-			}
-
-			const user = await User.findOne({ email });
-
-			if (!user) {
-				res.status(400);
-				throw new Error("User not found!");
-			}
-			if (!user.isVerified) {
-				const token = UserController.createToken(user, config.expiresIn);
-				user.verifyAccountToken = token.token;
-				user.verifyAccountTokenExpires = new Date(
-					Date.now() + 24 * 60 * 60 * 1000
-				); // 1 day
-
-				await user.save();
-
-				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
-
-				res.status(401).json({ error: "Verify ur email" });
-			}
-
-			if (user && (await bcrypt.compare(password, user.password))) {
-				const accessToken = UserController.createToken(user, config.expiresIn);
-				res.status(200).json({ accessToken: accessToken });
-			} else {
-				res.status(401).json({ error: "Invalid email or password" });
-			}
+		  const { email, password } = req.body;
+	  
+		  if (!email || !password) {
+			res.status(400).json({ error: "All fields are mandatory!" });
+			return;
+		  }
+	  
+		  const user = await User.findOne({ email });
+	  
+		  if (!user) {
+			res.status(400).json({ error: "User not found!" });
+			return;
+		  }
+	  
+		  if (!user.isVerified) {
+			const token = UserController.createToken(user, config.expiresIn);
+			user.verifyAccountToken = token.token;
+			user.verifyAccountTokenExpires = new Date(
+			  Date.now() + 24 * 60 * 60 * 1000
+			); // 24 hours
+	  
+			await user.save();
+	  
+			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
+	  
+			res.status(401).json({ error: "Verify your email" });
+			return;
+		  }
+	  
+		  const passwordMatch = await bcrypt.compare(password, user.password);
+	  
+		  if (passwordMatch) {
+			const accessToken = UserController.createToken(user, config.expiresIn);
+			res.status(200).json({ accessToken: accessToken });
+		  } else {
+			res.status(401).json({ error: "Invalid email or password" });
+		  }
 		} catch (error) {
-			res.status(500).json(error);
+		  res.status(500).json({ error: error });
 		}
-	}
+	  }
+	  
 
 	public async verifyAccount(req: Request, res: Response) {
 		const token = req.query.token as string;
