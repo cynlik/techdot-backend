@@ -28,17 +28,17 @@ export default class UserController {
 				password: hashedPassword,
 			});
 
-			console.log(`User created ${user}`);
+			console.log(user)
 
-			const token = this.createToken(user, config.secret, config.expiresIn);
-			user.verifyAccountToken = token;
+			const token = UserController.createToken(user, config.expiresIn);
+			user.verifyAccountToken = token.token;
 			user.verifyAccountTokenExpires = new Date(
 				Date.now() + 24 * 60 * 60 * 1000
 			); // 15 minutes
 
 			await user.save();
 
-			sendMail(EmailType.VerifyAccount, user.email, res, token);
+			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
 			res.status(201).json({
 				message: `Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`,
@@ -65,25 +65,21 @@ export default class UserController {
 				throw new Error("User not found!");
 			}
 			if (!user.isVerified) {
-				const token = this.createToken(user, config.secret, config.expiresIn);
-				user.verifyAccountToken = token;
+				const token = UserController.createToken(user, config.expiresIn);
+				user.verifyAccountToken = token.token;
 				user.verifyAccountTokenExpires = new Date(
 					Date.now() + 24 * 60 * 60 * 1000
 				); // 1 day
 
 				await user.save();
 
-				sendMail(EmailType.VerifyAccount, user.email, res, token);
+				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
 				res.status(401).json({ error: "Verify ur email" });
 			}
 
 			if (user && (await bcrypt.compare(password, user.password))) {
-				const accessToken = this.createToken(
-					user,
-					config.secret,
-					config.expiresIn
-				);
+				const accessToken = UserController.createToken(user, config.expiresIn);
 				res.status(200).json({ accessToken: accessToken });
 			} else {
 				res.status(401).json({ error: "Invalid email or password" });
@@ -182,20 +178,20 @@ export default class UserController {
 		}
 	}
 
-	private createToken(user: IUser, secret: string, expiresIn: string | number) {
-		return jwt.sign(
-			{
-				user: {
-					id: user._id,
-					name: user.name,
-					email: user.email,
-					roles: user.roles,
-				},
-			},
-			secret,
-			{ expiresIn }
+	static createToken(user: IUser, expiresIn = config.expiresIn) {
+		let token = jwt.sign(
+		  {
+			id: user._id,
+			name: user.name,
+			email: user.email,
+			roles: user.roles,
+		  },
+		  config.secret,
+		  { expiresIn }
 		);
-	}
+	  
+		return { auth: true, token };
+	  }
 
 	private async isEmailUnique(email: string): Promise<boolean> {
 		return (await User.find({ email }).exec()).length <= 0;
