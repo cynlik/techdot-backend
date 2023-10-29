@@ -8,7 +8,7 @@ import { EmailType } from '@src/utils/emailType';
 
 export default class UserController {
 
-  public async registerUser(req: Request, res: Response) {
+  static async registerUser(req: Request, res: Response) {
     try {
       const { name, email, password } = req.body;
       if (!name || !email || !password) {
@@ -16,21 +16,19 @@ export default class UserController {
         return;
       }
 
-      const userAvailable = await User.findOne({ email });
-      if (userAvailable) {
-        res.status(400).json({ message: "User already registered!" });
+      if (!await this.isEmailUnique(email)) {
+        res.status(400).json({ message: "User already registered with the same!" });
         return;
       }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("Hashed Password: ", hashedPassword);
+      
+      console.log("Password hashed!");
       const user = new User({
         name,
         email,
-        password: hashedPassword,
+        password: await this.hashPassword(password),
       });
 
-      console.log(`User created ${user}`);
+      console.log("User created: \n", user);
 
       const token = jwt.sign({ _id: user._id }, process.env.SECRET as string, {
         expiresIn: "15m",
@@ -51,29 +49,136 @@ export default class UserController {
     }
   }
 
-  public async verifyAccount(req: Request, res: Response) {
+  static async verifyAccount(req: Request, res: Response) {
     //
   }
 
-  private hashPassword(password: string) {
-    return bcrypt.hash(password, config.saltRounds).catch((err) => {
-      return Promise.reject(new Error(`Password not hashed, error: \n ${err}`));
-    });
+  static async getUserById(req: Request, res: Response) {
+    try {
+      const user = await User.findById(req.params.userId).exec();
+      
+      if(user === null) {
+        throw new Error("User not found!");
+      }
+
+      res.status(200).send(user);
+    } catch (error) {
+      console.error(error);
+      res.status(404).json({ message: "User not found." });
+    }
+  }
+
+  static async updateUserById(req: Request, res: Response) {
+    try {
+      const newUser: Partial<IUser> = req.body
+      const dbUser = await User.findById(req.params.userId).exec();
+
+      if(dbUser === null) {
+        throw new Error("User not found!");
+      }
+
+      if(newUser.email && !(await this.isEmailUnique(newUser.email))) {
+        throw new Error("Email already in use.");
+      }
+
+      if(newUser.password && !(await this.comparePassword(newUser.password, dbUser.password))) {
+        newUser.password = await this.hashPassword(newUser.password);
+      }else {
+        newUser.password = dbUser.password;
+      }
+
+      res.status(200).send(newUser);
+    } catch (error) {
+      console.error(error);
+      res.status(404).json({ message: "Failed to update user." });
+    }
+  }
+
+  static async deleteUserById(req: Request, res: Response) {
+    try {
+      const user = await User.findByIdAndDelete(req.params.userId)
+      
+      if(user === null) {
+        throw new Error("User not found!");
+      }
+
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(404).json({ message: "Failed to delete user." });
+    }
+  }
+
+  private static async hashPassword(password: string): Promise<string> {
+    try {
+      return await bcrypt.hash(password, config.saltRounds);
+    }catch (err: any) {
+      err = err instanceof Error ? err : new Error(err);
+
+      return Promise.reject(new Error(`Password not hashed, error: \n ${err.message}`));
+    }
   }
   
-  private comparePassword(newPassword: string, hash: string) {
+  private static async comparePassword(newPassword: string, hash: string) {
     return bcrypt.compare(newPassword, hash);
   }
 
-  private async isEmailUnique(newUser: IUser) {
-    return (await User.find({ email: newUser.email }).exec()).length <= 0;
+  private static async isEmailUnique(email: string): Promise<boolean> {
+    return (await User.find({ email }).exec()).length <= 0;
   }
 
-  private async save(doc: IUser) {
-    return doc.save();
-  }
+  /*static async findById(id: string): Promise<IUser> {
+    try {
+      const user = await User.findById(id).exec();
+      
+      if(user === null) {
+        throw new Error("User not found!");
+      }
 
-  private createToken(user: IUser, expiresIn = config.expiresIn) {
+      return user;
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }*/
+
+  /*static async updateById(id: string, newUser: Partial<IUser>): Promise<IUser> {
+    try {
+      const dbUser = await User.findById(id).exec();
+
+      if(dbUser === null) {
+        throw new Error("User not found!");
+      }
+
+      if(newUser.email && !(await this.isEmailUnique(newUser.email))) {
+        throw new Error("Email already in use.");
+      }
+
+      if(newUser.password && !(await this.comparePassword(newUser.password, dbUser.password))) {
+        newUser.password = await this.hashPassword(newUser.password);
+      }else {
+        newUser.password = dbUser.password;
+      }
+
+      return await User.findByIdAndUpdate(id, newUser).exec() as IUser;
+    }catch (err) {
+      return Promise.reject(err);
+    }
+  }*/
+
+  /*static async removeById(id: string): Promise<IUser> {
+    try {
+      const user = await User.findByIdAndRemove(id).exec();
+
+      if(user === null) {
+        throw new Error("User not found!");
+      }
+
+      return user;
+    }catch (err) {
+      return Promise.reject(err);
+    }
+  }*/
+
+  /*private static createToken(user: IUser, expiresIn = config.expiresIn) {
     let token = jwt.sign(
       {
         id: user._id,
@@ -85,5 +190,5 @@ export default class UserController {
     );
 
     return { auth: true, token };
-  }
+  }*/
 }
