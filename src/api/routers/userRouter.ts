@@ -6,10 +6,14 @@ import { IUser } from "@src/models/userModel";
 const router = express.Router();
 const userController = new UserController();
 
-
+//Register user
 router.post('/register', userController.registerUser);
 
+//Verify user
 router.put('/verify', userController.verifyAccount);
+
+//Login
+router.post("/login", userController.loginUser);
 
 router.route('/id/:userId')
     .get(asyncHandler(async (req, res, next) => {
