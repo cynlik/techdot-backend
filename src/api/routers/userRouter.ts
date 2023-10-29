@@ -1,23 +1,24 @@
-import express, { Router } from "express";
+import express from "express";
 import UserController from '@src/controllers/userController';
-import asyncHandler from "express-async-handler";
-import { IUser } from "@src/models/userModel";
+import { roleMiddleware } from '@src/middlewares/roleMiddleware';
+import { UserRole } from "@src/utils/roles";
+import validateToken from '@src/middlewares/validateToken'; // Importe o middleware de validação de token
 
 const router = express.Router();
 const userController = new UserController();
 
-//Register user
+// Register user
 router.post('/register', userController.registerUser);
 
-//Verify user
+// Verify user
 router.put('/verify', userController.verifyAccount);
 
-//Login
+// Login (Rota que não requer validação de token)
 router.post("/login", userController.loginUser);
 
-router.route('/id/:userId')
-    .get(userController.getUserById)
-    .post(userController.updateUserById)
-    .delete(userController.deleteUserById);
-    
+// User routes
+router.get('/id/:userId', validateToken, roleMiddleware(UserRole.ManageClients), userController.getUserById);
+router.post('/id/:userId', validateToken, roleMiddleware(UserRole.ManageClients), userController.updateUserById);
+router.delete('/id/:userId', validateToken, roleMiddleware(UserRole.ManageClients), userController.deleteUserById);
+
 export default router;
