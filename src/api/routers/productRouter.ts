@@ -5,11 +5,8 @@ const router = express.Router();
 const productController = new ProductController();
 
 // Rota para devolver todos os Produtos
-router.post('/', productController.createProduct.bind(productController));
+router.post('/', productController.createProduct);
 router.put('/:id', productController.updateProduct.bind(productController));
-router.delete('/:id', productController.deleteProduct);
-router.get('/:id', productController.getProductById);
-router.get('/', productController.getAllProducts);
 
 //Rota para dar update a um produto pelo ID
 router.put('/:id', productController.updateProduct);
