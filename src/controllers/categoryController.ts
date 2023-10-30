@@ -19,8 +19,8 @@ export class CategoryController {
 
   public async getAllCategory(req: Request, res:Response) {
     try {
-      const categorys = await Category.find().populate({ path: 'subcategory', populate: [{ path: 'products'}] });
-      return res.status(200).send(categorys)
+      const categories = await Category.find().populate({ path: 'subcategory', populate: [{ path: 'products'}] });
+      return res.status(200).send(categories)
     } catch (error) {
       return res.status(500).send({ message: 'Internal Error' })
     }
