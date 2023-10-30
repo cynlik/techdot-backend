@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel';
 import { UserRole } from '@src/utils/roles';
+import jwt from 'jsonwebtoken';
 
 declare global {
   namespace Express {
@@ -15,29 +16,14 @@ const roleMiddleware = (allowedRole: UserRole) => {
     try {
       const userRoles = req.user?.roles;
 
-      if (!userRoles) {
-        return res
-          .status(403)
-          .json({ message: 'Access denied. User has no roles.' });
+      if (!userRoles || !Array.isArray(userRoles)) {
+        return res.status(403).json({ message: 'Access denied. User has no valid roles.' });
       }
 
-      const allowedRoleIndex = Object.values(UserRole).indexOf(allowedRole);
-      if (allowedRoleIndex === -1) {
-        return res
-          .status(403)
-          .json({ message: `Invalid role: ${allowedRole}` });
-      }
-
-      const userRoleIndex = Math.max(
-        ...userRoles.map((role) => Object.values(UserRole).indexOf(role))
-      );
-
-      if (userRoleIndex >= allowedRoleIndex) {
+      if (userRoles.includes(allowedRole) || userRoles.includes(UserRole.Admin)) {
         next();
       } else {
-        return res
-          .status(403)
-          .json({ message: `Access denied. Only ${allowedRole} users allowed.` });
+        return res.status(403).json({ message: `Access denied. Only ${allowedRole} users allowed.` });
       }
     } catch (error) {
       return res.status(500).json({ message: `Error in ${allowedRole} middleware` });
