@@ -17,8 +17,8 @@ router.put('/verify', userController.verifyAccount);
 router.post("/login", userController.loginUser);
 
 // User routes
-router.get('/id/:userId', validateToken, roleMiddleware(UserRole.ManageClients), userController.getUserById);
-router.post('/id/:userId', validateToken, roleMiddleware(UserRole.ManageClients), userController.updateUserById);
-router.delete('/id/:userId', validateToken, roleMiddleware(UserRole.ManageClients), userController.deleteUserById);
+router.get('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.getUserById);
+router.post('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
+router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.deleteUserById);
 
 export default router;

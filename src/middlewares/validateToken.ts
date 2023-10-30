@@ -14,8 +14,8 @@ const validateToken = async (req: CustomRequest, res: Response, next: NextFuncti
       token = authHeader.split(' ')[1];
       const decoded = jwt.verify(token, process.env.SECRET as string);
 
-      if (typeof decoded === 'object' && 'user' in decoded) {
-        req.user = decoded.user;
+      if (typeof decoded === 'object') {
+        (req as any).user = decoded;
         next();
       } else {
         res.status(401);
