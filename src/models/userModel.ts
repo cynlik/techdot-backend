@@ -26,7 +26,7 @@ export const UserSchema = new Schema<IUser>(
       default: [UserRole.Member],
       enum: Object.values(UserRole),
     },
-    picture: { type: String },
+    picture: { type: String, default: null},
     age: { type: Number },
     address: { type: String, default: null },
     country: { type: String, default: null },
