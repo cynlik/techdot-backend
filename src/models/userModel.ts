@@ -1,5 +1,6 @@
 import { model, Document, Schema } from 'mongoose';
 import { UserRole } from '@src/utils/roles';
+import { CartItem } from './cartModel';
 
 export interface IUser extends Document {
   name: string;
@@ -13,6 +14,7 @@ export interface IUser extends Document {
   verifyAccountToken: string | null;
   verifyAccountTokenExpires: Date | null;
   isVerified: boolean | false;
+  cart: CartItem[] | null
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -33,6 +35,7 @@ export const UserSchema = new Schema<IUser>(
     verifyAccountToken: { type: String, default: null },
     verifyAccountTokenExpires: { type: Date, default: null },
     isVerified: { type: Boolean, default: false },
+    cart: [{ type: Schema.Types.ObjectId, ref: 'CartItem' }],
   },
   {
     timestamps: true,
