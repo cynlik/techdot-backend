@@ -1,27 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUser } from '@src/models/userModel'; 
-import { UserRole } from '@src/utils/roles'; 
+import { IUser } from '@src/models/userModel';
+import { UserRole } from '@src/utils/roles';
 
-interface CustomRequest extends Request {
-  user: IUser;
+declare global {
+  namespace Express {
+    interface Request {
+      user: IUser;
+    }
+  }
 }
 
 const roleMiddleware = (allowedRole: UserRole) => {
-  return async (req: CustomRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ message: 'Unauthorized access' });
+      const userRoles = req.user?.roles;
+
+      if (!userRoles) {
+        return res
+          .status(403)
+          .json({ message: 'Access denied. User has no roles.' });
       }
 
-      const roles = req.user.roles;
+      const allowedRoleIndex = Object.values(UserRole).indexOf(allowedRole);
+      if (allowedRoleIndex === -1) {
+        return res
+          .status(403)
+          .json({ message: `Invalid role: ${allowedRole}` });
+      }
 
-      if (!roles.includes(allowedRole)) {
+      const userRoleIndex = Math.max(
+        ...userRoles.map((role) => Object.values(UserRole).indexOf(role))
+      );
+
+      if (userRoleIndex >= allowedRoleIndex) {
+        next();
+      } else {
         return res
           .status(403)
           .json({ message: `Access denied. Only ${allowedRole} users allowed.` });
       }
-
-      next();
     } catch (error) {
       return res.status(500).json({ message: `Error in ${allowedRole} middleware` });
     }
@@ -29,11 +46,3 @@ const roleMiddleware = (allowedRole: UserRole) => {
 };
 
 export { roleMiddleware };
-
-/**
- * Create a new role
- * 
- * @param {UserRole.role}
- * const productManagerMiddleware = roleMiddleware(UserRole.ManageProducts);
- * const clientManagerMiddleware = roleMiddleware(UserRole.ManageClients);
- */

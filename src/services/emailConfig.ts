@@ -35,14 +35,15 @@ export function sendMail(emailType: EmailType, to: string, res: Response, token?
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log(error);
-      res.status(500).json({ message: 'Error in sending email' });
+      console.error(error);
+      return res.status(422).json({ message: 'Error in sending email', error: error.message });
     } else {
       console.log('Email sent: ' + info.response);
-      res.status(200).json({ message: 'Email sent successfully' });
+      return res.status(200).json({ message: 'Email sent successfully' });
     }
   });
 }
+
 
 // Exemplo de uso:
 // sendMail(EmailType.Tipo, user.email, res);
