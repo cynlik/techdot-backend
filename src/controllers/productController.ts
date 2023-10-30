@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { Product } from "../models/productModel";
-import { Subcategory, ISubcategory } from "../models/subcategoryModel";
+import { Product } from "@src/models/productModel";
+import { Subcategory, ISubcategory } from "@src/models/subcategoryModel";
+import { Constant } from "@src/utils/constant"
 
 export class ProductController {
 
@@ -47,7 +48,7 @@ export class ProductController {
 
     const validations = [
       () => this.validateProductData(req.body),
-      () => this.validateId(subcategoryId, "Subcategory")
+      () => this.validateId(subcategoryId, Constant.Subcategory)
     ];
   
     for (const validate of validations) {
@@ -80,7 +81,7 @@ export class ProductController {
     const { name, description, imageUrl, manufacturer, stockQuantity, price } = req.body;
 
     const validations = [
-      () => this.validateId(id, "Product")
+      () => this.validateId(id, Constant.Product)
     ];
   
     for (const validate of validations) {
@@ -114,6 +115,18 @@ export class ProductController {
   public async deleteProduct(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
 
+    // Antes de eliminar tem que ver onde está o produto a ser eliminado e tem que eliminar de todos os sitios
+
+    const validations = [
+      () => this.validateId(id, Constant.Product)
+    ];
+  
+    for (const validate of validations) {
+      const errors = validate();
+      const response = this.sendErrorResponse(errors, res);
+      if (response) return response;
+    }
+
     try {
       const product = await this.findProductById(id);
       if (!product) {
@@ -130,6 +143,16 @@ export class ProductController {
 
   public async getProductById(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
+
+    const validations = [
+      () => this.validateId(id, Constant.Product)
+    ];
+  
+    for (const validate of validations) {
+      const errors = validate();
+      const response = this.sendErrorResponse(errors, res);
+      if (response) return response;
+    }
 
     try {
       const product = await this.findProductById(id);
