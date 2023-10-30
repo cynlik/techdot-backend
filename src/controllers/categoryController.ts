@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { Category } from "../models/categoryModel";
+import { Category, ICategory } from "../models/categoryModel";
 
 export class CategoryController {
     
   public async createCategory(req: Request, res: Response): Promise<Response> {
-    const { name } = req.body;
+    const { name }: Partial<ICategory> = req.body;
 
     try {
       const newCategory = new Category({ name });
