@@ -10,34 +10,28 @@ declare global {
   }
 }
 
+function calculateRoleOrder(role: UserRole) {
+  const roles = Object.values(UserRole);
+  const roleIndex = roles.indexOf(role);
+  return roleIndex === -1 ? -1 : roles.length - roleIndex - 1;
+}
+
 const roleMiddleware = (allowedRole: UserRole) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userRoles = req.user?.roles;
+      const userRole = req.user?.role;
 
-      if (!userRoles) {
-        return res
-          .status(403)
-          .json({ message: 'Access denied. User has no roles.' });
+      if (!userRole) {
+        return res.status(403).json({ message: 'Access denied. User has no valid role.' });
       }
 
-      const allowedRoleIndex = Object.values(UserRole).indexOf(allowedRole);
-      if (allowedRoleIndex === -1) {
-        return res
-          .status(403)
-          .json({ message: `Invalid role: ${allowedRole}` });
-      }
+      const allowedRoleOrder = calculateRoleOrder(allowedRole);
+      const userRoleOrder = calculateRoleOrder(userRole);
 
-      const userRoleIndex = Math.max(
-        ...userRoles.map((role) => Object.values(UserRole).indexOf(role))
-      );
-
-      if (userRoleIndex >= allowedRoleIndex) {
+      if (userRoleOrder >= allowedRoleOrder) {
         next();
       } else {
-        return res
-          .status(403)
-          .json({ message: `Access denied. Only ${allowedRole} users allowed.` });
+        return res.status(403).json({ message: `Access denied. Only ${allowedRole} or higher users allowed.` });
       }
     } catch (error) {
       return res.status(500).json({ message: `Error in ${allowedRole} middleware` });

@@ -2,7 +2,7 @@ import express from "express";
 import UserController from '@src/controllers/userController';
 import { roleMiddleware } from '@src/middlewares/roleMiddleware';
 import { UserRole } from "@src/utils/roles";
-import validateToken from '@src/middlewares/validateToken'; // Importe o middleware de validação de token
+import validateToken from '@src/middlewares/validateToken'; 
 
 const router = express.Router();
 const userController = new UserController();
@@ -17,7 +17,7 @@ router.put('/verify', userController.verifyAccount);
 router.post("/login", userController.loginUser);
 
 // User routes
-router.get('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.getUserById);
+router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), userController.getUserById);
 router.post('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
 router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.deleteUserById);
 

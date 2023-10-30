@@ -125,18 +125,27 @@ export default class UserController {
 
 	public async getUserById(req: Request, res: Response) {
 		try {
+		  let users;
+	  
+		  if (req.params.id) {
 			const user = await User.findById(req.params.id).exec();
-
+	  
 			if (user === null) {
-				throw new Error("User not found!");
+			  throw new Error("User not found!");
 			}
-
-			res.status(200).send(user);
+	  
+			users = [user];
+		  } else {
+			users = await User.find().exec();
+		  }
+	  
+		  res.status(200).send(users);
 		} catch (error) {
-			console.error(error);
-			res.status(404).json({ message: "User not found." });
+		  console.error(error);
+		  res.status(404).json({ message: "User not found." });
 		}
-	}
+	  }
+	  
 
 	public async updateUserById(req: Request, res: Response) {
 		try {
@@ -187,7 +196,7 @@ export default class UserController {
 				id: user._id,
 				name: user.name,
 				email: user.email,
-				roles: user.roles,
+				role: user.role,
 			},
 			config.secret,
 			{ expiresIn }
