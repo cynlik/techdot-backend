@@ -43,7 +43,7 @@ export class ProductController {
     // Melhorar os códigos de status enviados para erro de ID 422, talvez fazer global
   }
 
-  public async createProduct(req: Request, res: Response): Promise<Response> {
+  public createProduct = async (req: Request, res: Response) => {
     const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId } = req.body;
 
     const validations = [
@@ -76,7 +76,7 @@ export class ProductController {
     }
   }
 
-  public async updateProduct(req: Request, res: Response): Promise<Response> {
+  public updateProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, description, imageUrl, manufacturer, stockQuantity, price } = req.body;
 
@@ -112,7 +112,7 @@ export class ProductController {
     }
   }
 
-  public async deleteProduct(req: Request, res: Response): Promise<Response> {
+  public deleteProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Antes de eliminar tem que ver onde está o produto a ser eliminado e tem que eliminar de todos os sitios
@@ -141,7 +141,7 @@ export class ProductController {
     }
   }
 
-  public async getProductById(req: Request, res: Response): Promise<Response> {
+  public getProductById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const validations = [
@@ -167,7 +167,7 @@ export class ProductController {
     }
   }
 
-  public async getAllProducts(req: Request, res: Response): Promise<Response> {
+  public getAllProducts = async (req: Request, res: Response) => {
     try {
       const products = await Product.find();
       return res.status(200).send(products);
