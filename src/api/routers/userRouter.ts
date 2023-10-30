@@ -13,7 +13,7 @@ router.post('/register', userController.registerUser);
 // Verify user
 router.put('/verify', userController.verifyAccount);
 
-// Login (Rota que não requer validação de token)
+// Login
 router.post("/login", userController.loginUser);
 
 // User routes

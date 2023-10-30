@@ -21,6 +21,6 @@ export const emailContent = {
 	[EmailType.VerifyAccount]: {
 		subject: "Verificar Conta",
 		text: (token: string) =>
-		  `http://localhost:5173/user/verify?token=${token}`,
+		  `http://${process.env.HOST}:${process.env.PORT}/api/user/verify?token=${token}`,
 	},
 };
