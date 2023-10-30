@@ -78,7 +78,7 @@ export default class UserController {
 			return;
 		  }
 	  
-		  const passwordMatch = await this.comparePassword(password, user.password);
+		  const passwordMatch = await bcrypt.compare(password, user.password);
 	  
 		  if (passwordMatch) {
 			const accessToken = UserController.createToken(user, config.expiresIn);
@@ -125,7 +125,7 @@ export default class UserController {
 
 	public async getUserById(req: Request, res: Response) {
 		try {
-			const user = await User.findById(req.params.userId);
+			const user = await User.findById(req.params.id).exec();
 
 			if (user === null) {
 				throw new Error("User not found!");
@@ -153,7 +153,7 @@ export default class UserController {
 
 			if (
 				newUser.password &&
-				!(await this.comparePassword(newUser.password, dbUser.password))
+				!(await bcrypt.compare(newUser.password, dbUser.password))
 			) {
 				newUser.password = await this.hashPassword(newUser.password);
 			} else {
@@ -206,10 +206,6 @@ export default class UserController {
 				new Error(`Password not hashed, error: \n ${err.message}`)
 			);
 		}
-	}
-
-	private async comparePassword(newPassword: string, hash: string) {
-		return bcrypt.compare(newPassword, hash);
 	}
 
 	private async isEmailUnique(email: string): Promise<boolean> {

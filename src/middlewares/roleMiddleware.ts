@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUser } from '@src/models/userModel'; 
-import { UserRole } from '@src/utils/roles'; 
+import { IUser } from '@src/models/userModel';
+import { UserRole } from '@src/utils/roles'; // Importe o enum UserRole
 import jwt from 'jsonwebtoken';
 
-// Estenda a definição de tipo do Express para incluir a propriedade 'user'
 declare global {
   namespace Express {
     interface Request {
@@ -18,6 +17,15 @@ const roleMiddleware = (allowedRole: UserRole) => {
       const userRoles = req.user?.roles;
 
       if (!userRoles || !userRoles.includes(allowedRole)) {
+        if (userRoles) {
+          for (const role of userRoles) {
+            if (role === allowedRole) {
+              next();
+              return;
+            }
+          }
+        }
+
         return res
           .status(403)
           .json({ message: `Access denied. Only ${allowedRole} users allowed.` });
@@ -29,6 +37,5 @@ const roleMiddleware = (allowedRole: UserRole) => {
     }
   };
 };
-
 
 export { roleMiddleware };
