@@ -2,7 +2,7 @@ import express from "express";
 import UserController from '@src/controllers/userController';
 import { roleMiddleware } from '@src/middlewares/roleMiddleware';
 import { UserRole } from "@src/utils/roles";
-import validateToken from '@src/middlewares/validateToken'; // Importe o middleware de validação de token
+import validateToken from '@src/middlewares/validateToken'; 
 
 const router = express.Router();
 const userController = new UserController();
