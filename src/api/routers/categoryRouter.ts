@@ -7,4 +7,6 @@ const categoryController = new CategoryController();
 // Rota para cirar uma Categoria 
 router.post('/', categoryController.createCategory);
 
+router.get('/', categoryController.getAllCategory)
+
 export default router;

@@ -7,4 +7,6 @@ const subcategoryController = new SubcategoryController();
 // Rota para devolver todos os Produtos
 router.post('/', subcategoryController.createSubcategory);
 
+router.get('/', subcategoryController.getAllSubcategory);
+
 export default router;

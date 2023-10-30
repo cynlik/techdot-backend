@@ -1,3 +1,6 @@
+// Alterar para global as menssagens 
+
+
 export const messages = {
     error: {
       SUBCATEGORY_NOT_FOUND: "Subcategory not found",
@@ -10,4 +13,4 @@ export const messages = {
       INVALID_SUBCATEGORY_ID: "Invalid subcategory ID",
       INVALID_IMAGE_URL: "Invalid image URL",
     },
-  };
+};

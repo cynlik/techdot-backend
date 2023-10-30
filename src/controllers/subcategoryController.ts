@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { Subcategory } from "../models/subcategoryModel";
-import { Category } from "../models/categoryModel";
-
+import { Category } from "@src/models/categoryModel";
+import { Subcategory } from "@src/models/subcategoryModel";
 export class SubcategoryController {
     
   public async createSubcategory(req: Request, res: Response): Promise<Response> {
@@ -28,6 +27,15 @@ export class SubcategoryController {
     } catch (error) {
       console.error(error);
       return res.status(500).send({ message: "Erro ao criar subcategoria" });
+    }
+  }
+
+  public async getAllSubcategory(req: Request, res:Response) {
+    try {
+      const subcategorys = await Subcategory.find().populate({ path: 'products'});
+      return res.status(200).send(subcategorys)
+    } catch (error) {
+      return res.status(500).send({ message: 'Internal Error' })
     }
   }
 }
