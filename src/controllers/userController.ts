@@ -7,7 +7,7 @@ import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 
 export default class UserController {
-	public async registerUser(req: Request, res: Response) {
+	public registerUser = async(req: Request, res: Response) => {
 		try {
 			const { name, email, password }: Partial<IUser> = req.body;
 			if (!name || !email || !password) {
@@ -47,52 +47,51 @@ export default class UserController {
 		}
 	}
 
-	public async loginUser(req: Request, res: Response) {
+	public loginUser = async(req: Request, res: Response) => {
 		try {
-		  const { email, password }: Partial<IUser> = req.body;
-	  
-		  if (!email || !password) {
-			res.status(400).json({ error: "All fields are mandatory!" });
-			return;
-		  }
-	  
-		  const user = await User.findOne({ email });
-	  
-		  if (!user) {
-			res.status(400).json({ error: "User not found!" });
-			return;
-		  }
-	  
-		  if (!user.isVerified) {
-			const token = UserController.createToken(user, config.expiresIn);
-			user.verifyAccountToken = token.token;
-			user.verifyAccountTokenExpires = new Date(
-			  Date.now() + 24 * 60 * 60 * 1000
-			); // 24 hours
-	  
-			await user.save();
-	  
-			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
-	  
-			res.status(401).json({ error: "Verify your email" });
-			return;
-		  }
-	  
-		  const passwordMatch = await bcrypt.compare(password, user.password);
-	  
-		  if (passwordMatch) {
-			const accessToken = UserController.createToken(user, config.expiresIn);
-			res.status(200).json({ accessToken: accessToken });
-		  } else {
-			res.status(401).json({ error: "Invalid email or password" });
-		  }
-		} catch (error) {
-		  res.status(500).json({ error: error });
-		}
-	  }
-	  
+			const { email, password }: Partial<IUser> = req.body;
 
-	public async verifyAccount(req: Request, res: Response) {
+			if (!email || !password) {
+				res.status(400).json({ error: "All fields are mandatory!" });
+				return;
+			}
+
+			const user = await User.findOne({ email });
+
+			if (!user) {
+				res.status(400).json({ error: "User not found!" });
+				return;
+			}
+
+			if (!user.isVerified) {
+				const token = UserController.createToken(user, config.expiresIn);
+				user.verifyAccountToken = token.token;
+				user.verifyAccountTokenExpires = new Date(
+					Date.now() + 24 * 60 * 60 * 1000
+				); // 24 hours
+
+				await user.save();
+
+				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
+
+				res.status(401).json({ error: "Verify your email" });
+				return;
+			}
+
+			const passwordMatch = await bcrypt.compare(password, user.password);
+
+			if (passwordMatch) {
+				const accessToken = UserController.createToken(user, config.expiresIn);
+				res.status(200).json({ accessToken: accessToken });
+			} else {
+				res.status(401).json({ error: "Invalid email or password" });
+			}
+		} catch (error) {
+			res.status(500).json({ error: error });
+		}
+	}
+
+	public verifyAccount = async(req: Request, res: Response) => {
 		const token = req.query.token as string;
 
 		try {
@@ -123,31 +122,30 @@ export default class UserController {
 		}
 	}
 
-	public async getUserById(req: Request, res: Response) {
+	public getUserById = async(req: Request, res: Response) => {
 		try {
-		  let users;
-	  
-		  if (req.params.id) {
-			const user = await User.findById(req.params.id).exec();
-	  
-			if (user === null) {
-			  throw new Error("User not found!");
-			}
-	  
-			users = [user];
-		  } else {
-			users = await User.find().exec();
-		  }
-	  
-		  res.status(200).send(users);
-		} catch (error) {
-		  console.error(error);
-		  res.status(404).json({ message: "User not found." });
-		}
-	  }
-	  
+			let users;
 
-	public async updateUserById(req: Request, res: Response) {
+			if (req.params.id) {
+				const user = await User.findById(req.params.id).exec();
+
+				if (user === null) {
+					throw new Error("User not found!");
+				}
+
+				users = [user];
+			} else {
+				users = await User.find().exec();
+			}
+
+			res.status(200).send(users);
+		} catch (error) {
+			console.error(error);
+			res.status(404).json({ message: "User not found." });
+		}
+	}
+
+	public updateUserById = async(req: Request, res: Response) => {
 		try {
 			const newUser: Partial<IUser> = req.body;
 			const dbUser = await User.findById(req.params.userId);
@@ -176,7 +174,7 @@ export default class UserController {
 		}
 	}
 
-	public async deleteUserById(req: Request, res: Response) {
+	public deleteUserById = async(req: Request, res: Response) => {
 		try {
 			const user = await User.findByIdAndDelete(req.params.userId);
 
@@ -205,7 +203,7 @@ export default class UserController {
 		return { auth: true, token };
 	}
 
-	private async hashPassword(password: string): Promise<string> {
+	private hashPassword = async(password: string) => {
 		try {
 			return await bcrypt.hash(password, config.saltRounds);
 		} catch (err: any) {
@@ -217,7 +215,7 @@ export default class UserController {
 		}
 	}
 
-	private async isEmailUnique(email: string): Promise<boolean> {
+	private isEmailUnique = async(email: string) => {
 		return (await User.find({ email }).exec()).length <= 0;
 	}
 }
