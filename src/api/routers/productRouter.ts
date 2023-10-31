@@ -6,7 +6,6 @@ const productController = new ProductController();
 
 // Rota para devolver todos os Produtos
 router.post('/', productController.createProduct);
-router.put('/:id', productController.updateProduct.bind(productController));
 
 //Rota para dar update a um produto pelo ID
 router.put('/:id', productController.updateProduct);
