@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { Product } from "@src/models/productModel";
+import { Product, IProduct } from "@src/models/productModel";
 import { Subcategory, ISubcategory } from "@src/models/subcategoryModel";
 import { Constant } from "@src/utils/constant"
 
 export class ProductController {
 
-  private async findProductById(id: string): Promise<ISubcategory | null> {
+  private async findProductById(id: string): Promise<IProduct | null> {
     return await Product.findById(id);
-  } 
+  }
 
   private async findSubcategoryById(id: string): Promise<ISubcategory | null> {
     return await Subcategory.findById(id);
@@ -78,10 +78,12 @@ export class ProductController {
 
   public updateProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, description, imageUrl, manufacturer, stockQuantity, price } = req.body;
-
+    const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId } = req.body;
+  
     const validations = [
-      () => this.validateId(id, Constant.Product)
+      () => this.validateId(id, 'Product'),
+      () => this.validateProductData(req.body),
+      () => this.validateId(subcategoryId, 'Subcategory'),
     ];
   
     for (const validate of validations) {
@@ -89,28 +91,46 @@ export class ProductController {
       const response = this.sendErrorResponse(errors, res);
       if (response) return response;
     }
-
-    // Adicionar funcionalidade para que ao alterar a subcategoruia ela seja eliminada na base de dados da tabela 
-    // "Subcategorie" e seja adicionado há nova subcategoria
-
+  
     try {
       const product = await this.findProductById(id);
       if (!product) {
         return res.status(404).send({ message: 'Product not found' });
       }
-
-      const updatedProduct = await Product.findByIdAndUpdate(
-        id,
-        { name, description, imageUrl, manufacturer, stockQuantity, price },
-        { new: true },
-      );
-
-      return res.status(200).send(updatedProduct);
+  
+      const newSubcategory = await this.findSubcategoryById(subcategoryId);
+      if (!newSubcategory) {
+        return res.status(404).send({ message: 'Subcategory not found' });
+      }
+  
+      const oldSubcategories = await Subcategory.find({ products: product._id });
+      for (const oldSubcategory of oldSubcategories) {
+        oldSubcategory.products = oldSubcategory.products.filter(
+          (productId) => productId.toString() !== id
+        );
+        await oldSubcategory.save();
+      }
+  
+      if (!newSubcategory.products.includes(product._id)) {
+        newSubcategory.products.push(product._id);
+        await newSubcategory.save();
+      }
+  
+      product.name = name;
+      product.description = description;
+      product.imageUrl = imageUrl;
+      product.manufacturer = manufacturer;
+      product.stockQuantity = stockQuantity;
+      product.price = price;
+      await product.save();
+  
+      return res.status(200).send(product);
     } catch (error) {
       console.error(error);
       return res.status(500).send({ message: 'Internal Server Error' });
     }
-  }
+  };
+  
 
   public deleteProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
