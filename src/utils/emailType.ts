@@ -16,7 +16,8 @@ export const emailContent = {
 	},
 	[EmailType.ForgetPassword]: {
 		subject: "Esqueceu Senha",
-		text: "Você solicitou o esquecimento de senha.",
+		text: (token: string) =>
+		  `http://${process.env.HOST}:${process.env.PORT}/api/user/reset-password?token=${token}`,
 	},
 	[EmailType.VerifyAccount]: {
 		subject: "Verificar Conta",

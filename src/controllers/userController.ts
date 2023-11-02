@@ -7,9 +7,9 @@ import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 
 export default class UserController {
-	public registerUser = async(req: Request, res: Response) => {
+	public registerUser = async (req: Request, res: Response) => {
 		try {
-			const { name, email, password }: Partial<IUser> = req.body;
+			const { name, email, password } = req.body;
 			if (!name || !email || !password) {
 				res.status(400).json({ message: "All fields are mandatory!" });
 				return;
@@ -45,11 +45,11 @@ export default class UserController {
 			console.error(error);
 			res.status(500).json({ message: "Failed to register the user" });
 		}
-	}
+	};
 
-	public loginUser = async(req: Request, res: Response) => {
+	public loginUser = async (req: Request, res: Response) => {
 		try {
-			const { email, password }: Partial<IUser> = req.body;
+			const { email, password } = req.body;
 
 			if (!email || !password) {
 				res.status(400).json({ error: "All fields are mandatory!" });
@@ -89,9 +89,9 @@ export default class UserController {
 		} catch (error) {
 			res.status(500).json({ error: error });
 		}
-	}
+	};
 
-	public verifyAccount = async(req: Request, res: Response) => {
+	public verifyAccount = async (req: Request, res: Response) => {
 		const token = req.query.token as string;
 
 		try {
@@ -120,14 +120,88 @@ export default class UserController {
 				.status(500)
 				.json({ error: "An error occurred while verifying the account." });
 		}
-	}
+	};
 
-	public me = async(req: Request, res: Response) => {
-		const User = req.user
+	public forgetPassword = async (req: Request, res: Response) => {
+		const { email } = req.body;
+
+		const user = await User.findOne({ email });
+		if (!user) {
+			res.status(400);
+			throw new Error("User with this email does not exist");
+		}
+
+		const token = UserController.createToken(user, config.expiresIn);
+		user.resetPasswordToken = token.token;
+		user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+		await user.save();
+
+		sendMail(EmailType.ForgetPassword, user.email, res, token.token);
+	};
+
+	public resetPassword = async (req: Request, res: Response) => {
+		const { newPassword, confirmPassword } = req.body;
+
+		const token = req.query.token as string | undefined;
+
+		if (!token) {
+			res.status(400);
+			throw new Error("Token not provided.");
+		}
+
+		// verificar se o token é válido e ainda não expirou
+		const user = await User.findOne({
+			resetPasswordToken: token,
+			resetPasswordExpires: { $gt: Date.now() },
+		});
+
+		if (!user) {
+			res.status(404);
+			throw new Error("Token inválido ou expirado!");
+		}
+
+		if (!newPassword || !confirmPassword) {
+			res.status(400);
+			throw new Error(
+				"Both the new password and confirm password fields are mandatory."
+			);
+		}
+
+		if (newPassword !== confirmPassword) {
+			res.status(400);
+			throw new Error(
+				"The new password and confirm password fields must match."
+			);
+		}
+
+		const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
+
+		if (oldPasswordMatch) {
+			res.status(400);
+			throw new Error(
+				"The new password must be different from the old password."
+			);
+		}
+
+		try {
+			const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+			user.password = hashedNewPassword;
+			user.resetPasswordToken = null;
+			const updatedUser = await user.save();
+			res.status(200).json({ message: "Password updated successfully." });
+		} catch (error) {
+			res.status(500);
+			throw new Error("An error occurred while updating the password.");
+		}
+	};
+
+	public me = async (req: Request, res: Response) => {
+		const User = req.user;
 		res.status(200).json({ message: User });
-	}
+	};
 
-	public getUserById = async(req: Request, res: Response) => {
+	public getUserById = async (req: Request, res: Response) => {
 		try {
 			let users;
 
@@ -148,11 +222,11 @@ export default class UserController {
 			console.error(error);
 			res.status(404).json({ message: "User not found." });
 		}
-	}
+	};
 
-	public updateUserById = async(req: Request, res: Response) => {
+	public updateUserById = async (req: Request, res: Response) => {
 		try {
-			const newUser: Partial<IUser> = req.body;
+			const newUser = req.body;
 			const dbUser = await User.findById(req.params.userId);
 
 			if (dbUser === null) {
@@ -167,7 +241,8 @@ export default class UserController {
 				newUser.password &&
 				!(await bcrypt.compare(newUser.password, dbUser.password))
 			) {
-				newUser.password = await this.hashPassword(newUser.password);
+				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
+				newUser.password = hashedNewPassword;
 			} else {
 				newUser.password = dbUser.password;
 			}
@@ -177,9 +252,9 @@ export default class UserController {
 			console.error(error);
 			res.status(404).json({ message: "Failed to update user." });
 		}
-	}
+	};
 
-	public deleteUserById = async(req: Request, res: Response) => {
+	public deleteUserById = async (req: Request, res: Response) => {
 		try {
 			const user = await User.findByIdAndDelete(req.params.userId);
 
@@ -191,7 +266,7 @@ export default class UserController {
 		} catch (error) {
 			res.status(404).json({ message: "Failed to delete user." });
 		}
-	}
+	};
 
 	private static createToken(user: IUser, expiresIn = config.expiresIn) {
 		let token = jwt.sign(
@@ -208,19 +283,7 @@ export default class UserController {
 		return { auth: true, token };
 	}
 
-	private hashPassword = async(password: string) => {
-		try {
-			return await bcrypt.hash(password, config.saltRounds);
-		} catch (err: any) {
-			err = err instanceof Error ? err : new Error(err);
-
-			return Promise.reject(
-				new Error(`Password not hashed, error: \n ${err.message}`)
-			);
-		}
-	}
-
-	private isEmailUnique = async(email: string) => {
+	private isEmailUnique = async (email: string) => {
 		return (await User.find({ email }).exec()).length <= 0;
-	}
+	};
 }
