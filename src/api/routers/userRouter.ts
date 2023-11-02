@@ -16,6 +16,12 @@ router.put('/verify', userController.verifyAccount);
 // Login
 router.post("/login", userController.loginUser);
 
+// Forget
+router.post("/:email", userController.forgetPassword);
+
+// Reset
+router.put("/resetpassword", userController.resetPassword);
+
 // My information
 router.get('/me', validateToken, userController.me);
 
