@@ -3,7 +3,6 @@ import { ProductController } from "../../controllers/productController";
 import validateToken from "@src/middlewares/validateToken";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
 import { UserRole } from "@src/utils/roles";
-import { User } from "@src/models/userModel";
 import tryValidateToken from "@src/middlewares/tryValidateToken";
 
 const router = express.Router();
