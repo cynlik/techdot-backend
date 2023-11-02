@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { SaleModel, ISale } from "@src/models/saleModel";
 
-export class saleController {
+export class SaleController {
   public async create(req: Request, res: Response) {
     try {
       const { user, products, purchaseDate, totalAmount }:ISale = req.body;
