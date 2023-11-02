@@ -122,6 +122,11 @@ export default class UserController {
 		}
 	}
 
+	public me = async(req: Request, res: Response) => {
+		const User = req.user
+		res.status(200).json({ message: User });
+	}
+
 	public getUserById = async(req: Request, res: Response) => {
 		try {
 			let users;
