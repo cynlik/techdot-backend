@@ -1,26 +1,33 @@
 import express from "express";
 import { ProductController } from "../../controllers/productController";
+import validateToken from "@src/middlewares/validateToken";
+import { roleMiddleware } from "@src/middlewares/roleMiddleware";
+import { UserRole } from "@src/utils/roles";
+import { User } from "@src/models/userModel";
+import tryValidateToken from "@src/middlewares/tryValidateToken";
 
 const router = express.Router();
 const productController = new ProductController();
 
-// Rota para devolver todos os Produtos
-router.post('/', productController.createProduct.bind(productController));
-router.put('/:id', productController.updateProduct.bind(productController));
-router.delete('/:id', productController.deleteProduct);
-router.get('/:id', productController.getProductById);
-router.get('/', productController.getAllProducts);
+// ROTAS TANTO PARA ADMIN | USER | NONMEMBER
 
-//Rota para dar update a um produto pelo ID
-router.put('/:id', productController.updateProduct);
+    // Rota para devolver um produto pelo ID | devolver produtos todos
+    router.get('/products/', tryValidateToken, productController.getProductsByName);
 
-// Rota para eliminar um produto pelo ID
-router.delete('/:id', productController.deleteProduct);
+    // Rota para devolver um produto pelo ID
+    router.get('/:id', tryValidateToken, productController.getProductById);
 
-// Rota para devolver um produto pelo ID
-router.get('/:id', productController.getProductById);
+// ROTAS DE ADMIN
 
-// Rota para devolver todos os produtos existentes
-router.get('/', productController.getAllProducts);
+    // Rota para criar Produtos
+    router.post('/', validateToken, roleMiddleware( UserRole.Manager ), productController.createProduct);
+
+    // Rota para dar update a um produto pelo ID
+    router.put('/:id', validateToken, roleMiddleware( UserRole.Manager ), productController.updateProduct);
+
+    // Rota para eliminar um produto pelo ID
+    router.delete('/:id', validateToken, roleMiddleware( UserRole.Manager ), productController.deleteProduct);
+
+    
 
 export default router;

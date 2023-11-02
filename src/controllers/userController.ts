@@ -9,7 +9,7 @@ import { EmailType } from "@src/utils/emailType";
 export default class UserController {
 	public async registerUser(req: Request, res: Response) {
 		try {
-			const { name, email, password } = req.body;
+			const { name, email, password }: Partial<IUser> = req.body;
 			if (!name || !email || !password) {
 				res.status(400).json({ message: "All fields are mandatory!" });
 				return;
@@ -49,7 +49,7 @@ export default class UserController {
 
 	public async loginUser(req: Request, res: Response) {
 		try {
-		  const { email, password } = req.body;
+		  const { email, password }: Partial<IUser> = req.body;
 	  
 		  if (!email || !password) {
 			res.status(400).json({ error: "All fields are mandatory!" });
