@@ -150,38 +150,27 @@ export default class UserController {
 			throw new Error("Token not provided.");
 		}
 
-		// verificar se o token é válido e ainda não expirou
 		const user = await User.findOne({
 			resetPasswordToken: token,
 			resetPasswordExpires: { $gt: Date.now() },
 		});
 
 		if (!user) {
-			res.status(404);
-			throw new Error("Token inválido ou expirado!");
+			return res.status(400).json({ error: "Token inválido ou expirado!" });
 		}
 
 		if (!newPassword || !confirmPassword) {
-			res.status(400);
-			throw new Error(
-				"Both the new password and confirm password fields are mandatory."
-			);
+			res.status(400).json({ message: "Both the new password and confirm password fields are mandatory." });
 		}
 
 		if (newPassword !== confirmPassword) {
-			res.status(400);
-			throw new Error(
-				"The new password and confirm password fields must match."
-			);
+			res.status(400).json({ message: "The new password and confirm password fields must match." });
 		}
 
 		const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
 
 		if (oldPasswordMatch) {
-			res.status(400);
-			throw new Error(
-				"The new password must be different from the old password."
-			);
+			res.status(400).json({ message: "The new password must be different from the old password." });
 		}
 
 		try {
@@ -191,8 +180,7 @@ export default class UserController {
 			const updatedUser = await user.save();
 			res.status(200).json({ message: "Password updated successfully." });
 		} catch (error) {
-			res.status(500);
-			throw new Error("An error occurred while updating the password.");
+			res.status(500).json({ message: "An error occurred while updating the password." });
 		}
 	};
 
