@@ -16,6 +16,9 @@ router.put('/verify', userController.verifyAccount);
 // Login
 router.post("/login", userController.loginUser);
 
+// My information
+router.get('/me', validateToken, userController.me);
+
 // User routes
 router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), userController.getUserById);
 router.post('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
