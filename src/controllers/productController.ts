@@ -194,8 +194,6 @@ export class ProductController {
     }
   };
 
-  // Atualizar rotas para ter filtragens paginação e maneira de um membro receber uma coisa e o Admin outra
-
   public getProductsByName = async (req: Request, res: Response) => {
     const { name, sort, page = 1, limit = 6 } = req.query as {
         name?: string;
@@ -257,7 +255,16 @@ export class ProductController {
     }
   
     try {
-      const product = await this.findProductById(id);
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      
+      const conditions: any = { _id: id };
+      
+      if (!isAdmin) {
+        conditions.visible = true;
+      }
+      
+      const product = await Product.findOne(conditions);
+      
       if (!product) {
         return res.status(404).send({ message: 'Product not found' });
       }
@@ -268,5 +275,6 @@ export class ProductController {
       return res.status(500).send({ message: 'Internal Server Error' });
     }
   };
+
   
 }
