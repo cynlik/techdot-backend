@@ -16,6 +16,13 @@ function calculateRoleOrder(role: UserRole) {
   return roleIndex === -1 ? -1 : roles.length - roleIndex - 1;
 }
 
+const hasPermission = (userRole: UserRole, requiredRole: UserRole): boolean => {
+  const requiredRoleOrder = calculateRoleOrder(requiredRole);
+  const userRoleOrder = calculateRoleOrder(userRole);
+
+  return userRoleOrder >= requiredRoleOrder;
+};
+
 const roleMiddleware = (allowedRole: UserRole) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -39,4 +46,4 @@ const roleMiddleware = (allowedRole: UserRole) => {
   };
 };
 
-export { roleMiddleware };
+export { roleMiddleware, hasPermission };
