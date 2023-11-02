@@ -17,10 +17,10 @@ router.put('/verify', userController.verifyAccount);
 router.post("/login", userController.loginUser);
 
 // Forget
-router.post("/:email", userController.forgetPassword);
+router.post("/forgetpassword/:email", userController.forgetPassword);
 
 // Reset
-router.put("/resetpassword", userController.resetPassword);
+router.put("/resetpassword/:token", userController.resetPassword);
 
 // My information
 router.get('/me', validateToken, userController.me);

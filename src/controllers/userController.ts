@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import * as _ from 'lodash';
 import { Request, Response } from "express";
 import { config } from "@src/config";
 import { User, IUser } from "@src/models/userModel";
@@ -82,7 +83,8 @@ export default class UserController {
 
 			if (passwordMatch) {
 				const accessToken = UserController.createToken(user, config.expiresIn);
-				res.status(200).json({ accessToken: accessToken });
+				res.cookie('token', accessToken.token, { httpOnly: true });
+				res.status(200).send(_.pick(user, ['_id', 'name', 'role']));
 			} else {
 				res.status(401).json({ error: "Invalid email or password" });
 			}
@@ -110,6 +112,8 @@ export default class UserController {
 			user.isVerified = true;
 			user.verifyAccountToken = null;
 			await user.save();
+			
+			res.clearCookie("token");
 
 			return res
 				.status(200)
@@ -160,17 +164,30 @@ export default class UserController {
 		}
 
 		if (!newPassword || !confirmPassword) {
-			res.status(400).json({ message: "Both the new password and confirm password fields are mandatory." });
+			res
+				.status(400)
+				.json({
+					message:
+						"Both the new password and confirm password fields are mandatory.",
+				});
 		}
 
 		if (newPassword !== confirmPassword) {
-			res.status(400).json({ message: "The new password and confirm password fields must match." });
+			res
+				.status(400)
+				.json({
+					message: "The new password and confirm password fields must match.",
+				});
 		}
 
 		const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
 
 		if (oldPasswordMatch) {
-			res.status(400).json({ message: "The new password must be different from the old password." });
+			res
+				.status(400)
+				.json({
+					message: "The new password must be different from the old password.",
+				});
 		}
 
 		try {
@@ -180,7 +197,9 @@ export default class UserController {
 			const updatedUser = await user.save();
 			res.status(200).json({ message: "Password updated successfully." });
 		} catch (error) {
-			res.status(500).json({ message: "An error occurred while updating the password." });
+			res
+				.status(500)
+				.json({ message: "An error occurred while updating the password." });
 		}
 	};
 
