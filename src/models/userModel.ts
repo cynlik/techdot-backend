@@ -16,6 +16,7 @@ export interface IUser extends Document {
   resetPasswordToken: string | null;
   resetPasswordExpires: Date | null;
   isVerified: boolean | false;
+  lastLoginIP: string;
   cart: CartItem[] | null
 }
 
@@ -39,6 +40,7 @@ export const UserSchema = new Schema<IUser>(
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
     isVerified: { type: Boolean, default: false },
+    lastLoginIP: { type: String },
     cart: [{ type: Schema.Types.ObjectId, ref: 'CartItem' }],
   },
   {
