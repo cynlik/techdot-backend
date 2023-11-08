@@ -27,7 +27,11 @@ router.get('/me', validateToken, userController.me);
 
 // User routes
 router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), userController.getUserById);
-router.post('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
+router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
 router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.deleteUserById);
+
+router.post('/logout', userController.logout);
+
+router.post('/logout', userController.logout);
 
 export default router;

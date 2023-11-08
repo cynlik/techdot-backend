@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import * as _ from 'lodash';
+import * as _ from "lodash";
 import { Request, Response } from "express";
 import { config } from "@src/config";
 import { User, IUser } from "@src/models/userModel";
@@ -50,48 +50,52 @@ export default class UserController {
 
 	public loginUser = async (req: Request, res: Response) => {
 		try {
-			const { email, password } = req.body;
-
-			if (!email || !password) {
-				res.status(400).json({ error: "All fields are mandatory!" });
-				return;
-			}
-
-			const user = await User.findOne({ email });
-
-			if (!user) {
-				res.status(400).json({ error: "User not found!" });
-				return;
-			}
-
-			if (!user.isVerified) {
-				const token = UserController.createToken(user, config.expiresIn);
-				user.verifyAccountToken = token.token;
-				user.verifyAccountTokenExpires = new Date(
-					Date.now() + 24 * 60 * 60 * 1000
-				); // 24 hours
-
-				await user.save();
-
-				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
-
-				res.status(401).json({ error: "Verify your email" });
-				return;
-			}
-
-			const passwordMatch = await bcrypt.compare(password, user.password);
-
-			if (passwordMatch) {
-				const accessToken = UserController.createToken(user, config.expiresIn);
-				res.cookie('token', accessToken.token, { httpOnly: true });
-				res.status(200).send(_.pick(user, ['_id', 'name', 'role']));
-			} else {
-				res.status(401).json({ error: "Invalid email or password" });
-			}
+		  const { email, password } = req.body;
+	  
+		  if (!email || !password) {
+			res.status(400).json({ error: "All fields are mandatory!" });
+			return;
+		  }
+	  
+		  const user = await User.findOne({ email });
+	  
+		  if (!user) {
+			res.status(400).json({ error: "User not found!" });
+			return;
+		  }
+	  
+		  if (!user.isVerified) {
+			const token = UserController.createToken(user, config.expiresIn);
+			user.verifyAccountToken = token.token;
+			user.verifyAccountTokenExpires = new Date(
+			  Date.now() + 24 * 60 * 60 * 1000
+			); // 24 hours
+	  
+			await user.save();
+	  
+			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
+	  
+			res.status(401).json({ error: "Verify your email" });
+			return;
+		  }
+	  
+		  const passwordMatch = await bcrypt.compare(password, user.password);
+	  
+		  if (passwordMatch) {
+			const userIP = req.ip;
+	  
+		  	user.lastLoginIP = userIP;
+		  	await user.save();
+			
+			const accessToken = UserController.createToken(user, config.expiresIn);
+			res.status(200).json({ accessToken: accessToken });
+		  } else {
+			res.status(401).json({ error: "Invalid email or password" });
+		  }
 		} catch (error) {
-			res.status(500).json({ error: error });
+		  res.status(500).json({ error: error });
 		}
-	};
+	  };
 
 	public verifyAccount = async (req: Request, res: Response) => {
 		const token = req.query.token as string;
@@ -112,7 +116,7 @@ export default class UserController {
 			user.isVerified = true;
 			user.verifyAccountToken = null;
 			await user.save();
-			
+
 			res.clearCookie("token");
 
 			return res
@@ -164,34 +168,32 @@ export default class UserController {
 		}
 
 		if (!newPassword || !confirmPassword) {
-			res
-				.status(400)
-				.json({
-					message:
-						"Both the new password and confirm password fields are mandatory.",
-				});
+			res.status(400).json({
+				message:
+					"Both the new password and confirm password fields are mandatory.",
+			});
 		}
 
 		if (newPassword !== confirmPassword) {
-			res
-				.status(400)
-				.json({
-					message: "The new password and confirm password fields must match.",
-				});
+			res.status(400).json({
+				message: "The new password and confirm password fields must match.",
+			});
 		}
 
 		const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
 
 		if (oldPasswordMatch) {
-			res
-				.status(400)
-				.json({
-					message: "The new password must be different from the old password.",
-				});
+			res.status(400).json({
+				message: "The new password must be different from the old password.",
+			});
 		}
 
 		try {
-			const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+			const hashedNewPassword = await bcrypt.hash(
+				newPassword,
+				config.saltRounds
+			);
+			res.clearCookie("token");
 			user.password = hashedNewPassword;
 			user.resetPasswordToken = null;
 			const updatedUser = await user.save();
@@ -275,12 +277,18 @@ export default class UserController {
 		}
 	};
 
+	public logout = async (req: Request, res: Response) => {
+		res.clearCookie("token");
+		res.status(200).json({ message: "Logout" });
+	};
+
 	private static createToken(user: IUser, expiresIn = config.expiresIn) {
 		let token = jwt.sign(
 			{
 				id: user._id,
 				name: user.name,
 				email: user.email,
+				country: user.country,
 				role: user.role,
 			},
 			config.secret,

@@ -7,13 +7,11 @@ import "./config"
 dotenv.config();
 
 const app = express();
-const cookieParser = require("cookie-parser");
 
 const hostname = String(process.env.HOST ?? "127.0.0.1");
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(cors());
-app.use(cookieParser());
 app.use(express.json());
 
 for (const route of routes) {
