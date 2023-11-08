@@ -3,8 +3,9 @@ import { ProductController } from "../../controllers/productController";
 import validateToken from "@src/middlewares/validateToken";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
 import { UserRole } from "@src/utils/roles";
-import { User } from "@src/models/userModel";
 import tryValidateToken from "@src/middlewares/tryValidateToken";
+import Validator from "@src/middlewares/validator";
+import { Constant } from "@src/utils/constant";
 
 const router = express.Router();
 const productController = new ProductController();
@@ -15,18 +16,18 @@ const productController = new ProductController();
     router.get('/products/', tryValidateToken, productController.getProductsByName);
 
     // Rota para devolver um produto pelo ID
-    router.get('/:id', tryValidateToken, productController.getProductById);
+    router.get('/:id', tryValidateToken, Validator.validateId('id', Constant.Product), productController.getProductById);
 
 // ROTAS DE ADMIN
 
     // Rota para criar Produtos
-    router.post('/', validateToken, roleMiddleware( UserRole.Manager ), productController.createProduct);
+    router.post('/', validateToken, roleMiddleware( UserRole.Manager ), Validator.validateBody(['name', 'description', 'imageUrl', 'manufacturer', 'stockQuantity', 'price', 'subcategoryId']), Validator.validateId('subcategoryId', Constant.Subcategory), productController.createProduct);
 
     // Rota para dar update a um produto pelo ID
-    router.put('/:id', validateToken, roleMiddleware( UserRole.Manager ), productController.updateProduct);
+    router.put('/:id', validateToken, roleMiddleware( UserRole.Manager ), Validator.validateBody(['name', 'description', 'imageUrl', 'manufacturer', 'stockQuantity', 'price', 'subcategoryId', 'visible']), Validator.validateId('id', Constant.Product), Validator.validateId('subcategoryId', Constant.Subcategory), productController.updateProduct);
 
     // Rota para eliminar um produto pelo ID
-    router.delete('/:id', validateToken, roleMiddleware( UserRole.Manager ), productController.deleteProduct);
+    router.delete('/:id', validateToken, roleMiddleware( UserRole.Manager ), Validator.validateId('id', Constant.Product), productController.deleteProduct);
 
     
 

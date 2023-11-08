@@ -1,37 +1,30 @@
-//import SaleController from '@src/controllers/saleController';
+import { SaleController } from '@src/controllers/saleController';
 import UserController from '@src/controllers/userController';
-import bodyParser from 'body-parser';
 import express from 'express';
-import { Request, Response, NextFunction } from 'express';
+import { roleMiddleware } from '@src/middlewares/roleMiddleware';
+import { UserRole } from "@src/utils/roles";
+import validateToken from '@src/middlewares/validateToken'; 
+
 
 const router = express.Router();
+const userController = new UserController();
+const saleController = new SaleController();
 
-router.use(bodyParser.json({ limit: '100mb' }));
-router.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
+// Create Sale
+router.post('/sale', saleController.create);
 
-router.use((req: Request, res: Response, next: NextFunction) => {
-  console.log('Sale HTTP request');
-  next();
-});
+// Get All Sales
+router.get('/allSales',validateToken, roleMiddleware(UserRole.Manager), saleController.getAll);
 
-//real-all => means that user is logged in
+// Get Sales By Id
+router.get('/sale/:id', validateToken, roleMiddleware(UserRole.Manager), saleController.getById);
 
-// router.route('/create').post(UserController.authorize(['member']), (req: Request, res: Response, next: NextFunction) => {
-//   res.send('');
-// });
+// Delete Sale By Id
+router.delete('/sale/:id', validateToken, roleMiddleware(UserRole.Manager), saleController.deleteById);
 
-// router
-//   .route('/id/:saleId')
-//   .get(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
-//     res.send('');
-//   })
-//   .delete(UserController.authorize([scopes['Admin']]), (req: Request, res: Response, next: NextFunction) => {
-//     res.send('');
-//   });
+// Update Sale By Id
+router.put('/updateSale/:id', saleController.updateById);
 
-// //NO FIELDS = GET ALL
-// router.route('/search').get(UserController.authorize([scopes['Member']]), (req: Request, res: Response, next: NextFunction) => {
-//   res.send('');
-// });
+
 
 export default router;
