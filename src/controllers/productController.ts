@@ -55,16 +55,7 @@ export class ProductController {
 
   public updateProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const {
-      name,
-      description,
-      imageUrl,
-      manufacturer,
-      stockQuantity,
-      price,
-      subcategoryId,
-      visible,
-    } = req.body;
+    const updateFields = req.body;
 
     try {
       const product = await this.findProductById(id);
@@ -72,33 +63,49 @@ export class ProductController {
         return res.status(404).send({ message: "Product not found" });
       }
 
-      const newSubcategory = await this.findSubcategoryById(subcategoryId);
-      if (!newSubcategory) {
-        return res.status(404).send({ message: "Subcategory not found" });
+      if (updateFields.subcategoryId) {
+        const newSubcategory = await this.findSubcategoryById(updateFields.subcategoryId);
+        if (!newSubcategory) {
+          return res.status(404).send({ message: "Subcategory not found" });
+        }
+
+        const oldSubcategories = await Subcategory.find({
+          products: product._id,
+        });
+        for (const oldSubcategory of oldSubcategories) {
+          oldSubcategory.products = oldSubcategory.products.filter(
+            (productId) => productId.toString() !== id
+          );
+          await oldSubcategory.save();
+        }
+
+        if (!newSubcategory.products.includes(product._id)) {
+          newSubcategory.products.push(product._id);
+          await newSubcategory.save();
+        }
+      }
+      if (updateFields.hasOwnProperty('name')) {
+        product.name = updateFields.name;
+      }
+      if (updateFields.hasOwnProperty('description')) {
+        product.description = updateFields.description;
+      }
+      if (updateFields.hasOwnProperty('imageUrl')) {
+        product.imageUrl = updateFields.imageUrl;
+      }
+      if (updateFields.hasOwnProperty('manufacturer')) {
+        product.manufacturer = updateFields.manufacturer;
+      }
+      if (updateFields.hasOwnProperty('stockQuantity')) {
+        product.stockQuantity = updateFields.stockQuantity;
+      }
+      if (updateFields.hasOwnProperty('price')) {
+        product.price = updateFields.price;
+      }
+      if (updateFields.hasOwnProperty('visible')) {
+        product.visible = updateFields.visible;
       }
 
-      const oldSubcategories = await Subcategory.find({
-        products: product._id,
-      });
-      for (const oldSubcategory of oldSubcategories) {
-        oldSubcategory.products = oldSubcategory.products.filter(
-          (productId) => productId.toString() !== id
-        );
-        await oldSubcategory.save();
-      }
-
-      if (!newSubcategory.products.includes(product._id)) {
-        newSubcategory.products.push(product._id);
-        await newSubcategory.save();
-      }
-
-      product.name = name;
-      product.description = description;
-      product.imageUrl = imageUrl;
-      product.manufacturer = manufacturer;
-      product.stockQuantity = stockQuantity;
-      product.price = price;
-      product.visible = visible;
       await product.save();
 
       return res.status(200).send(product);
@@ -107,7 +114,7 @@ export class ProductController {
       return res.status(500).send({ message: "Internal Server Error" });
     }
   };
-  
+
   public deleteProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -136,10 +143,10 @@ export class ProductController {
 
   public getProductsByName = async (req: Request, res: Response) => {
     const { name, sort, page = 1, limit = 6 } = req.query as {
-        name?: string;
-        sort: string;
-        page: string;
-        limit: string;
+      name?: string;
+      sort: string;
+      page: string;
+      limit: string;
     };
 
     const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
@@ -147,12 +154,12 @@ export class ProductController {
     const conditions: any = {};
 
     if (!isAdmin) {
-        conditions.visible = true;
+      conditions.visible = true;
     }
 
     if (name) {
-        const regex = new RegExp(name, 'i');
-        conditions.name = regex;
+      const regex = new RegExp(name, 'i');
+      conditions.name = regex;
     }
 
     const count = await Product.countDocuments(conditions);
@@ -161,52 +168,52 @@ export class ProductController {
     let query = Product.find(conditions);
 
     if (sort) {
-        switch (sort) {
-            case 'preco_maior':
-                query = query.sort({ price: -1 });
-                break;
-            case 'preco_menor':
-                query = query.sort({ price: 1 });
-                break;
-            default:
-                break;
-        }
+      switch (sort) {
+        case 'preco_maior':
+          query = query.sort({ price: -1 });
+          break;
+        case 'preco_menor':
+          query = query.sort({ price: 1 });
+          break;
+        default:
+          break;
+      }
     }
 
     let products = await query
-        .limit(Number(limit))
-        .skip((Number(page) - 1) * Number(limit));
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit));
 
     if (products.length === 0) {
-        res.status(404).send({ message: 'Nenhum produto encontrado.' });
+      res.status(404).send({ message: 'Nenhum produto encontrado.' });
     } else {
-        res.status(200).send({ products, totalPages });
+      res.status(200).send({ products, totalPages });
     }
   };
 
   public getProductById = async (req: Request, res: Response) => {
     const { id } = req.params;
-  
+
     try {
       const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
-      
+
       const conditions: any = { _id: id };
-      
+
       if (!isAdmin) {
         conditions.visible = true;
       }
-      
+
       const product = await Product.findOne(conditions);
-      
+
       if (!product) {
         return res.status(404).send({ message: 'Product not found' });
       }
-  
+
       return res.status(200).send(product);
     } catch (error) {
       console.error(error);
       return res.status(500).send({ message: 'Internal Server Error' });
     }
   };
-  
+
 }
