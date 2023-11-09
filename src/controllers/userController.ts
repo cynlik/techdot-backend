@@ -6,6 +6,7 @@ import { config } from "@src/config";
 import { User, IUser } from "@src/models/userModel";
 import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
+import { getUserCountry } from "@src/services/geoLocation";
 import axios from "axios";
 
 interface CustomRequest extends Request {
@@ -94,7 +95,7 @@ export default class UserController {
 						sendMail(EmailType.NewLocation, user.email, res, ip)
 						user.lastLoginIP = ip;
 
-						const userCountry = await this.getUserCountry(ip);
+						const userCountry = await getUserCountry(ip);
 						user.country = userCountry;
 					}
 
@@ -112,18 +113,6 @@ export default class UserController {
 			}
 		} catch (error) {
 			res.status(500).json({ error: error });
-		}
-	};
-
-	private getUserCountry = async (ip: string) => {
-		try {
-			const response = await axios.get(
-				`https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOAPI}&ip=${ip}`
-			);
-			
-			return response.data.country_name;
-		} catch (error) {
-			return null;
 		}
 	};
 
