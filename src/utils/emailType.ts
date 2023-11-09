@@ -3,6 +3,7 @@ export enum EmailType {
 	ResetPassword = "resetPassword",
 	ForgetPassword = "forgetPassword",
 	VerifyAccount = "verifyAccount",
+	NewLocation = "newLocation",
 }
 
 export const emailContent = {
@@ -23,5 +24,10 @@ export const emailContent = {
 		subject: "Verificar Conta",
 		text: (token: string) =>
 		  `http://${process.env.HOST}:${process.env.PORT}/api/user/verify?token=${token}`,
+	},
+	[EmailType.NewLocation]: {
+		subject: "Verificar Conta",
+		text: (ip: string) =>
+		  `Novo inicio de sessao a partir de uma localizaçao atraves do ip: ${ip}`,
 	},
 };

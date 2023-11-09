@@ -90,9 +90,13 @@ export default class UserController {
 				const ip =
 					req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 				if (typeof ip === "string") {
-					user.lastLoginIP = ip;
-					const userCountry = await this.getUserCountry(ip);
-					user.country = userCountry;
+					if (user.lastLoginIP !== ip) {
+						sendMail(EmailType.NewLocation, user.email, res, ip)
+						user.lastLoginIP = ip;
+
+						const userCountry = await this.getUserCountry(ip);
+						user.country = userCountry;
+					}
 
 					try {
 						await user.save();
