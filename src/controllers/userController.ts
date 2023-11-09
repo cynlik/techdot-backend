@@ -6,8 +6,8 @@ import { config } from "@src/config";
 import { User, IUser } from "@src/models/userModel";
 import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
+import { RevokedToken } from "@src/models/revokedTokenModel";
 import { getUserCountry } from "@src/services/geoLocation";
-import axios from "axios";
 
 interface CustomRequest extends Request {
 	user: IUser;
@@ -92,7 +92,7 @@ export default class UserController {
 					req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 				if (typeof ip === "string") {
 					if (user.lastLoginIP !== ip) {
-						sendMail(EmailType.NewLocation, user.email, res, ip)
+						sendMail(EmailType.NewLocation, user.email, res, ip);
 						user.lastLoginIP = ip;
 
 						const userCountry = await getUserCountry(ip);
@@ -297,8 +297,19 @@ export default class UserController {
 	};
 
 	public logout = async (req: Request, res: Response) => {
-		res.clearCookie("token");
-		res.status(200).json({ message: "Logout" });
+		try {
+			const token = req.headers.authorization as string;
+
+			if (!token) {
+				res.status(401).json({ message: "Invalid token" });
+			}
+			await this.revokeUserToken(token);
+
+			res.status(200).json({ message: "Logout successful" });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ message: "Failed to logout" });
+		}
 	};
 
 	private static createToken(user: IUser, expiresIn = config.expiresIn) {
@@ -319,5 +330,14 @@ export default class UserController {
 
 	private isEmailUnique = async (email: string) => {
 		return (await User.find({ email }).exec()).length <= 0;
+	};
+
+	private revokeUserToken = async (token: string) => {
+		const existingToken = await RevokedToken.findOne({ token });
+
+		if (!existingToken) {
+			const newRevokedToken = new RevokedToken({ token });
+			await newRevokedToken.save();
+		}
 	};
 }

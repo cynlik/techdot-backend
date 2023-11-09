@@ -30,6 +30,6 @@ router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), userControl
 router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
 router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.deleteUserById);
 
-router.post('/logout', userController.logout);
+router.post('/logout', validateToken, userController.logout);
 
 export default router;
