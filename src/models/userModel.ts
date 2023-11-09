@@ -40,7 +40,7 @@ export const UserSchema = new Schema<IUser>(
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
     isVerified: { type: Boolean, default: false },
-    lastLoginIP: { type: String },
+    lastLoginIP: { type: String, default: null },
     cart: [{ type: Schema.Types.ObjectId, ref: 'CartItem' }],
   },
   {

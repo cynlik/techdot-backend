@@ -6,6 +6,11 @@ import { config } from "@src/config";
 import { User, IUser } from "@src/models/userModel";
 import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
+import axios from "axios";
+
+interface CustomRequest extends Request {
+	user: IUser;
+}
 
 export default class UserController {
 	public registerUser = async (req: Request, res: Response) => {
@@ -50,52 +55,75 @@ export default class UserController {
 
 	public loginUser = async (req: Request, res: Response) => {
 		try {
-		  const { email, password } = req.body;
-	  
-		  if (!email || !password) {
-			res.status(400).json({ error: "All fields are mandatory!" });
-			return;
-		  }
-	  
-		  const user = await User.findOne({ email });
-	  
-		  if (!user) {
-			res.status(400).json({ error: "User not found!" });
-			return;
-		  }
-	  
-		  if (!user.isVerified) {
-			const token = UserController.createToken(user, config.expiresIn);
-			user.verifyAccountToken = token.token;
-			user.verifyAccountTokenExpires = new Date(
-			  Date.now() + 24 * 60 * 60 * 1000
-			); // 24 hours
-	  
-			await user.save();
-	  
-			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
-	  
-			res.status(401).json({ error: "Verify your email" });
-			return;
-		  }
-	  
-		  const passwordMatch = await bcrypt.compare(password, user.password);
-	  
-		  if (passwordMatch) {
-			const userIP = req.ip;
-	  
-		  	user.lastLoginIP = userIP;
-		  	await user.save();
-			
-			const accessToken = UserController.createToken(user, config.expiresIn);
-			res.status(200).json({ accessToken: accessToken });
-		  } else {
-			res.status(401).json({ error: "Invalid email or password" });
-		  }
+			const { email, password } = req.body;
+
+			if (!email || !password) {
+				res.status(400).json({ error: "All fields are mandatory!" });
+				return;
+			}
+
+			const user = await User.findOne({ email });
+
+			if (!user) {
+				res.status(400).json({ error: "User not found!" });
+				return;
+			}
+
+			if (!user.isVerified) {
+				const token = UserController.createToken(user, config.expiresIn);
+				user.verifyAccountToken = token.token;
+				user.verifyAccountTokenExpires = new Date(
+					Date.now() + 24 * 60 * 60 * 1000
+				); // 24 hours
+
+				await user.save();
+
+				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
+
+				res.status(401).json({ error: "Verify your email" });
+				return;
+			}
+
+			const passwordMatch = await bcrypt.compare(password, user.password);
+
+			if (passwordMatch) {
+				const ip =
+					req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+				if (typeof ip === "string") {
+					user.lastLoginIP = ip;
+					const userCountry = await this.getUserCountry(ip);
+					user.country = userCountry;
+
+					try {
+						await user.save();
+						console.log(user.country);
+      					console.log(user.lastLoginIP);
+					} catch (error) {
+						console.error("Error saving user data:", error);
+					}
+				}
+
+				const accessToken = UserController.createToken(user, config.expiresIn);
+				res.status(200).json({ accessToken: accessToken });
+			} else {
+				res.status(401).json({ error: "Invalid email or password" });
+			}
 		} catch (error) {
-		  res.status(500).json({ error: error });
+			res.status(500).json({ error: error });
 		}
-	  };
+	};
+
+	private getUserCountry = async (ip: string) => {
+		try {
+			const response = await axios.get(
+				`https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.IPGEOAPI}&ip=${ip}`
+			);
+			
+			return response.data.country_name;
+		} catch (error) {
+			return null;
+		}
+	};
 
 	public verifyAccount = async (req: Request, res: Response) => {
 		const token = req.query.token as string;
@@ -205,9 +233,9 @@ export default class UserController {
 		}
 	};
 
-	public me = async (req: Request, res: Response) => {
-		const User = req.user;
-		res.status(200).json({ message: User });
+	public me = async (req: CustomRequest, res: Response) => {
+		const user = req.user;
+		res.status(200).json({ message: user });
 	};
 
 	public getUserById = async (req: Request, res: Response) => {
