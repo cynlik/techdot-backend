@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel';
+import { RevokedToken } from '@src/models/revokedTokenModel'; 
 import jwt from 'jsonwebtoken';
 
 interface CustomRequest extends Request {
@@ -12,14 +13,21 @@ const validateToken = async (req: CustomRequest, res: Response, next: NextFuncti
     let authHeader = req.headers.authorization || req.headers.Authorization;
     if (authHeader && typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer')) {
       token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.SECRET as string);
 
-      if (typeof decoded === 'object') {
-        (req as any).user = decoded;
-        next();
+      const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
+
+      if (isRevoked) {
+        res.status(401).json({ message: 'Token revoked' });
       } else {
-        res.status(401);
-        throw new Error('User is not authorized or token is missing user information');
+        const decoded = jwt.verify(token, process.env.SECRET as string);
+
+        if (typeof decoded === 'object') {
+          (req as any).user = decoded;
+          next();
+        } else {
+          res.status(401);
+          throw new Error('User is not authorized or token is missing user information');
+        }
       }
     } else {
       res.status(401);
