@@ -32,6 +32,4 @@ router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), userContr
 
 router.post('/logout', userController.logout);
 
-router.post('/logout', userController.logout);
-
 export default router;
