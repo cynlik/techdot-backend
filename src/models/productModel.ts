@@ -8,6 +8,7 @@ export interface IProduct extends Document {
   stockQuantity: number;
   price: number;
   visible: boolean;
+  subcategoryId: mongoose.Types.ObjectId;
 }
 
 export const productSchema = new Schema<IProduct>({
@@ -17,9 +18,10 @@ export const productSchema = new Schema<IProduct>({
   manufacturer: { type: String, required: true },
   stockQuantity: { type: Number, required: true, min: 0 },
   price: { type: Number, required: true, min: 0 },
-  visible: { type: Boolean, required: true, default: false} 
+  visible: { type: Boolean, required: true, default: false},
+  subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true} 
   //  visible vai servir para ao criar o produto ele fique invisivel, depois o administrador vai poder
-  //  alterar o estado para visibel e será listado nas rotas busca
+  //  alterar o estado para visibel e será listado nas rotas busca global
 });
 
 export const Product = model<IProduct>("Product", productSchema);

@@ -20,7 +20,7 @@ export class SubcategoryController {
       const newSubcategory = new Subcategory({ name, category: categoryId });
       const savedSubcategory = await newSubcategory.save();
 
-      category.subcategory.push(savedSubcategory._id);
+     // category.subcategory.push(savedSubcategory._id);
       await category.save();
 
       return res.status(201).send(savedSubcategory);
