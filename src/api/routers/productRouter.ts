@@ -18,77 +18,17 @@ const productController = new ProductController();
 router.get("/products/", tryValidateToken, productController.getProductsByName);
 
 // Rota para devolver um produto pelo ID
-router.get(
-  "/:id",
-  tryValidateToken,
-  Validator.validateIds([
-    { paramName: "id", model: Product, type: Constant.Product },
-  ]),
-  productController.getProductById
-);
+router.get("/:id", tryValidateToken, Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.getProductById);
 
 // ROTAS DE ADMIN
 
 // Rota para criar Produtos
-router.post(
-  "/",
-  validateToken,
-  roleMiddleware(UserRole.Manager),
-  Validator.validateBody([
-    "name",
-    "description",
-    "imageUrl",
-    "manufacturer",
-    "stockQuantity",
-    "price",
-    "subcategoryId",
-  ]),
-  Validator.validateIds([
-    {
-      paramName: "subcategoryId",
-      model: Subcategory,
-      type: Constant.Subcategory,
-    },
-  ]),
-  productController.createProduct
-);
+router.post("/", validateToken, roleMiddleware(UserRole.Manager), Validator.validateBody(["name","description","imageUrl","manufacturer","stockQuantity","price","subcategoryId"]), Validator.validateIds([{paramName: "subcategoryId", model: Subcategory, type: Constant.Subcategory}]), productController.createProduct);
 
 // Rota para dar update a um produto pelo ID
-router.put(
-  "/:id",
-  validateToken,
-  roleMiddleware(UserRole.Manager),
-  Validator.validateOptionalBody([
-    "name",
-    "description",
-    "imageUrl",
-    "manufacturer",
-    "stockQuantity",
-    "price",
-    "subcategoryId",
-    "visible",
-  ]),
-  Validator.validateIds([
-    { paramName: "id", model: Product, type: Constant.Product },
-    {
-      paramName: "subcategoryId",
-      model: Subcategory,
-      type: Constant.Subcategory,
-      isOptional: true,
-    },
-  ]),
-  productController.updateProduct
-);
+router.put("/:id", validateToken, roleMiddleware(UserRole.Manager), Validator.validateOptionalBody(["name","description","imageUrl","manufacturer","stockQuantity","price","subcategoryId","visible"]), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }, {paramName: "subcategoryId", model: Subcategory, type: Constant.Subcategory, isOptional: true}]), productController.updateProduct);
 
 // Rota para eliminar um produto pelo ID
-router.delete(
-  "/:id",
-  validateToken,
-  roleMiddleware(UserRole.Manager),
-  Validator.validateIds([
-    { paramName: "id", model: Product, type: Constant.Product },
-  ]),
-  productController.deleteProduct
-);
+router.delete("/:id", validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.deleteProduct);
 
 export default router;
