@@ -1,5 +1,36 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
+const cpuSpecificationsSchema  = new Schema({
+  brand: String,
+  speed: Number,
+  cores: Number,
+});
+
+const gpuSpecificationSchema = new Schema({
+  name: String,
+  memory: Number,
+  type: String,
+});
+
+const motherboardSpecificationSchema = new Schema ({
+  manufacturer: String,
+  chipset: String,
+  formFactor: String,
+});
+
+const ramSpecificationSchema = new Schema ({
+  size: Number,
+  frequency: Number,
+  type: String,
+});
+
+const caseSpecificationSchema = new Schema ({
+  length: Number,
+  width: Number,
+  height: Number,
+  material: String,
+});
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -9,6 +40,15 @@ export interface IProduct extends Document {
   price: number;
   visible: boolean;
   subcategoryId: mongoose.Types.ObjectId;
+  productType: string;
+  specifications: {
+    cpu ?: typeof cpuSpecificationsSchema,
+    gpu ?: typeof gpuSpecificationSchema,
+    motherboard ?: typeof motherboardSpecificationSchema,
+    ram ?: typeof ramSpecificationSchema,
+    case ?: typeof caseSpecificationSchema,
+  };
+  warranty: Date;
 }
 
 export const productSchema = new Schema<IProduct>({
@@ -19,9 +59,17 @@ export const productSchema = new Schema<IProduct>({
   stockQuantity: { type: Number, required: true, min: 0 },
   price: { type: Number, required: true, min: 0 },
   visible: { type: Boolean, required: true, default: false},
-  subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true} 
-  //  visible vai servir para ao criar o produto ele fique invisivel, depois o administrador vai poder
-  //  alterar o estado para visibel e será listado nas rotas busca global
+  subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true},
+  productType: { type: String }, // Exemplos: CPU | MOtherboard | GPU | RAM | CASE ...
+  specifications: {
+    cpu : cpuSpecificationsSchema,
+    gpu : gpuSpecificationSchema,
+    motherboard : motherboardSpecificationSchema,
+    ram : ramSpecificationSchema,
+    case : caseSpecificationSchema,
+  },
+  warranty: { type: Date},
+
 });
 
 export const Product = model<IProduct>("Product", productSchema);

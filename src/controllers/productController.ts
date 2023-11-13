@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Product } from "@src/models/productModel";
+import { IProduct, Product } from "@src/models/productModel";
 import { UserRole } from "@src/utils/roles";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
 
@@ -14,7 +14,10 @@ export class ProductController {
       stockQuantity,
       price,
       subcategoryId,
-    } = req.body;
+      productType,
+      specifications,
+      warranty
+    }: Partial<IProduct> = req.body;
 
     try {
       const newProduct = new Product({
@@ -25,6 +28,9 @@ export class ProductController {
         stockQuantity,
         price,
         subcategoryId,
+        productType,
+        specifications,
+        warranty,
       });
 
       const savedProduct = await newProduct.save();
@@ -69,32 +75,39 @@ export class ProductController {
   };
 
   public getProductsByName = async (req: Request, res: Response) => {
-    const { name, sort, page = 1, limit = 6 } = req.query as {
-      name?: string;
-      sort: string;
-      page: string;
-      limit: string;
-    };
+    try {
+      const { name, sort, page = '1', limit = '6' } = req.query as {
+        name?: string;
+        sort?: string;
+        page?: string;
+        limit?: string;
+      };
+      
+      const pageNumber = parseInt(page, 10);
+      const limitNumber = parseInt(limit, 10);
 
-    const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
-
-    const conditions: any = {};
-
-    if (!isAdmin) {
-      conditions.visible = true;
-    }
-
-    if (name) {
-      const regex = new RegExp(name, 'i');
-      conditions.name = regex;
-    }
-
-    const count = await Product.countDocuments(conditions);
-    const totalPages = Math.ceil(count / Number(limit));
-
-    let query = Product.find(conditions).populate({path: 'subcategoryId' , populate: [{ path: 'category'}]});
-
-    if (sort) {
+      if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
+        return res.status(400).send({ message: 'Parâmetros de paginação inválidos.' });
+      }
+  
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+  
+      const conditions: any = {};
+  
+      if (!isAdmin) {
+        conditions.visible = true;
+      }
+  
+      if (name) {
+        const regex = new RegExp(name, 'i');
+        conditions.name = regex;
+      }
+  
+      const count = await Product.countDocuments(conditions);
+      const totalPages = Math.ceil(count / limitNumber);
+  
+      let query = Product.find(conditions).populate({ path: 'subcategoryId', populate: [{ path: 'category' }] });
+  
       switch (sort) {
         case 'preco_maior':
           query = query.sort({ price: -1 });
@@ -102,22 +115,23 @@ export class ProductController {
         case 'preco_menor':
           query = query.sort({ price: 1 });
           break;
-        default:
-          break;
       }
-    }
-
-    let products = await query
-      .limit(Number(limit))
-      .skip((Number(page) - 1) * Number(limit));
-
-    if (products.length === 0) {
-      res.status(404).send({ message: 'Nenhum produto encontrado.' });
-    } else {
-      res.status(200).send({ products, totalPages });
+  
+      const products = await query
+        .limit(limitNumber)
+        .skip((pageNumber - 1) * limitNumber);
+  
+      if (products.length === 0) {
+        res.status(404).send({ message: 'Nenhum produto encontrado.' });
+      } else {
+        res.status(200).send({ products, totalPages });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: 'Erro ao buscar produtos.' });
     }
   };
-
+  
   public getProductById = async (req: Request, res: Response) => {
     const { id } = req.params;
 

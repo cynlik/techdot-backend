@@ -96,8 +96,6 @@ export default class UserController {
 
 					try {
 						await user.save();
-						console.log(user.country);
-      					console.log(user.lastLoginIP);
 					} catch (error) {
 						console.error("Error saving user data:", error);
 					}
