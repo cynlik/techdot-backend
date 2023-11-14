@@ -26,7 +26,7 @@ export const emailContent = {
 		  `http://${process.env.HOST}:${process.env.PORT}/api/user/verify?token=${token}`,
 	},
 	[EmailType.NewLocation]: {
-		subject: "Verificar Conta",
+		subject: "Novo inicio de sessao",
 		text: (ip: string) =>
 		  `Novo inicio de sessao a partir de uma localizaçao atraves do ip: ${ip}`,
 	},
