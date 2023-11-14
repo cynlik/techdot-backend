@@ -94,8 +94,11 @@ export default class UserController {
 					if (user.lastLoginIP !== ip) {
 						sendMail(EmailType.NewLocation, user.email, res, ip);
 						user.lastLoginIP = ip;
+					} 
 
-						const userCountry = await getUserCountry(ip);
+					const userCountry = await getUserCountry(ip);
+
+					if (user.country === null) {
 						user.country = userCountry;
 					}
 
