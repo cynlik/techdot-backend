@@ -3,13 +3,13 @@ import { model, Document, Schema } from 'mongoose';
 export interface RevokedToken extends Document {
     token: string;
     revocationDate: Date;
-};
+}
 
-export const revokedTokenSchema = new Schema <RevokedToken>(
+export const revokedTokenSchema = new Schema<RevokedToken>(
     {
         token: { type: String, required: true },
-        revocationDate: { type: Date, default: null },
+        revocationDate: { type: Date, default: null, expires: '1d' },
     }
-)
+);
 
 export const RevokedToken = model<RevokedToken>('RevokedToken', revokedTokenSchema);
