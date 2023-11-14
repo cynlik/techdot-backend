@@ -9,5 +9,3 @@ export const routes = [
   { path: "/api/category", router: categoryRouter },
   { path: "/api/subcategory", router: subcategoryRouter }
 ];
-
-

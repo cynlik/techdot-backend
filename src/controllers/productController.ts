@@ -33,6 +33,8 @@ export class ProductController {
         warranty,
       });
 
+      // adicionar validação de data
+
       const savedProduct = await newProduct.save();
 
       return res.status(201).send(savedProduct);
@@ -131,7 +133,7 @@ export class ProductController {
       res.status(500).send({ message: 'Erro ao buscar produtos.' });
     }
   };
-  
+
   public getProductById = async (req: Request, res: Response) => {
     const { id } = req.params;
 

@@ -68,8 +68,7 @@ export const productSchema = new Schema<IProduct>({
     ram : ramSpecificationSchema,
     case : caseSpecificationSchema,
   },
-  warranty: { type: Date},
-
+  warranty: { type: Date, default: null},
 });
 
 export const Product = model<IProduct>("Product", productSchema);
