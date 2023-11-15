@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { IProduct, Product } from "@src/models/productModel";
-import { UserRole } from "@src/utils/roles";
+import { UserRole } from "@src/models/userModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
 
 export class ProductController {
