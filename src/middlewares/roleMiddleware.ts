@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUser } from '@src/models/userModel';
-import { UserRole } from '@src/utils/roles';
+import { IUser, UserRole } from '@src/models/userModel';
 
 declare global {
   namespace Express {
