@@ -8,7 +8,7 @@ export interface RevokedToken extends Document {
 export const revokedTokenSchema = new Schema<RevokedToken>(
     {
         token: { type: String, required: true },
-        revocationDate: { type: Date, default: null, expires: '1d' },
+        revocationDate: { type: Date, default: Date.now(), expires: '1d' },
     }
 );
 
