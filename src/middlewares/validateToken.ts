@@ -17,7 +17,7 @@ const validateToken = async (req: CustomRequest, res: Response, next: NextFuncti
       const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
 
       if (isRevoked) {
-        res.status(401).json({ message: 'Token revoked' });
+        res.status(401).json({ message: 'Token revoked. Login again' });
       } else {
         const decoded = jwt.verify(token, process.env.SECRET as string);
 

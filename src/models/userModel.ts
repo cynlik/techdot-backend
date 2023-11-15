@@ -1,6 +1,13 @@
 import { model, Document, Schema } from 'mongoose';
-import { UserRole } from '@src/utils/roles';
 import { CartItem } from './cartModel';
+
+export enum UserRole {
+  Admin = 'admin',
+  Security = 'security',
+  Manager = 'manager',
+  Member = 'member',
+  NonMember = 'nonmember',
+}
 
 export interface IUser extends Document {
   name: string;
