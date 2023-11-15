@@ -10,7 +10,7 @@ interface FieldValidationConfig {
 class Validator {
 
   // Validar campos (required: obrigatórios || optional: opcional)
-  // Pode ser inserido apenas required ou optional como os dois
+  // Pode ser inserido apenas required ou optional, caso seja necessário usar os dois também dá
   // Como usar Validator.validateFields({ required: ['name', ...] , optional: ['name', ...]})
   static validateFields(config: FieldValidationConfig) {
     return (req: Request, res: Response, next: NextFunction) => {
