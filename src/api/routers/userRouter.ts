@@ -16,16 +16,16 @@ const userController = new UserController();
 router.post('/register', Validator.validateFields({ required: ["name", "email", "password"] }), userController.registerUser);
 
 // Verify user
-router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'), userController.verifyAccount);
+router.put('/verify', Validator.validateTokenMatch("token", "verifyAccountToken"), userController.verifyAccount);
 
 // Login
-router.post("/login", Validator.validateFields({ required:["email","password"] }), userController.loginUser);
+router.post("/login", Validator.validateFields({ required:["email", "password"] }), userController.loginUser);
 
 // Forget
 router.post("/forgetpassword", Validator.validateFields({ required:["email"] }), userController.forgetPassword);
 
 // Reset
-router.put("/resetpassword", Validator.validateFields({ required: ["newPassword","confirmPassword"] }), Validator.validateTokenMatch('token', 'resetPasswordToken'), userController.resetPassword);
+router.put("/resetpassword", Validator.validateFields({ required: ["newPassword", "confirmPassword"] }), Validator.validateTokenMatch("token", "resetPasswordToken"), userController.resetPassword);
 
 // My information
 router.get('/me', validateToken, userController.me);

@@ -150,33 +150,33 @@ export default class UserController {
 		try {
 			const { newPassword, confirmPassword } = req.body;
 			const user = req.user;
-
+	
 			if (newPassword !== confirmPassword) {
-				res.status(400).json({
+				return res.status(400).json({
 					message: "The new password and confirm password fields must match.",
 				});
 			}
-
+	
 			const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
-
+	
 			if (oldPasswordMatch) {
-				res.status(400).json({
+				return res.status(400).json({
 					message: "The new password must be different from the old password.",
 				});
 			}
-
+	
 			try {
 				const hashedNewPassword = await bcrypt.hash(
 					newPassword,
 					config.saltRounds
 				);
-				res.clearCookie("token");
 				user.password = hashedNewPassword;
 				user.resetPasswordToken = null;
 				await user.save();
-				res.status(200).json({ message: "Password updated successfully." });
+				return res.status(200).json({ message: "Password updated successfully." });
 			} catch (error) {
-				res
+				console.error(error);
+				return res
 					.status(500)
 					.json({ message: "An error occurred while updating the password." });
 			}
@@ -184,7 +184,7 @@ export default class UserController {
 			console.error(error);
 			return res.status(500).send({ message: "Internal Server Error" });
 		}
-	};
+	};	
 
 	public me = async (req: CustomRequest, res: Response) => {
 		try {
