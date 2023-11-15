@@ -17,13 +17,9 @@ export default class UserController {
 	public registerUser = async (req: Request, res: Response) => {
 		try {
 			const { name, email, password } = req.body;
-			if (!name || !email || !password) {
-				res.status(400).json({ message: "All fields are mandatory!" });
-				return;
-			}
 
-			const userAvailable = await User.findOne({ email });
-			if (userAvailable) {
+			const userExists = await User.findOne({ email });
+			if (userExists) {
 				res.status(400).json({ message: "User already registered!" });
 				return;
 			}
@@ -58,11 +54,6 @@ export default class UserController {
 		try {
 			const { email, password } = req.body;
 
-			if (!email || !password) {
-				res.status(400).json({ error: "All fields are mandatory!" });
-				return;
-			}
-
 			const user = await User.findOne({ email });
 
 			if (!user) {
@@ -94,7 +85,7 @@ export default class UserController {
 					if (user.lastLoginIP !== ip) {
 						sendMail(EmailType.NewLocation, user.email, res, ip);
 						user.lastLoginIP = ip;
-					} 
+					}
 
 					const userCountry = await getUserCountry(ip);
 
@@ -157,8 +148,9 @@ export default class UserController {
 
 		const user = await User.findOne({ email });
 		if (!user) {
-			res.status(400);
-			throw new Error("User with this email does not exist");
+			return res
+				.status(500)
+				.json({ error: "User with this email does not exist." });
 		}
 
 		const token = UserController.createToken(user, config.expiresIn);
@@ -233,26 +225,18 @@ export default class UserController {
 	};
 
 	public getUserById = async (req: Request, res: Response) => {
-		try {
-			let users;
+		const { id } = req.params;
 
-			if (req.params.id) {
-				const user = await User.findById(req.params.id).exec();
+		let users;
 
-				if (user === null) {
-					throw new Error("User not found!");
-				}
-
-				users = [user];
-			} else {
-				users = await User.find().exec();
-			}
-
-			res.status(200).send(users);
-		} catch (error) {
-			console.error(error);
-			res.status(404).json({ message: "User not found." });
+		if (id) {
+			const user = await User.findById(id);
+			users = [user];
+		} else {
+			users = await User.find();
 		}
+
+		res.status(200).send(users);
 	};
 
 	public updateUserById = async (req: Request, res: Response) => {
