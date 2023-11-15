@@ -32,7 +32,7 @@ export const UserSchema = new Schema<IUser>(
       enum: Object.values(UserRole),
     },
     picture: { type: String, default: null },
-    age: { type: Number },
+    age: { type: Number, default: null },
     address: { type: String, default: null },
     country: { type: String, default: null },
     verifyAccountToken: { type: String, default: null },
