@@ -1,11 +1,10 @@
 import express from "express";
 import UserController from '@src/controllers/userController';
 import { roleMiddleware } from '@src/middlewares/roleMiddleware';
-import { UserRole } from "@src/utils/roles";
 import validateToken from '@src/middlewares/validateToken';
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
-import { User } from "@src/models/userModel";
+import { User, UserRole } from "@src/models/userModel";
 
 const router = express.Router();
 const userController = new UserController();
