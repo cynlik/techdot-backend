@@ -46,7 +46,7 @@ export default class UserController {
 			});
 		} catch (error) {
 			console.error(error);
-			res.status(500).json({ message: "Failed to register the user" });
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
 	};
 
@@ -87,17 +87,12 @@ export default class UserController {
 						user.lastLoginIP = ip;
 					}
 
-					const userCountry = await getUserCountry(ip);
-
 					if (user.country === null) {
+						const userCountry = await getUserCountry(ip);
 						user.country = userCountry;
 					}
 
-					try {
-						await user.save();
-					} catch (error) {
-						console.error("Error saving user data:", error);
-					}
+					await user.save();
 				}
 
 				const accessToken = UserController.createToken(user, config.expiresIn);
@@ -106,137 +101,155 @@ export default class UserController {
 				res.status(401).json({ error: "Invalid email or password" });
 			}
 		} catch (error) {
-			res.status(500).json({ error: error });
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
 	};
 
 	public verifyAccount = async (req: Request, res: Response) => {
-		const token = req.query.token as string;
-
 		try {
-			const user = await User.findOne({
-				verifyAccountToken: token,
-				verifyAccountTokenExpires: { $gt: new Date() },
-			});
+			const token = req.query.token as string;
 
-			if (!user) {
-				console.log(
-					"Token inválido ou expirado: Token não encontrado no banco de dados."
-				);
-				return res.status(400).json({ error: "Token inválido ou expirado!" });
+			if (!token) {
+				res.status(400);
+				throw new Error("Token not provided.");
 			}
 
-			user.isVerified = true;
-			user.verifyAccountToken = null;
-			await user.save();
+			try {
+				const user = await User.findOne({
+					verifyAccountToken: token,
+					verifyAccountTokenExpires: { $gt: new Date() },
+				});
 
-			res.clearCookie("token");
+				if (!user) {
+					return res.status(400).json({ error: "Token inválido ou expirado!" });
+				}
 
-			return res
-				.status(200)
-				.json({ message: "Account verified successfully." });
+				user.isVerified = true;
+				user.verifyAccountToken = null;
+				await user.save();
+
+				return res
+					.status(200)
+					.json({ message: "Account verified successfully." });
+			} catch (error) {
+				return res
+					.status(500)
+					.json({ error: "An error occurred while verifying the account." });
+			}
 		} catch (error) {
-			console.error("Erro durante a verificação da conta:", error);
-			return res
-				.status(500)
-				.json({ error: "An error occurred while verifying the account." });
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
 	};
 
 	public forgetPassword = async (req: Request, res: Response) => {
-		const { email } = req.body;
+		try {
+			const { email } = req.body;
 
-		const user = await User.findOne({ email });
-		if (!user) {
-			return res
-				.status(500)
-				.json({ error: "User with this email does not exist." });
+			const user = await User.findOne({ email });
+			if (!user) {
+				return res
+					.status(500)
+					.json({ error: "User with this email does not exist." });
+			}
+
+			const token = UserController.createToken(user, config.expiresIn);
+			user.resetPasswordToken = token.token;
+			user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+			await user.save();
+
+			sendMail(EmailType.ForgetPassword, user.email, res, token.token);
+		} catch (error) {
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
-
-		const token = UserController.createToken(user, config.expiresIn);
-		user.resetPasswordToken = token.token;
-		user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-		await user.save();
-
-		sendMail(EmailType.ForgetPassword, user.email, res, token.token);
 	};
 
 	public resetPassword = async (req: Request, res: Response) => {
-		const { newPassword, confirmPassword } = req.body;
-
-		const token = req.query.token as string | undefined;
-
-		if (!token) {
-			res.status(400);
-			throw new Error("Token not provided.");
-		}
-
-		const user = await User.findOne({
-			resetPasswordToken: token,
-			resetPasswordExpires: { $gt: Date.now() },
-		});
-
-		if (!user) {
-			return res.status(400).json({ error: "Token inválido ou expirado!" });
-		}
-
-		if (!newPassword || !confirmPassword) {
-			res.status(400).json({
-				message:
-					"Both the new password and confirm password fields are mandatory.",
-			});
-		}
-
-		if (newPassword !== confirmPassword) {
-			res.status(400).json({
-				message: "The new password and confirm password fields must match.",
-			});
-		}
-
-		const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
-
-		if (oldPasswordMatch) {
-			res.status(400).json({
-				message: "The new password must be different from the old password.",
-			});
-		}
-
 		try {
-			const hashedNewPassword = await bcrypt.hash(
-				newPassword,
-				config.saltRounds
-			);
-			res.clearCookie("token");
-			user.password = hashedNewPassword;
-			user.resetPasswordToken = null;
-			const updatedUser = await user.save();
-			res.status(200).json({ message: "Password updated successfully." });
+			const { newPassword, confirmPassword } = req.body;
+
+			const token = req.query.token as string | undefined;
+
+			if (!token) {
+				res.status(400);
+				throw new Error("Token not provided.");
+			}
+
+			const user = await User.findOne({
+				resetPasswordToken: token,
+				resetPasswordExpires: { $gt: Date.now() },
+			});
+
+			if (!user) {
+				return res.status(400).json({ error: "Token inválido ou expirado!" });
+			}
+
+			if (newPassword !== confirmPassword) {
+				res.status(400).json({
+					message: "The new password and confirm password fields must match.",
+				});
+			}
+
+			const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
+
+			if (oldPasswordMatch) {
+				res.status(400).json({
+					message: "The new password must be different from the old password.",
+				});
+			}
+
+			try {
+				const hashedNewPassword = await bcrypt.hash(
+					newPassword,
+					config.saltRounds
+				);
+				res.clearCookie("token");
+				user.password = hashedNewPassword;
+				user.resetPasswordToken = null;
+				await user.save();
+				res.status(200).json({ message: "Password updated successfully." });
+			} catch (error) {
+				res
+					.status(500)
+					.json({ message: "An error occurred while updating the password." });
+			}
 		} catch (error) {
-			res
-				.status(500)
-				.json({ message: "An error occurred while updating the password." });
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
 	};
 
 	public me = async (req: CustomRequest, res: Response) => {
-		const user = req.user;
-		res.status(200).json({ message: user });
+		try {
+			const user = req.user;
+			res.status(200).json({ message: user });
+		} catch (error) {
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
+		}
 	};
 
 	public getUserById = async (req: Request, res: Response) => {
-		const { id } = req.params;
+		try {
+			const { id } = req.params;
 
-		let users;
+			let users;
 
-		if (id) {
-			const user = await User.findById(id);
-			users = [user];
-		} else {
-			users = await User.find();
+			if (id) {
+				const user = await User.findById(id);
+				users = [user];
+			} else {
+				users = await User.find();
+			}
+
+			res.status(200).send(users);
+		} catch (error) {
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
-
-		res.status(200).send(users);
 	};
 
 	public updateUserById = async (req: Request, res: Response) => {
@@ -265,21 +278,20 @@ export default class UserController {
 			res.status(200).send(newUser);
 		} catch (error) {
 			console.error(error);
-			res.status(404).json({ message: "Failed to update user." });
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
 	};
 
 	public deleteUserById = async (req: Request, res: Response) => {
 		try {
-			const user = await User.findByIdAndDelete(req.params.userId);
+			const { id } = req.params;
 
-			if (user === null) {
-				throw new Error("User not found!");
-			}
+			const user = await User.findByIdAndDelete(id);
 
 			res.status(200).send(user);
 		} catch (error) {
-			res.status(404).json({ message: "Failed to delete user." });
+			console.error(error);
+			return res.status(500).send({ message: "Internal Server Error" });
 		}
 	};
 
@@ -294,7 +306,6 @@ export default class UserController {
 
 			res.status(200).json({ message: "Logout successful" });
 		} catch (error) {
-			console.error(error);
 			res.status(500).json({ message: "Failed to logout" });
 		}
 	};

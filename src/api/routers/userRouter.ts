@@ -10,6 +10,8 @@ import { User } from "@src/models/userModel";
 const router = express.Router();
 const userController = new UserController();
 
+///  -- USER ROUTES --
+
 // Register user
 router.post('/register', Validator.validateBody(["name","email","password"]), userController.registerUser);
 
@@ -23,16 +25,23 @@ router.post("/login", Validator.validateBody(["email","password"]), userControll
 router.post("/forgetpassword", Validator.validateBody(["email"]), userController.forgetPassword);
 
 // Reset
-router.put("/resetpassword/:token", userController.resetPassword);
+router.put("/resetpassword", Validator.validateBody(["newPassword","confirmPassword"]), userController.resetPassword);
 
 // My information
 router.get('/me', validateToken, userController.me);
 
-// User routes
-router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
-router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.updateUserById);
-router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), userController.deleteUserById);
-
+// Logout
 router.post('/logout', validateToken, userController.logout);
+
+///  -- ADMIN ROUTES --
+
+// Get user by id
+router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
+
+// Update user by id
+router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateOptionalBody(["name","email","role","picture","address","country","isVerified","cart"]), userController.updateUserById);
+
+// Delete user by id
+router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
 
 export default router;
