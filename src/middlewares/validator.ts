@@ -44,7 +44,7 @@ class Validator {
   static validateIds(idsInfo: { paramName: string, model: mongoose.Model<any>, type: string, isOptional?: boolean }[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
       for (const { paramName, model, type, isOptional } of idsInfo) {
-        const id = req.params[paramName] || req.body[paramName];
+        const id = req.params[paramName] || req.body[paramName] || req.query[paramName];
 
         if (isOptional && !id) {
           continue;

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
-const cpuSpecificationsSchema  = new Schema({
+const cpuSpecificationsSchema = new Schema({
   brand: String,
   speed: Number,
   cores: Number,
@@ -12,19 +12,19 @@ const gpuSpecificationSchema = new Schema({
   type: String,
 });
 
-const motherboardSpecificationSchema = new Schema ({
+const motherboardSpecificationSchema = new Schema({
   manufacturer: String,
   chipset: String,
   formFactor: String,
 });
 
-const ramSpecificationSchema = new Schema ({
+const ramSpecificationSchema = new Schema({
   size: Number,
   frequency: Number,
   type: String,
 });
 
-const caseSpecificationSchema = new Schema ({
+const caseSpecificationSchema = new Schema({
   length: Number,
   width: Number,
   height: Number,
@@ -42,11 +42,11 @@ export interface IProduct extends Document {
   subcategoryId: mongoose.Types.ObjectId;
   productType: string;
   specifications: {
-    cpu ?: typeof cpuSpecificationsSchema,
-    gpu ?: typeof gpuSpecificationSchema,
-    motherboard ?: typeof motherboardSpecificationSchema,
-    ram ?: typeof ramSpecificationSchema,
-    case ?: typeof caseSpecificationSchema,
+    cpu?: typeof cpuSpecificationsSchema,
+    gpu?: typeof gpuSpecificationSchema,
+    motherboard?: typeof motherboardSpecificationSchema,
+    ram?: typeof ramSpecificationSchema,
+    case?: typeof caseSpecificationSchema,
   };
   warranty: Date;
 }
@@ -58,17 +58,17 @@ export const productSchema = new Schema<IProduct>({
   manufacturer: { type: String, required: true },
   stockQuantity: { type: Number, required: true, min: 0 },
   price: { type: Number, required: true, min: 0 },
-  visible: { type: Boolean, required: true, default: false},
-  subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true},
-  productType: { type: String }, // Exemplos: CPU | MOtherboard | GPU | RAM | CASE ...
+  visible: { type: Boolean, required: true, default: false },
+  subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
+  productType: { type: String, enum: ['CPU', 'RAM', 'Motherboard', 'GPU', 'Case'], required: true },
   specifications: {
-    cpu : cpuSpecificationsSchema,
-    gpu : gpuSpecificationSchema,
-    motherboard : motherboardSpecificationSchema,
-    ram : ramSpecificationSchema,
-    case : caseSpecificationSchema,
+    cpu: cpuSpecificationsSchema,
+    gpu: gpuSpecificationSchema,
+    motherboard: motherboardSpecificationSchema,
+    ram: ramSpecificationSchema,
+    case: caseSpecificationSchema,
   },
-  warranty: { type: Date, default: null},
+  warranty: { type: Date, default: null },
 });
 
 export const Product = model<IProduct>("Product", productSchema);
