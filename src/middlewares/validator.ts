@@ -1,40 +1,38 @@
 import { Request, Response, NextFunction } from "express";
+import { User, IUser } from '@src/models/userModel';
 import mongoose from "mongoose";
+
+interface FieldValidationConfig {
+  required?: string[];
+  optional?: string[];
+}
 
 class Validator {
 
-  // Valida se todos os campos fornecidos estão preenchidos "Os campos fornecidos serão obrigatórios"
-  static validateBody(fields: string[]) {
+  // Validar campos (required: obrigatórios || optional: opcional)
+  static validateFields(config: FieldValidationConfig) {
     return (req: Request, res: Response, next: NextFunction) => {
       const errors: string[] = [];
-      for (const field of fields) {
-        if (!req.body[field]) {
-          errors.push(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
+      const bodyFields = Object.keys(req.body);
+
+      if (config.required) {
+        for (const field of config.required) {
+          if (!bodyFields.includes(field)) {
+            errors.push(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
+          }
         }
       }
+
+      const validFields = (config.required || []).concat(config.optional || []);
+      const isValidOperation = bodyFields.every((field) => validFields.includes(field) || !field);
+
+      if (!isValidOperation) {
+        errors.push(`One or more fields are invalid: ${bodyFields.join(", ")}`);
+      }
+
       if (errors.length > 0) {
         return res.status(400).send({ message: errors.join(", ") });
       }
-      next();
-    };
-  }
-
-  // Validação para verificar se os campos opcionais fornecidos são válidos, mas não exigir todos eles.
-  static validateOptionalBody(fields: string[]) {
-    return (req: Request, res: Response, next: NextFunction) => {
-      const updates = Object.keys(req.body);
-      const allowedUpdates = fields;
-      const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-
-      if (!isValidOperation) {
-        return res.status(400).send({ message: `One or more fields are invalid: ${updates.join(", ")}` });
-      }
-
-      updates.forEach((field) => {
-        if (req.body[field] === '') {
-          return res.status(400).send({ message: `${field.charAt(0).toUpperCase() + field.slice(1)} cannot be empty` });
-        }
-      });
 
       next();
     };
@@ -70,6 +68,33 @@ class Validator {
       }
 
       next();
+    };
+  }
+
+  static validateTokenMatch(queryTokenParam: string, userTokenField: keyof IUser) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      const token = req.query[queryTokenParam] as string | undefined;
+
+      if (!token) {
+        return res.status(400).send({ message: "Token is required" });
+      }
+
+      try {
+        const userConditions = { [userTokenField]: token };
+        const user = await User.findOne(userConditions);
+
+        if (!user) {
+          return res.status(404).send({ message: "Invalid or expired token" });
+        }
+
+        // Opcional: Armazenar o usuário encontrado no objeto de requisição para uso posterior
+        req.user = user;
+
+        next();
+      } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Internal Server Error" });
+      }
     };
   }
 
