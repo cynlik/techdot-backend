@@ -13,19 +13,19 @@ const userController = new UserController();
 ///  -- USER ROUTES --
 
 // Register user
-router.post('/register', Validator.validateBody(["name","email","password"]), userController.registerUser);
+router.post('/register', Validator.validateFields({ required: ["name", "email", "password"] }), userController.registerUser);
 
 // Verify user
-router.put('/verify', userController.verifyAccount);
+router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'), userController.verifyAccount);
 
 // Login
-router.post("/login", Validator.validateBody(["email","password"]), userController.loginUser);
+router.post("/login", Validator.validateFields({ required:["email","password"] }), userController.loginUser);
 
 // Forget
-router.post("/forgetpassword", Validator.validateBody(["email"]), userController.forgetPassword);
+router.post("/forgetpassword", Validator.validateFields({ required:["email"] }), userController.forgetPassword);
 
 // Reset
-router.put("/resetpassword", Validator.validateBody(["newPassword","confirmPassword"]), userController.resetPassword);
+router.put("/resetpassword", Validator.validateFields({ required: ["newPassword","confirmPassword"] }), Validator.validateTokenMatch('token', 'resetPasswordToken'), userController.resetPassword);
 
 // My information
 router.get('/me', validateToken, userController.me);
@@ -39,7 +39,7 @@ router.post('/logout', validateToken, userController.logout);
 router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
 // Update user by id
-router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateOptionalBody(["name","email","role","picture","address","country","isVerified","cart"]), userController.updateUserById);
+router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
 
 // Delete user by id
 router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);

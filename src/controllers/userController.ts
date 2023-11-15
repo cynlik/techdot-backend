@@ -108,35 +108,14 @@ export default class UserController {
 
 	public verifyAccount = async (req: Request, res: Response) => {
 		try {
-			const token = req.query.token as string;
+			const user = req.user;
+			user.isVerified = true;
+			user.verifyAccountToken = null;
+			await user.save();
 
-			if (!token) {
-				res.status(400);
-				throw new Error("Token not provided.");
-			}
-
-			try {
-				const user = await User.findOne({
-					verifyAccountToken: token,
-					verifyAccountTokenExpires: { $gt: new Date() },
-				});
-
-				if (!user) {
-					return res.status(400).json({ error: "Token inválido ou expirado!" });
-				}
-
-				user.isVerified = true;
-				user.verifyAccountToken = null;
-				await user.save();
-
-				return res
-					.status(200)
-					.json({ message: "Account verified successfully." });
-			} catch (error) {
-				return res
-					.status(500)
-					.json({ error: "An error occurred while verifying the account." });
-			}
+			return res
+				.status(200)
+				.json({ message: "Account verified successfully." });
 		} catch (error) {
 			console.error(error);
 			return res.status(500).send({ message: "Internal Server Error" });
@@ -170,22 +149,7 @@ export default class UserController {
 	public resetPassword = async (req: Request, res: Response) => {
 		try {
 			const { newPassword, confirmPassword } = req.body;
-
-			const token = req.query.token as string | undefined;
-
-			if (!token) {
-				res.status(400);
-				throw new Error("Token not provided.");
-			}
-
-			const user = await User.findOne({
-				resetPasswordToken: token,
-				resetPasswordExpires: { $gt: Date.now() },
-			});
-
-			if (!user) {
-				return res.status(400).json({ error: "Token inválido ou expirado!" });
-			}
+			const user = req.user;
 
 			if (newPassword !== confirmPassword) {
 				res.status(400).json({
