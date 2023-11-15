@@ -71,6 +71,7 @@ class Validator {
     };
   }
 
+
   static validateTokenMatch(queryTokenParam: string, userTokenField: keyof IUser) {
     return async (req: Request, res: Response, next: NextFunction) => {
       const token = req.query[queryTokenParam] as string | undefined;
@@ -86,9 +87,6 @@ class Validator {
         if (!user) {
           return res.status(404).send({ message: "Invalid or expired token" });
         }
-
-        // Opcional: Armazenar o usuário encontrado no objeto de requisição para uso posterior
-        req.user = user;
 
         next();
       } catch (error) {
