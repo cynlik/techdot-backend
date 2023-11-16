@@ -25,7 +25,13 @@ class Validator {
         }
       }
 
-      // adicionar validação porque o specifications passa se não tiver nada
+      const validFields = (config.required || []).concat(config.optional || []);
+
+      for (const field of bodyFields) {
+        if (!validFields.includes(field)) {
+          errors.push(`Invalid field: ${field}`);
+        }
+      }
 
       if (errors.length > 0) {
         return res.status(400).send({ message: errors.join(", ") });
@@ -68,7 +74,6 @@ class Validator {
     };
   }
 
-
   static validateTokenMatch(queryTokenParam: string, userTokenField: keyof IUser) {
     return async (req: Request, res: Response, next: NextFunction) => {
       const token = req.query[queryTokenParam] as string | undefined;
@@ -92,6 +97,28 @@ class Validator {
         console.error(error);
         return res.status(500).send({ message: "Internal Server Error" });
       }
+    };
+  }
+
+  static validateEnums(validations: { enumObject: object, fieldName: string, errorMessage?: string }[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const errors: string[] = [];
+
+      validations.forEach(validation => {
+        const { enumObject, fieldName, errorMessage } = validation;
+        const value = req.body[fieldName];
+        const enumValues = Object.values(enumObject);
+
+        if (!enumValues.includes(value)) {
+          errors.push(errorMessage || `Invalid value for ${fieldName}`);
+        }
+      });
+
+      if (errors.length > 0) {
+        return res.status(400).send({ message: `Validation errors: ${errors.join(", ")}` });
+      }
+
+      next();
     };
   }
 

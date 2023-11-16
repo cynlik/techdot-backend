@@ -31,6 +31,14 @@ const caseSpecificationSchema = new Schema({
   material: String,
 });
 
+export enum ProductType {
+  CPU = 'CPU',
+  RAM = 'RAM',
+  Motherboard = 'Motherboard',
+  GPU = 'GPU',
+  Case = 'Case',
+}
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -60,7 +68,7 @@ const productSchema = new Schema<IProduct>({
   price: { type: Number, required: true, min: 0 },
   visible: { type: Boolean, required: true, default: false },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
-  productType: { type: String, enum: ['CPU', 'RAM', 'Motherboard', 'GPU', 'Case'], required: true },
+  productType: { type: String, enum: [...Object.keys(ProductType)], required: true },
   specifications: {
     type: {
       cpu: cpuSpecificationsSchema,
