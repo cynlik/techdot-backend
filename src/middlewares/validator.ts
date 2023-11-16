@@ -26,10 +26,11 @@ class Validator {
       }
 
       const validFields = (config.required || []).concat(config.optional || []);
-      const isValidOperation = bodyFields.every((field) => validFields.includes(field) || !field);
 
-      if (!isValidOperation) {
-        errors.push(`One or more fields are invalid: ${bodyFields.join(", ")}`);
+      for (const field of bodyFields) {
+        if (!validFields.includes(field)) {
+          errors.push(`Invalid field: ${field}`);
+        }
       }
 
       if (errors.length > 0) {
@@ -73,7 +74,6 @@ class Validator {
     };
   }
 
-
   static validateTokenMatch(queryTokenParam: string, userTokenField: keyof IUser) {
     return async (req: Request, res: Response, next: NextFunction) => {
       const token = req.query[queryTokenParam] as string | undefined;
@@ -90,11 +90,35 @@ class Validator {
           return res.status(404).send({ message: "Invalid or expired token" });
         }
 
+        req.user = user;
+
         next();
       } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Internal Server Error" });
       }
+    };
+  }
+
+  static validateEnums(validations: { enumObject: object, fieldName: string, errorMessage?: string }[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const errors: string[] = [];
+
+      validations.forEach(validation => {
+        const { enumObject, fieldName, errorMessage } = validation;
+        const value = req.body[fieldName];
+        const enumValues = Object.values(enumObject);
+
+        if (!enumValues.includes(value)) {
+          errors.push(errorMessage || `Invalid value for ${fieldName}`);
+        }
+      });
+
+      if (errors.length > 0) {
+        return res.status(400).send({ message: `Validation errors: ${errors.join(", ")}` });
+      }
+
+      next();
     };
   }
 

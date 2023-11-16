@@ -7,7 +7,7 @@ import tryValidateToken from "@src/middlewares/tryValidateToken";
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";
-import { Product } from "@src/models/productModel";
+import { Product, ProductType } from "@src/models/productModel";
 
 const router = express.Router();
 const productController = new ProductController();
@@ -23,7 +23,7 @@ router.get("/:id", tryValidateToken, Validator.validateIds([{ paramName: "id", m
 // ROTAS DE ADMIN
 
 // Rota para criar Produtos
-router.post("/", validateToken, roleMiddleware(UserRole.Manager), Validator.validateFields({ required: ["name", "description", "imageUrl", "manufacturer", "stockQuantity", "price", "subcategoryId", "productType", "specifications"] }), Validator.validateIds([{ paramName: "subcategoryId", model: Subcategory, type: Constant.Subcategory }]), productController.createProduct);
+router.post("/", validateToken, roleMiddleware(UserRole.Manager), Validator.validateFields({ required: ["name", "description", "imageUrl", "manufacturer", "stockQuantity", "price", "subcategoryId", "specifications", "productType"], optional: ["warranty"] }), Validator.validateEnums([{ enumObject: ProductType, fieldName: 'productType' }]), Validator.validateIds([{ paramName: "subcategoryId", model: Subcategory, type: Constant.Subcategory }]), productController.createProduct);
 
 // Rota para dar update a um produto pelo ID
 router.put("/:id", validateToken, roleMiddleware(UserRole.Manager), Validator.validateFields({ optional: ["name", "description", "imageUrl", "manufacturer", "stockQuantity", "price", "subcategoryId", "visible"] }), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }, { paramName: "subcategoryId", model: Subcategory, type: Constant.Subcategory, isOptional: true }]), productController.updateProduct);
