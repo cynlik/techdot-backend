@@ -51,7 +51,7 @@ export interface IProduct extends Document {
   warranty: Date;
 }
 
-export const productSchema = new Schema<IProduct>({
+const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },
   description: { type: String, required: true },
   imageUrl: { type: String, required: true },
@@ -62,11 +62,14 @@ export const productSchema = new Schema<IProduct>({
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
   productType: { type: String, enum: ['CPU', 'RAM', 'Motherboard', 'GPU', 'Case'], required: true },
   specifications: {
-    cpu: cpuSpecificationsSchema,
-    gpu: gpuSpecificationSchema,
-    motherboard: motherboardSpecificationSchema,
-    ram: ramSpecificationSchema,
-    case: caseSpecificationSchema,
+    type: {
+      cpu: cpuSpecificationsSchema,
+      gpu: gpuSpecificationSchema,
+      motherboard: motherboardSpecificationSchema,
+      ram: ramSpecificationSchema,
+      case: caseSpecificationSchema,
+    },
+    required: true
   },
   warranty: { type: Date, default: null },
 });

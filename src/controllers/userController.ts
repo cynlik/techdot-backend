@@ -156,7 +156,7 @@ export default class UserController {
 					message: "The new password and confirm password fields must match.",
 				});
 			}
-	
+			console.log("Password: ", user)
 			const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
 	
 			if (oldPasswordMatch) {

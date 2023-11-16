@@ -25,12 +25,7 @@ class Validator {
         }
       }
 
-      const validFields = (config.required || []).concat(config.optional || []);
-      const isValidOperation = bodyFields.every((field) => validFields.includes(field) || !field);
-
-      if (!isValidOperation) {
-        errors.push(`One or more fields are invalid: ${bodyFields.join(", ")}`);
-      }
+      // adicionar validação porque o specifications passa se não tiver nada
 
       if (errors.length > 0) {
         return res.status(400).send({ message: errors.join(", ") });
@@ -89,6 +84,8 @@ class Validator {
         if (!user) {
           return res.status(404).send({ message: "Invalid or expired token" });
         }
+
+        req.user = user;
 
         next();
       } catch (error) {
