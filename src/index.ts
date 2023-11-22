@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import { routes } from "@src/api/routes";
 import "./config"
+import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
 

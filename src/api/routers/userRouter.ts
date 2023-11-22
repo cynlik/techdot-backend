@@ -28,20 +28,20 @@ router.post("/forgetpassword", Validator.validateFields({ required:["email"] }),
 router.put("/resetpassword", Validator.validateFields({ required: ["newPassword", "confirmPassword"] }), Validator.validateTokenMatch("token", "resetPasswordToken"), userController.resetPassword);
 
 // My information
-router.get('/me', validateToken, userController.me);
+router.get('/me', validateToken(), userController.me);
 
 // Logout
-router.post('/logout', validateToken, userController.logout);
+router.post('/logout', validateToken(), userController.logout);
 
 ///  -- ADMIN ROUTES --
 
 // Get user by id
-router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
+router.get('/:id?', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
 // Update user by id
-router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
+router.put('/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
 
 // Delete user by id
-router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
+router.delete('/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
 
 export default router;
