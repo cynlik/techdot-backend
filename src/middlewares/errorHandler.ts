@@ -8,7 +8,7 @@ interface CustomError extends Error {
 
 export function errorHandler(err: CustomError, req: Request, res: Response, next: NextFunction): void {
   const status = err.status || HttpStatus.INTERNAL_SERVER_ERROR;
-  const message = err.message || 'Ocorreu um erro inesperado.';
+  const message = err.message || 'Something went wrong.';
 
   res.status(status).json({
     error: true,
