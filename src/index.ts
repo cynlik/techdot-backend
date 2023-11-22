@@ -18,6 +18,7 @@ app.use(express.json());
 for (const route of routes) {
   app.use(route.path, route.router);
 }
+app.use(errorHandler)// Tratamento de erros
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);

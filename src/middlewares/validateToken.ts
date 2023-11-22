@@ -2,9 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel';
 import { RevokedToken } from '@src/models/revokedTokenModel'; 
 import jwt from 'jsonwebtoken';
+import { HttpStatus } from '@src/utils/constant';
 
 interface CustomRequest extends Request {
   user: IUser;
+}
+
+class CustomError extends Error {
+  status: HttpStatus;
+
+  constructor(status: HttpStatus, message: string) {
+    super(message);
+    this.status = status;
+  }
 }
 
 const validateToken = (isOptional: boolean = false) => {
@@ -17,7 +27,7 @@ const validateToken = (isOptional: boolean = false) => {
       if (isOptional) {
         return next();
       } else {
-        return res.status(401).json({ message: 'User is not authorized or token is missing' });
+        return next(new CustomError(HttpStatus.UNAUTHORIZED, 'User is not authorized or token is missing'));
       }
     }
 
@@ -27,22 +37,21 @@ const validateToken = (isOptional: boolean = false) => {
         
         const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
         if (isRevoked) {
-          return res.status(401).json({ message: 'Token revoked. Login again' });
+          throw new CustomError(HttpStatus.UNAUTHORIZED, 'Token revoked. Login again');
         }
         
-        const decoded = jwt.verify(token, process.env.SECRET as string);
-        
-        if (typeof decoded === 'object') {
-          (req as any).user = decoded;
-          return next();
-        } else {
-          return res.status(401).json({ message: 'User is not authorized or token is missing user information' });
-        }
+        const decoded = jwt.verify(token, process.env.SECRET as string) as IUser;
+        req.user = decoded;
+        next();
       } else {
-        return res.status(401).json({ message: 'User is not authorized or token is missing' });
+        throw new CustomError(HttpStatus.UNAUTHORIZED, 'Invalid token format');
       }
     } catch (err: any) {
-      return res.status(401).json({ error: err.message });
+      if (err instanceof jwt.JsonWebTokenError) {
+        next(new CustomError(HttpStatus.UNAUTHORIZED, 'Invalid or expired token'));
+      } else {
+        next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'An unexpected error occurred'));
+      }
     }
   };
 };
