@@ -3,18 +3,10 @@ import { IUser } from '@src/models/userModel';
 import { RevokedToken } from '@src/models/revokedTokenModel'; 
 import jwt from 'jsonwebtoken';
 import { HttpStatus } from '@src/utils/constant';
+import { CustomError } from '@src/utils/customError';
 
 interface CustomRequest extends Request {
   user: IUser;
-}
-
-class CustomError extends Error {
-  status: HttpStatus;
-
-  constructor(status: HttpStatus, message: string) {
-    super(message);
-    this.status = status;
-  }
 }
 
 const validateToken = (isOptional: boolean = false) => {
