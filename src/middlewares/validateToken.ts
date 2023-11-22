@@ -25,7 +25,7 @@ const validateToken = (isOptional?: boolean) => {
         const decoded = jwt.verify(token, process.env.SECRET as string);
 
         if (typeof decoded === 'object') {
-          (req as any).user = decoded;
+          req.user = decoded as IUser;
           next();
         } else {
           res.status(401).json({ message: 'User is not authorized or token is missing user information' });

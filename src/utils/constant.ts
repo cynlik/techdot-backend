@@ -2,7 +2,8 @@ export enum Constant {
     Product = "Product",
     Subcategory = "Subcategory",
     Category = "Category",
-    User = "User"
+    User = "User",
+    Sale = "Sale"
 }
 
 

@@ -1,18 +1,15 @@
 import mongoose, { Document, Schema, model } from "mongoose";
-import { IProduct } from "./productModel";
 
 export interface ISale extends Document {
-        user: string;
-        products: Array<IProduct | string>;
-        purchaseDate: Date;
-        totalAmount: number;
+        userId: mongoose.Types.ObjectId;
+        productsId: mongoose.Types.ObjectId[];
+        // totalAmount: number;
 }
 
-export const saleSchema = new Schema({
-        user: { type: Schema.Types.ObjectId, ref: "User" },
-        products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
-        purchaseDate: Date,
-        totalAmount: Number,
+export const saleSchema = new Schema<ISale>({
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        productsId: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+        // totalAmount: Number,
 });
 
-export const SaleModel = mongoose.model<ISale>('Sale', saleSchema)
+export const SaleModel = model<ISale>('Sales', saleSchema)
