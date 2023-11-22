@@ -3,7 +3,6 @@ import { ProductController } from "../../controllers/productController";
 import validateToken from "@src/middlewares/validateToken";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
 import { UserRole } from "@src/utils/roles";
-import tryValidateToken from "@src/middlewares/tryValidateToken";
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";
@@ -15,10 +14,10 @@ const productController = new ProductController();
 // ROTAS TANTO PARA ADMIN | USER | NONMEMBER
 
 // Rota para devolver um produto pelo ID | devolver produtos todos
-router.get("/", tryValidateToken, productController.getProductsByName);
+router.get("/", validateToken(true), productController.getProductsByName);
 
 // Rota para devolver um produto pelo ID
-router.get("/:id", tryValidateToken, Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.getProductById);
+router.get("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.getProductById);
 
 // ROTAS DE ADMIN
 
@@ -32,4 +31,3 @@ router.put("/:id", validateToken, roleMiddleware(UserRole.Manager), Validator.va
 router.delete("/:id", validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.deleteProduct);
 
 export default router;
-"userId"

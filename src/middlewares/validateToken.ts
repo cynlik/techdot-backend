@@ -7,34 +7,43 @@ interface CustomRequest extends Request {
   user: IUser;
 }
 
-const validateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
-  try {
-    let token;
-    let authHeader = req.headers.authorization || req.headers.Authorization;
-    if (authHeader && typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer')) {
-      token = authHeader.split(' ')[1];
+const validateToken = (isOptional?: boolean) => {
+  return async (req: CustomRequest, res: Response, next: NextFunction)  => {
+    try {
+      let token;
+      let authHeader = req.headers.authorization || req.headers.Authorization;
+      if (authHeader && typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer')) {
+        token = authHeader.split(' ')[1];
 
-      const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
+        const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
 
-      if (isRevoked) {
-        res.status(401).json({ message: 'Token revoked' });
-      } else {
+        if (isRevoked) {
+          res.status(401).json({ message: 'Token revoked' });
+          return;
+        } 
+
         const decoded = jwt.verify(token, process.env.SECRET as string);
 
         if (typeof decoded === 'object') {
           (req as any).user = decoded;
           next();
         } else {
-          res.status(401);
-          throw new Error('User is not authorized or token is missing user information');
+          res.status(401).json({ message: 'User is not authorized or token is missing user information' });
+        }
+      } else {
+        if (isOptional) {
+          next();
+        } else {
+          res.status(401).json({ message: 'User is not authorized or token is missing' });
         }
       }
-    } else {
-      res.status(401);
-      throw new Error('User is not authorized or token is missing');
+    } catch (err: any) {
+      if (isOptional) {
+        next();
+      } else {
+        res.status(401).json({ error: err.message });
+      }
     }
-  } catch (err: any) {
-    res.status(401).json({ error: err.message });
   }
 };
 
