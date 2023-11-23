@@ -8,6 +8,7 @@ export enum UserStatus {
   NonMember = 'nonmember',
 }
 
+
 export interface IUser extends Document {
   name: string;
   email: string;
