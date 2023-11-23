@@ -2,6 +2,7 @@ import { model, Document, Schema } from 'mongoose';
 import { UserRole } from '@src/utils/roles';
 import { CartItem } from './cartModel';
 
+
 export interface IUser extends Document {
   name: string;
   email: string;
