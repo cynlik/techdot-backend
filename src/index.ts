@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import { routes } from "@src/api/routes";
 import "./config"
+import swaggerDocs from '@src/utils/swagger';
 
 dotenv.config();
 
@@ -20,4 +21,6 @@ for (const route of routes) {
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
+
+  swaggerDocs(app, port);
 });
