@@ -10,11 +10,8 @@ import { User } from '@src/models/userModel';
 const router = express.Router();
 const userController = new UserController();
 
-///  -- USER ROUTES --
 /**
  * @swagger
- * tags:
- *  name: User Schema
  * components:
  *  schemas:
  *   User:
@@ -63,8 +60,31 @@ const userController = new UserController();
  *            schema:
  *              $ref: '#/components/schemas/User'
  */
+///  -- USER ROUTES --
+// Register user
 router.post('/register', Validator.validateFields({ required: ['name', 'email', 'password'] }), userController.registerUser);
 
+/**
+ * @openapi
+ * /api/user/verify:
+ *  put:
+ *     tags:
+ *      - User Routes
+ *     summary: Verify a user
+ *     parameters:
+ *      - in: query
+ *        name: token
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ */
 // Verify user
 router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'), userController.verifyAccount);
 
