@@ -4,6 +4,7 @@ import express from "express";
 import { routes } from "@src/api/routes";
 import "./config"
 import { errorHandler } from './middlewares/errorHandler';
+import swaggerDocs from '@src/utils/swagger';
 
 dotenv.config();
 
@@ -22,4 +23,6 @@ app.use(errorHandler)// Tratamento de erros
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
+
+  swaggerDocs(app, port);
 });
