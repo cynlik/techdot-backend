@@ -59,6 +59,22 @@ const userController = new UserController();
  *            type: boolean 
  *          token:
  *            type: string 
+ * 
+ *   ForgetPassword:
+ *     type: object
+ *     properties:
+ *       email:
+ *         type: string  
+ * 
+ *   ForgetPasswordResponse:
+ *     type: object
+ *     properties:
+ *       message:
+ *         type: string 
+ *       email:
+ *         type: string 
+ *       token:
+ *         type: string 
  */
 
 /**
@@ -134,6 +150,27 @@ router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'
 // Login
 router.post('/login', Validator.validateFields({ required: ['email', 'password'] }), userController.loginUser);
 
+/**
+ * @openapi
+ * /api/user/forgetpassword:
+ *  post:
+ *     tags:
+ *      - User Routes
+ *     summary: Forgot password
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema: 
+ *            $ref: '#/components/schemas/ForgetPassword'
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/ForgetPasswordResponse'
+ */
 // Forget
 router.post('/forgetpassword', Validator.validateFields({ required: ['email'] }), userController.forgetPassword);
 
