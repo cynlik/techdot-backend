@@ -41,6 +41,28 @@ const userController = new UserController();
  *        type: string
  *      country:
  *        type: string
+ * 
+ *   LoginUser:
+ *     type: object
+ *     required:
+ *      - email
+ *      - password
+ *     properties:
+ *      email:
+ *        type: string
+ *      password:
+ *        type: string
+ * 
+ *   LoginUserResponse:
+ *     type: object
+ *     properties:
+ *      accessToken:
+ *        type: object
+ *        properties:
+ *          auth:
+ *            type: boolean 
+ *          token:
+ *            type: string 
  */
 
 /**
@@ -92,6 +114,27 @@ router.post('/register', Validator.validateFields({ required: ['name', 'email', 
 // Verify user
 router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'), userController.verifyAccount);
 
+/**
+ * @openapi
+ * /api/user/login:
+ *  post:
+ *     tags:
+ *      - User Routes
+ *     summary: Login a user
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/LoginUser'
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/LoginUserResponse'
+ */
 // Login
 router.post('/login', Validator.validateFields({ required: ['email', 'password'] }), userController.loginUser);
 
