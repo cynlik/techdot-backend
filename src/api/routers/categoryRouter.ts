@@ -13,7 +13,7 @@ const categoryController = new CategoryController();
 // Rotas Publicas
 
 // Rota para obter todas as categorias
-router.get('/', categoryController.getAllProductsByCatgoryId)
+router.get('/', categoryController.getAllCategory)
 
 // Rotas Admin
 

@@ -138,7 +138,6 @@ export default class UserController {
 			user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
 			await user.save();
-
 			sendMail(EmailType.ForgetPassword, user.email, res, token.token);
 		} catch (error) {
 			console.error(error);

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { User, IUser } from '@src/models/userModel';
 import mongoose from "mongoose";
+import { CustomError } from "@src/utils/customError";
+import { HttpStatus } from "@src/utils/constant";
 
 interface FieldValidationConfig {
   required?: string[];
@@ -34,7 +36,7 @@ class Validator {
       }
 
       if (errors.length > 0) {
-        return res.status(400).send({ message: errors.join(", ") });
+        return next(new CustomError(HttpStatus.BAD_REQUEST, errors.join(", ") ));
       }
 
       next();
@@ -52,21 +54,21 @@ class Validator {
         }
 
         if (!isOptional && !id) {
-          return res.status(400).send({ message: `${type} ID is required` });
+          return next(new CustomError(HttpStatus.BAD_REQUEST , `${type} ID is required` ));
         }
 
         if (id && !mongoose.Types.ObjectId.isValid(id)) {
-          return res.status(422).send({ message: `Invalid ${type} ID` });
+          return next(new CustomError(HttpStatus.UNPROCESSABLE_ENTITY ,`Invalid ${type} ID` ));
         }
 
         try {
           const exists = await model.findById(id).exec();
           if (!exists) {
-            return res.status(404).send({ message: `${type} with ID ${id} not found` });
+            return next(new CustomError(HttpStatus.NOT_FOUND ,`${type} with ID ${id} not found` ));
           }
         } catch (error) {
           console.error(error);
-          return res.status(500).send({ message: "Internal Server Error" });
+          return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error" ));
         }
       }
 
@@ -79,7 +81,7 @@ class Validator {
       const token = req.query[queryTokenParam] as string | undefined;
 
       if (!token) {
-        return res.status(400).send({ message: "Token is required" });
+        return next(new CustomError(HttpStatus.BAD_REQUEST ,"Token is required" ));
       }
 
       try {
@@ -87,7 +89,7 @@ class Validator {
         const user = await User.findOne(userConditions);
 
         if (!user) {
-          return res.status(404).send({ message: "Invalid or expired token" });
+          return next(new CustomError(HttpStatus.BAD_REQUEST ,"Invalid or expired token" ));
         }
 
         req.user = user;
@@ -95,7 +97,7 @@ class Validator {
         next();
       } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Internal Server Error" });
+        return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"));
       }
     };
   }
@@ -115,7 +117,8 @@ class Validator {
       });
 
       if (errors.length > 0) {
-        return res.status(400).send({ message: `Validation errors: ${errors.join(", ")}` });
+        console.log("merda")
+        return next(new CustomError(HttpStatus.NOT_FOUND ,`Validation errors: ${errors.join(", ")}`))
       }
 
       next();
