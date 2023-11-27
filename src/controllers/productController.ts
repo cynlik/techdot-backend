@@ -7,75 +7,8 @@ import { HttpStatus } from "@src/utils/constant";
 
 export class ProductController {
 
-  public createProduct = async (req: Request, res: Response, next: Function) => {
-    const {
-      name,
-      description,
-      imageUrl,
-      manufacturer,
-      stockQuantity,
-      price,
-      subcategoryId,
-      productType,
-      specifications,
-      warranty
-    }: Partial<IProduct> = req.body;
-
-    try {
-      const newProduct = new Product({
-        name,
-        description,
-        imageUrl,
-        manufacturer,
-        stockQuantity,
-        price,
-        subcategoryId,
-        productType,
-        specifications,
-        warranty,
-      });
-
-      const savedProduct = await newProduct.save();
-
-      return res.status(HttpStatus.CREATED).json(savedProduct)
-    } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error" ));
-    }
-  };
-
-  public updateProduct = async (req: Request, res: Response, next: Function) => {
-    const { id } = req.params;
-    const updateFields = req.body;
-
-    try {
-      const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
-
-      if (!updatedProduct) {
-        return next(new CustomError(HttpStatus.NOT_FOUND ,"Product not found"));
-      }
-
-      return res.status(HttpStatus.OK).json(updatedProduct);
-    } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
-    }
-  };
-
-  public deleteProduct = async (req: Request, res: Response, next: Function) => {
-    const { id } = req.params;
-
-    try {
-
-      await Product.findByIdAndDelete(id);
-
-      return res.status(204).json({message: "Product successfully deleted!"});
-    } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
-    }
-  };
-
+  // =================|USERS|=================
+  
   public getProductsByName = async (req: Request, res: Response, next: Function) => {
     try {
       const { name, sort, page = '1', limit = '6' } = req.query as {
@@ -156,6 +89,73 @@ export class ProductController {
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+    }
+  };
+
+  // =================|ADMIN|=================
+
+  public createProduct = async (req: Request, res: Response, next: Function) => {
+    const {
+      name,
+      description,
+      imageUrl,
+      manufacturer,
+      stockQuantity,
+      price,
+      subcategoryId,
+      productType,
+      specifications,
+      warranty
+    }: Partial<IProduct> = req.body;
+
+    try {
+      const newProduct = new Product({
+        name,
+        description,
+        imageUrl,
+        manufacturer,
+        stockQuantity,
+        price,
+        subcategoryId,
+        productType,
+        specifications,
+        warranty,
+      });
+
+      const savedProduct = await newProduct.save();
+
+      return res.status(HttpStatus.CREATED).json(savedProduct)
+    } catch (error) {
+      console.error(error);
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error" ));
+    }
+  };
+
+  public updateProduct = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+    const updateFields = req.body;
+
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+
+      return res.status(HttpStatus.OK).json(updatedProduct);
+    } catch (error) {
+      console.error(error);
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
+    }
+  };
+
+  public deleteProduct = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+
+    try {
+
+      await Product.findByIdAndDelete(id);
+
+      return res.status(204).json({message: "Product successfully deleted!"});
+    } catch (error) {
+      console.error(error);
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
     }
   };
 

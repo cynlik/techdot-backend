@@ -5,8 +5,36 @@ import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
 export class SubcategoryController {
-    
-  public async createSubcategory(req: Request, res: Response, next: Function): Promise<Response> {
+
+  // =================|USER|=================
+
+  public getAllSubcategory = async(req: Request, res:Response, next: Function) => {
+    try {
+      const subcategorys = await Subcategory.find({ visible: true});
+      return res.status(HttpStatus.OK).send(subcategorys)
+    } catch (error) {
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+    }
+  }
+
+  public getAllProductBySubcategory = async(req: Request, res: Response, next: Function) => {
+    const { id } = req.params
+    try {
+      const products = await Product.find({ subcategoryId: id, visible: true });
+
+      if (products.length < 1) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, "Products Not Found"))
+      }
+      
+      return res.status(HttpStatus.OK).send(products)
+    } catch (error) {
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+    }
+  }
+
+  // =================|ADMIN|=================
+
+  public createSubcategory = async(req: Request, res: Response, next: Function): Promise<Response> => {
     const { name, categoryId } = req.body;
 
     try {
@@ -25,27 +53,36 @@ export class SubcategoryController {
     }
   }
 
-  public async getAllSubcategory(req: Request, res:Response, next: Function) {
+  public updateCategory = async(req: Request, res: Response, next: Function)  => {
+    const { id } = req.params;
+    const updateFields = req.body;
+
     try {
-      const subcategorys = await Subcategory.find();
-      return res.status(HttpStatus.OK).send(subcategorys)
+      const updateSubcategory = await Subcategory.findByIdAndUpdate(id, updateFields, { new: true , runValidators: true});
+
+      return res.status(HttpStatus.OK).send(updateSubcategory);
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Error'))
     }
   }
 
-  public async getAllProductBySubcategory(req: Request, res: Response, next: Function) {
+  public deleteSubcategory = async (req: Request, res: Response, next: Function) => {
     const { id } = req.params
-    try {
-      const products = await Product.find({ subcategoryId: id });
 
-      if (products.length < 1) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "Products Not Found"))
+    try {
+
+      const product = await Product.find({ subcategoryId: id })
+
+      if ( product.length > 0 ) {
+        return next(new CustomError(HttpStatus.FORBIDDEN, 'Subcategoria precisa de estar vazia'))
       }
-      
-      return res.status(HttpStatus.OK).send(products)
+
+      await Subcategory.deleteOne({ _id: id});
+
+      return res.status(HttpStatus.OK).send({ message: 'Subcategory deleted successfully'})
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Error'))
     }
   }
+
 }
