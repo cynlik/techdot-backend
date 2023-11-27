@@ -79,6 +79,34 @@ const userController = new UserController();
  *         type: string 
  *       token:
  *         type: string 
+ * 
+ *   ResetPassword:
+ *     type: object
+ *     properties:
+ *       newPassword:
+ *         type: string  
+ *       confirmPassword:
+ *         type: string 
+ * 
+ *   ResetPasswordResponse:
+ *     type: object
+ *     properties:
+ *       message:
+ *         type: string 
+ * 
+ *   Me:
+ *     type: object
+ *     properties:
+ *       newPassword:
+ *         type: string  
+ *       confirmPassword:
+ *         type: string 
+ * 
+ *   MeResponse:
+ *     type: object
+ *     properties:
+ *       message:
+ *         type: string
  */
 
 /**
@@ -178,9 +206,56 @@ router.post('/login', Validator.validateFields({ required: ['email', 'password']
 // Forget
 router.post('/forgetpassword', Validator.validateFields({ required: ['email'] }), userController.forgetPassword);
 
+/**
+ * @openapi
+ * /api/user/resetpassword:
+ *  put:
+ *     tags:
+ *      - User Routes
+ *     summary: Reset user password
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema: 
+ *            $ref: '#/components/schemas/ResetPassword'
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/ResetPasswordResponse'
+ *      400:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/ResetPasswordResponse'
+ */
 // Reset
 router.put('/resetpassword', Validator.validateFields({ required: ['newPassword', 'confirmPassword'] }), Validator.validateTokenMatch('token', 'resetPasswordToken'), userController.resetPassword);
 
+/**
+ * @openapi
+ * /api/user/me:
+ *  get:
+ *     tags:
+ *      - User Routes
+ *     summary: Get current user
+ *     parameters: 
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/MeResponse'
+ */
 // My information
 router.get('/me', validateToken(), userController.me);
 
