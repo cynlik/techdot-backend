@@ -15,6 +15,8 @@ const categoryController = new CategoryController();
 // Rota para obter todas as categorias
 router.get('/', categoryController.getAllCategory)
 
+router.get('/:categoryId', Validator.validateIds([{ paramName: "categoryId", model: Category, type: Constant.Category}]), categoryController.getAllSubcategoryByCategory)
+
 // Rotas Admin
 
 // Rota para cirar uma Categoria 
@@ -24,7 +26,7 @@ router.post('/', validateToken(), roleMiddleware(UserRole.Manager), Validator.va
 router.put('/update/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateFields({ optional: ['name']}), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category }]), categoryController.updateCategory)
 
 // Rota para eliminar uma categoria pelo seu id
-router.delete('/delete/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category}]))
+router.delete('/delete/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category}]), categoryController.deleteCategory)
 
 
 export default router;

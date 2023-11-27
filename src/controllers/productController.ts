@@ -37,7 +37,7 @@ export class ProductController {
 
       const savedProduct = await newProduct.save();
 
-      return res.status(201).send(savedProduct);
+      return res.status(HttpStatus.CREATED).json(savedProduct)
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error" ));
@@ -55,7 +55,7 @@ export class ProductController {
         return next(new CustomError(HttpStatus.NOT_FOUND ,"Product not found"));
       }
 
-      return res.status(200).send(updatedProduct);
+      return res.status(HttpStatus.OK).json(updatedProduct);
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
@@ -69,7 +69,7 @@ export class ProductController {
 
       await Product.findByIdAndDelete(id);
 
-      return res.status(204).send();
+      return res.status(204).json({message: "Product successfully deleted!"});
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
