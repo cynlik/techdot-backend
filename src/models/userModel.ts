@@ -1,16 +1,7 @@
 import mongoose, { model, Document, Schema } from 'mongoose';
 
-export enum UserRole {
+export enum UserStatus {
   Admin = 'admin',
-  Security = 'security',
-  Manager = 'manager',
-  Member = 'member',
-  NonMember = 'nonmember',
-}
-
-
-export enum UserView {
-	Admin = 'admin',
   Security = 'security',
   Manager = 'manager',
   Member = 'member',
@@ -21,8 +12,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  role: UserRole;
-  view: UserView;
+  role: UserStatus;
+  view: UserStatus;
   picture: string;
   age: number;
   address: string;
@@ -44,14 +35,14 @@ export const UserSchema = new Schema<IUser>(
     role: {
       type: String,
       required: true,
-      default: UserRole.Member,
-      enum: Object.values(UserRole),
+      default: UserStatus.Member,
+      enum: Object.values(UserStatus),
     },
     view: {
       type: String,
       required: true,
-      default: UserView.Member,
-      enum: Object.values(UserView),
+      default: UserStatus.Member,
+      enum: Object.values(UserStatus),
     },
     picture: { type: String, default: null },
     age: { type: Number, default: null },

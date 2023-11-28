@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUser, UserRole } from '@src/models/userModel';
+import { IUser, UserStatus } from '@src/models/userModel';
 
 declare global {
   namespace Express {
@@ -9,20 +9,20 @@ declare global {
   }
 }
 
-function calculateRoleOrder(role: UserRole) {
-  const roles = Object.values(UserRole);
+function calculateRoleOrder(role: UserStatus) {
+  const roles = Object.values(UserStatus);
   const roleIndex = roles.indexOf(role);
   return roleIndex === -1 ? -1 : roles.length - roleIndex - 1;
 }
 
-const hasPermission = (userRole: UserRole, requiredRole: UserRole): boolean => {
+const hasPermission = (userRole: UserStatus, requiredRole: UserStatus): boolean => {
   const requiredRoleOrder = calculateRoleOrder(requiredRole);
   const userRoleOrder = calculateRoleOrder(userRole);
 
   return userRoleOrder >= requiredRoleOrder;
 };
 
-const roleMiddleware = (allowedRole: UserRole) => {
+const roleMiddleware = (allowedRole: UserStatus) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const userRole = req.user?.role;

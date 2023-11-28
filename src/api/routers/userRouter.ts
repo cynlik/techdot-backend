@@ -4,7 +4,7 @@ import { roleMiddleware } from '@src/middlewares/roleMiddleware';
 import validateToken from '@src/middlewares/validateToken';
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
-import { User, UserRole } from "@src/models/userModel";
+import { User, UserStatus } from "@src/models/userModel";
 
 const router = express.Router();
 const userController = new UserController();
@@ -38,12 +38,12 @@ router.post('/logout', validateToken(), userController.logout);
 ///  -- ADMIN ROUTES --
 
 // Get user by id
-router.get('/:id?', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
+router.get('/:id?', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
 // Update user by id
-router.put('/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
+router.put('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
 
 // Delete user by id
-router.delete('/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
+router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
 
 export default router;

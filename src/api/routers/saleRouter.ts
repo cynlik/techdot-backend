@@ -2,7 +2,7 @@ import { SaleController } from "@src/controllers/saleController";
 import UserController from "@src/controllers/userController";
 import express from "express";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/models/userModel";
+import { UserStatus } from "@src/models/userModel";
 import validateToken from "@src/middlewares/validateToken";
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
@@ -29,7 +29,7 @@ router.get("/all/:id?", validateToken, saleController.getAll);
 router.get("/:id?", Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale },]),saleController.getById);
 
 // Delete Sale By Id
-router.delete("/delete/:id",Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale },]),validateToken, roleMiddleware(UserRole.Manager),saleController.deleteById
+router.delete("/delete/:id",Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale },]),validateToken, roleMiddleware(UserStatus.Manager),saleController.deleteById
 );
 
 // Update Sale By Id

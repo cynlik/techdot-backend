@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { IProduct, Product } from "@src/models/productModel";
-import { UserRole } from "@src/models/userModel";
+import { UserStatus } from "@src/models/userModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
@@ -25,7 +25,7 @@ export class ProductController {
         return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
       }
 
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       const conditions: any = {};
 
@@ -71,7 +71,7 @@ export class ProductController {
     const { id } = req.params;
 
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       const conditions: any = { _id: id };
 

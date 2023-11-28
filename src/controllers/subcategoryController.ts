@@ -4,14 +4,14 @@ import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/models/userModel";
+import { UserStatus } from "@src/models/userModel";
 export class SubcategoryController {
 
   // =================|USER|=================
 
   public getAllSubcategory = async(req: Request, res:Response, next: Function) => {
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       const conditions: any = {};
 
@@ -29,7 +29,7 @@ export class SubcategoryController {
   public getAllProductBySubcategory = async(req: Request, res: Response, next: Function) => {
     const { id } = req.params
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       const conditions: any = { subcategoryId: id };
 

@@ -5,14 +5,14 @@ import { HttpStatus } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";
 import { Product } from "@src/models/productModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/models/userModel";
+import { UserStatus } from "@src/models/userModel";
 export class CategoryController {
   
   // =================|USERS|=================
 
   public getAllCategory = async(req: Request, res:Response, next: Function) => {
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       const conditions: any = {};
 
@@ -36,7 +36,7 @@ export class CategoryController {
     const { categoryId } = req.params;
 
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       const conditions: any = {category: categoryId};
 
@@ -63,7 +63,7 @@ export class CategoryController {
 
       const subcategories = await Subcategory.find({category: categoryId})
 
-      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
 
       let conditions: any = {subcategoryId: { $in: subcategories.map(sc => sc._id) }};
 
