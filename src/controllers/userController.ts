@@ -326,6 +326,7 @@ export default class UserController {
 				email: user.email,
 				country: user.country,
 				role: user.role,
+				view: user.view
 			},
 			config.secret,
 			{ expiresIn }
