@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { SaleModel, ISale } from "@src/models/saleModel";
-import { UserRole } from "@src/utils/roles";
-import { IUser } from "@src/models/userModel";
+import { UserRole } from "@src/models/userModel";
 
 export class SaleController {
   public async create(req: Request, res: Response) {

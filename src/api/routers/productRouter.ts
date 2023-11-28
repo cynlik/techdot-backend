@@ -2,7 +2,7 @@ import express from "express";
 import { ProductController } from "../../controllers/productController";
 import validateToken from "@src/middlewares/validateToken";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/utils/roles";
+import { UserRole } from "@src/models/userModel";
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";

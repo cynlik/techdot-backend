@@ -3,7 +3,7 @@ import { CategoryController } from "@src/controllers/categoryController";
 import Validator from "@src/middlewares/validator";
 import validateToken from "@src/middlewares/validateToken";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/utils/roles";
+import { UserRole } from "@src/models/userModel";
 import { Constant } from "@src/utils/constant";
 import { Category } from "@src/models/categoryModel";
 

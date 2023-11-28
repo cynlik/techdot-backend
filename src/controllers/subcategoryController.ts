@@ -4,7 +4,7 @@ import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/utils/roles";
+import { UserRole } from "@src/models/userModel";
 export class SubcategoryController {
 
   // =================|USER|=================

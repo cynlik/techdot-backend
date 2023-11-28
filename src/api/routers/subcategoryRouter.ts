@@ -6,7 +6,7 @@ import { Category } from "@src/models/categoryModel";
 import { Constant } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";
 import { roleMiddleware } from "@src/middlewares/roleMiddleware";
-import { UserRole } from "@src/utils/roles";
+import { UserRole } from "@src/models/userModel";
 
 const router = express.Router();
 const subcategoryController = new SubcategoryController();

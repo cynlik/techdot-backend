@@ -301,37 +301,37 @@ export default class UserController {
 
 	public changeView = async (req: Request, res: Response) => {
 		try {
-			const token = req.headers.authorization as string;
-
-			if (!token) {
-				res.status(401).json({ message: "Invalid token" });
-				return;
-			}
-
-			const user = req.user;
-
-			const roleToViewMap: { [key in UserRole]: UserView } = {
-				[UserRole.Admin]: UserView.Admin,
-				[UserRole.Security]: UserView.Security,
-				[UserRole.Manager]: UserView.Manager,
-				[UserRole.Member]: UserView.Member,
-				[UserRole.NonMember]: UserView.NonMember,
-			};
-
-			user.view = user.view === UserView.Member ? roleToViewMap[user.role] : UserView.Member;
-
-			await this.revokeUserToken(token);
-
-			const accessToken = UserController.createToken(user, config.expiresIn);
-
-			await user.save();
-
-			res.status(200).json({ message: "View changed successfully", user: user, accessToken: accessToken });
+		  const token = req.headers.authorization as string;
+	  
+		  if (!token) {
+			res.status(401).json({ message: "Invalid token" });
+			return;
+		  }
+	  
+		  const user = req.user;
+	  
+		  const roleToViewMap: { [key in UserRole]: UserView } = {
+			[UserRole.Admin]: UserView.Admin,
+			[UserRole.Security]: UserView.Security,
+			[UserRole.Manager]: UserView.Manager,
+			[UserRole.Member]: UserView.Member,
+			[UserRole.NonMember]: UserView.NonMember,
+		  };
+	  
+		  user.view = user.view === UserView.Member ? roleToViewMap[user.role] : UserView.Member;
+	  
+		  await this.revokeUserToken(token);
+	  
+		  const accessToken = UserController.createToken(user, config.expiresIn);
+	  
+		  await user.save();
+	  
+		  res.status(200).json({ message: "View changed successfully", user: user, accessToken: accessToken });
 		} catch (error) {
-			console.error(error);
-			res.status(500).json({ message: "Internal Server Error" });
+		  console.error(error);
+		  res.status(500).json({ message: "Internal Server Error" });
 		}
-	};
+	};	  
 
 	public logout = async (req: Request, res: Response) => {
 		try {
