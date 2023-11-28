@@ -1,16 +1,25 @@
 import { Request, Response } from "express";
-import { Category } from "@src/models/categoryModel";
 import { Subcategory } from "@src/models/subcategoryModel";
 import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
+import { hasPermission } from "@src/middlewares/roleMiddleware";
+import { UserRole } from "@src/utils/roles";
 export class SubcategoryController {
 
   // =================|USER|=================
 
   public getAllSubcategory = async(req: Request, res:Response, next: Function) => {
     try {
-      const subcategorys = await Subcategory.find({ visible: true});
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+
+      const conditions: any = {};
+
+      if (!isAdmin) {
+        conditions.visible = true;
+      }
+
+      const subcategorys = await Subcategory.find(conditions);
       return res.status(HttpStatus.OK).send(subcategorys)
     } catch (error) {
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
@@ -20,7 +29,15 @@ export class SubcategoryController {
   public getAllProductBySubcategory = async(req: Request, res: Response, next: Function) => {
     const { id } = req.params
     try {
-      const products = await Product.find({ subcategoryId: id, visible: true });
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+
+      const conditions: any = { subcategoryId: id };
+
+      if (!isAdmin) {
+        conditions.visible = true;
+      }
+
+      const products = await Product.find(conditions);
 
       if (products.length < 1) {
         return next(new CustomError(HttpStatus.NOT_FOUND, "Products Not Found In That Subcategory"))

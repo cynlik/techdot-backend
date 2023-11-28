@@ -4,14 +4,23 @@ import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";
 import { Product } from "@src/models/productModel";
-
+import { hasPermission } from "@src/middlewares/roleMiddleware";
+import { UserRole } from "@src/utils/roles";
 export class CategoryController {
   
   // =================|USERS|=================
 
   public getAllCategory = async(req: Request, res:Response, next: Function) => {
     try {
-      const categories = await Category.find({ visible: true});
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+
+      const conditions: any = {};
+
+      if (!isAdmin) {
+        conditions.visible = true;
+      }
+
+      const categories = await Category.find(conditions);
 
       if (categories.length < 1) {
         return next(new CustomError(HttpStatus.NOT_FOUND, 'Categories not found'))
@@ -27,7 +36,15 @@ export class CategoryController {
     const { categoryId } = req.params;
 
     try {
-      const subcategories = await Subcategory.find({ category: categoryId, visible: true })
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+
+      const conditions: any = {category: categoryId};
+
+      if (!isAdmin) {
+        conditions.visible = true;
+      }
+
+      const subcategories = await Subcategory.find(conditions)
 
       if (subcategories.length < 1) {
         return next(new CustomError(HttpStatus.NOT_FOUND, "Subcategories not found"))
@@ -43,13 +60,18 @@ export class CategoryController {
     const { categoryId } = req.params
 
     try {
-      const subcategories = await Subcategory.find({ category: categoryId, visible: true })
 
-      if (subcategories.length < 1) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'No Subcategories found!'))
+      const subcategories = await Subcategory.find({category: categoryId})
+
+      const isAdmin = req.user && hasPermission(req.user.role, UserRole.Manager);
+
+      let conditions: any = {subcategoryId: { $in: subcategories.map(sc => sc._id) }};
+
+      if (!isAdmin) {
+        conditions.visible = true;
       }
 
-      const products = await Product.find({ subcategoryId: subcategories, visible: true })
+      const products = await Product.find(conditions)
 
       if (products.length < 1) {
         return next(new CustomError(HttpStatus.NOT_FOUND, 'No Product found!'))

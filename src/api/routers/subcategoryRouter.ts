@@ -14,10 +14,10 @@ const subcategoryController = new SubcategoryController();
 // =================|USER|=================
 
 // Rota para devolver todas as subcategorias
-router.get('/', subcategoryController.getAllSubcategory);
+router.get('/', validateToken(true), subcategoryController.getAllSubcategory);
 
 // Rota para devolver todos os produtos de uma subcategorias
-router.get('/:id', Validator.validateIds([{ paramName: 'id', model: Subcategory, type: Constant.Subcategory}]), subcategoryController.getAllProductBySubcategory);
+router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id', model: Subcategory, type: Constant.Subcategory}]), subcategoryController.getAllProductBySubcategory);
 
 // =================|ADMIN|=================
 

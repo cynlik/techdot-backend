@@ -13,13 +13,13 @@ const categoryController = new CategoryController();
 // =================|USER|=================
 
 // Rota para obter todas as categorias
-router.get('/', categoryController.getAllCategory)
+router.get('/', validateToken(true), categoryController.getAllCategory)
 
 // Rota que devolve todas as subcategorias de uma categoria
-router.get('/subcategory/:categoryId', Validator.validateIds([{ paramName: "categoryId", model: Category, type: Constant.Category}]), categoryController.getAllSubcategoryByCategory)
+router.get('/subcategory/:categoryId', validateToken(true), Validator.validateIds([{ paramName: "categoryId", model: Category, type: Constant.Category}]), categoryController.getAllSubcategoryByCategory)
 
 // Rota que devolve todos os produtos de uma categoria
-router.get('/products/:categoryId', Validator.validateIds([{ paramName: "categoryId", model: Category, type: Constant.Category}]), categoryController.getAllProductsByCategory)
+router.get('/products/:categoryId', validateToken(true), Validator.validateIds([{ paramName: "categoryId", model: Category, type: Constant.Category}]), categoryController.getAllProductsByCategory)
 
 // =================|ADMIN|=================
 
