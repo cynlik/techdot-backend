@@ -22,7 +22,7 @@ const validateToken = async (req: CustomRequest, res: Response, next: NextFuncti
         const decoded = jwt.verify(token, process.env.SECRET as string);
 
         if (typeof decoded === 'object') {
-          (req as any).user = decoded;
+          req.user = decoded as IUser;
           next();
         } else {
           res.status(401);
