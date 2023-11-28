@@ -317,6 +317,10 @@ export default class UserController {
 		return cart !== null && typeof cart === "object";
 	}
 
+	private isEmailUnique = async (email: string) => {
+		return (await User.find({ email }).exec()).length <= 0;
+	};
+
 	private static createToken(user: IUser, expiresIn = config.expiresIn) {
 		let token = jwt.sign(
 			{
@@ -333,10 +337,6 @@ export default class UserController {
 
 		return { auth: true, token };
 	}
-
-	private isEmailUnique = async (email: string) => {
-		return (await User.find({ email }).exec()).length <= 0;
-	};
 
 	private revokeUserToken = async (token: string) => {
 		const existingToken = await RevokedToken.findOne({ token });

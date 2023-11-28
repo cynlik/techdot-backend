@@ -5,7 +5,6 @@ import { emailContent, EmailType } from '@src/utils/emailType';
 interface MailOptions {
   to: string;
   subject: string;
-  text?: string;
   html?: string;
 }
 
@@ -19,18 +18,18 @@ const transporter = nodemailer.createTransport({
 
 export function sendMail(emailType: EmailType, to: string, res: Response, token?: string) {
   const emailInfo = emailContent[emailType];
-  let text: string;
+  let html: string;
 
-  if (typeof emailInfo.text === 'function') {
-    text = emailInfo.text(token || '');
+  if (typeof emailInfo.html === 'function') {
+    html = emailInfo.html(token || '');
   } else {
-    text = emailInfo.text as string;
+    html = emailInfo.html || '';
   }
 
-  const mailOptions = {
+  const mailOptions: MailOptions = {
     to,
     subject: emailInfo.subject,
-    text,
+    html,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -43,7 +42,6 @@ export function sendMail(emailType: EmailType, to: string, res: Response, token?
     }
   });
 }
-
 
 // Exemplo de uso:
 // sendMail(EmailType.Tipo, user.email, res);
