@@ -2,7 +2,7 @@ import { SaleController } from '@src/controllers/saleController';
 import UserController from '@src/controllers/userController';
 import express from 'express';
 import { roleMiddleware } from '@src/middlewares/roleMiddleware';
-import { UserRole } from "@src/utils/roles";
+import { UserRole } from "@src/models/userModel";
 import validateToken from '@src/middlewares/validateToken'; 
 
 

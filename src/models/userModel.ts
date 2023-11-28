@@ -1,5 +1,4 @@
-import { model, Document, Schema } from 'mongoose';
-import { CartItem } from './cartModel';
+import mongoose, { model, Document, Schema } from 'mongoose';
 
 export enum UserRole {
   Admin = 'admin',
@@ -9,11 +8,17 @@ export enum UserRole {
   NonMember = 'nonmember',
 }
 
+export enum UserView {
+  User = 'user',
+  Manager = 'manager',
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
   role: UserRole;
+  view: UserView;
   picture: string;
   age: number;
   address: string;
@@ -24,7 +29,7 @@ export interface IUser extends Document {
   resetPasswordExpires: Date | null;
   isVerified: boolean | false;
   lastLoginIP: string;
-  cart: CartItem[] | null
+  cart: mongoose.Types.ObjectId;
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -37,6 +42,12 @@ export const UserSchema = new Schema<IUser>(
       required: true,
       default: UserRole.Member,
       enum: Object.values(UserRole),
+    },
+    view: {
+      type: String,
+      required: true,
+      default: UserView.User,
+      enum: Object.values(UserView),
     },
     picture: { type: String, default: null },
     age: { type: Number, default: null },

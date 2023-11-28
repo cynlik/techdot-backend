@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as _ from "lodash";
 import { Request, Response } from "express";
 import { config } from "@src/config";
-import { User, IUser } from "@src/models/userModel";
+import { User, IUser, UserRole } from "@src/models/userModel";
 import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 import { RevokedToken } from "@src/models/revokedTokenModel";
@@ -39,6 +39,7 @@ export default class UserController {
 
 			await user.save();
 
+			sendMail(EmailType.Welcome, user.email, res, token.token);
 			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
 			res.status(201).json({
@@ -219,27 +220,54 @@ export default class UserController {
 	public updateUserById = async (req: Request, res: Response) => {
 		try {
 			const newUser = req.body;
-			const dbUser = await User.findById(req.params.userId);
-
+			const dbUser = await User.findById(req.params.id);
+	
 			if (dbUser === null) {
 				throw new Error("User not found!");
 			}
-
+	
 			if (newUser.email && !(await this.isEmailUnique(newUser.email))) {
 				throw new Error("Email already in use.");
 			}
-
-			if (
-				newUser.password &&
-				!(await bcrypt.compare(newUser.password, dbUser.password))
-			) {
+	
+			if (newUser.password && !(await bcrypt.compare(newUser.password, dbUser.password))) {
 				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
 				newUser.password = hashedNewPassword;
 			} else {
 				newUser.password = dbUser.password;
 			}
-
-			res.status(200).send(newUser);
+	
+			if (newUser.name && newUser.name.length > 50) {
+				throw new Error("Name must be 50 characters or less.");
+			}
+	
+			if (newUser.role && !(Object.values(UserRole).includes(newUser.role))) {
+				throw new Error("Invalid user role.");
+			}
+	
+			if (newUser.picture && !this.isValidPictureFormat(newUser.picture)) {
+				throw new Error("Invalid picture format. Allowed formats are jpg, jpeg, or png.");
+			}
+	
+			if (newUser.address && newUser.address.length > 100) {
+				throw new Error("Address must be 100 characters or less.");
+			}
+	
+			if (newUser.country && !this.isValidCountry(newUser.country)) {
+				throw new Error("Invalid country.");
+			}
+	
+			if (newUser.isVerified !== undefined && typeof newUser.isVerified !== "boolean") {
+				throw new Error("Invalid value for isVerified. Must be a boolean.");
+			}
+	
+			if (newUser.cart && !this.isValidCart(newUser.cart)) {
+				throw new Error("Invalid cart format.");
+			}
+	
+			const updatedUser = await User.findByIdAndUpdate(req.params.id, newUser, { new: true });
+	
+			res.status(200).send(updatedUser);
 		} catch (error) {
 			console.error(error);
 			return res.status(500).send({ message: "Internal Server Error" });
@@ -273,6 +301,22 @@ export default class UserController {
 			res.status(500).json({ message: "Failed to logout" });
 		}
 	};
+
+	private isValidPictureFormat(picture: string): boolean {
+		const allowedFormats = ["jpg", "jpeg", "png"];
+		const format = picture.split(".").pop()?.toLowerCase();
+		return format ? allowedFormats.includes(format) : false;
+	}
+
+	private isValidCountry(country: string): boolean {
+		// Aceita tudo menos vazio
+		return country.trim() !== "";
+	}
+
+	private isValidCart(cart: any): boolean {
+		// Aceita tudo menos null
+		return cart !== null && typeof cart === "object";
+	}
 
 	private static createToken(user: IUser, expiresIn = config.expiresIn) {
 		let token = jwt.sign(
