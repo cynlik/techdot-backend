@@ -13,18 +13,18 @@ const categoryController = new CategoryController();
 // Rotas Publicas
 
 // Rota para obter todas as categorias
-router.get('/', categoryController.getAllProductsByCatgoryId)
+router.get('/', categoryController.getAllCategory)
 
 // Rotas Admin
 
 // Rota para cirar uma Categoria 
-router.post('/', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateFields({ required: ['name']}), categoryController.createCategory);
+router.post('/', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateFields({ required: ['name'] }), categoryController.createCategory);
 
 // Rota para dar update no nome da categoria
-router.put('/update/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateFields({ optional: ['name']}), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category }]), categoryController.updateCategory)
+router.put('/update/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateFields({ optional: ['name'] }), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category }]), categoryController.updateCategory)
 
 // Rota para eliminar uma categoria pelo seu id
-router.delete('/delete/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category}]))
+router.delete('/delete/:id', validateToken(), roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: "id", model: Category, type: Constant.Category }]))
 
 
 export default router;
