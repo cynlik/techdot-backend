@@ -23,7 +23,7 @@ export class SubcategoryController {
       const products = await Product.find({ subcategoryId: id, visible: true });
 
       if (products.length < 1) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "Products Not Found"))
+        return next(new CustomError(HttpStatus.NOT_FOUND, "Products Not Found In That Subcategory"))
       }
       
       return res.status(HttpStatus.OK).send(products)
@@ -53,12 +53,12 @@ export class SubcategoryController {
     }
   }
 
-  public updateCategory = async(req: Request, res: Response, next: Function)  => {
-    const { id } = req.params;
+  public updateSubcategory = async(req: Request, res: Response, next: Function)  => {
+    const subcategoryId = req.params.id;
     const updateFields = req.body;
 
     try {
-      const updateSubcategory = await Subcategory.findByIdAndUpdate(id, updateFields, { new: true , runValidators: true});
+      const updateSubcategory = await Subcategory.findByIdAndUpdate(subcategoryId, updateFields, { new: true , runValidators: true});
 
       return res.status(HttpStatus.OK).send(updateSubcategory);
     } catch (error) {
