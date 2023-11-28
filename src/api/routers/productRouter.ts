@@ -11,7 +11,7 @@ import { Product, ProductType } from "@src/models/productModel";
 const router = express.Router();
 const productController = new ProductController();
 
-// ROTAS TANTO PARA ADMIN | USER | NONMEMBER
+// =================|USER|=================
 
 // Rota para devolver um produto pelo ID | devolver produtos todos
 router.get("/", validateToken(true), productController.getProductsByName);
@@ -19,7 +19,7 @@ router.get("/", validateToken(true), productController.getProductsByName);
 // Rota para devolver um produto pelo ID
 router.get("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.getProductById);
 
-// ROTAS DE ADMIN
+// =================|ADMIN|=================
 
 // Rota para criar Produtos
 router.post("/", validateToken(), roleMiddleware(UserRole.Manager), Validator.validateFields({ required: ["name", "description", "imageUrl", "manufacturer", "stockQuantity", "price", "subcategoryId", "specifications", "productType"], optional: ["warranty"] }), Validator.validateEnums([{ enumObject: ProductType, fieldName: 'productType' }]), Validator.validateIds([{ paramName: "subcategoryId", model: Subcategory, type: Constant.Subcategory }]), productController.createProduct);
