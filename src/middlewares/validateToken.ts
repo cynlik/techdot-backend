@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel';
-import { RevokedToken } from '@src/models/revokedTokenModel'; 
+import { RevokedToken } from '@src/models/revokedTokenModel';
 import jwt from 'jsonwebtoken';
 import { HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
@@ -26,12 +26,12 @@ const validateToken = (isOptional: boolean = false) => {
     try {
       if (authHeader && typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer')) {
         token = authHeader.split(' ')[1];
-        
+
         const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
         if (isRevoked) {
           throw new CustomError(HttpStatus.UNAUTHORIZED, 'Token revoked. Login again');
         }
-        
+
         const decoded = jwt.verify(token, process.env.SECRET as string) as IUser;
         req.user = decoded;
         next();
