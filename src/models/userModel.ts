@@ -8,9 +8,13 @@ export enum UserRole {
   NonMember = 'nonmember',
 }
 
+
 export enum UserView {
-  User = 'user',
+	Admin = 'admin',
+  Security = 'security',
   Manager = 'manager',
+  Member = 'member',
+  NonMember = 'nonmember',
 }
 
 export interface IUser extends Document {
@@ -46,7 +50,7 @@ export const UserSchema = new Schema<IUser>(
     view: {
       type: String,
       required: true,
-      default: UserView.User,
+      default: UserView.Member,
       enum: Object.values(UserView),
     },
     picture: { type: String, default: null },

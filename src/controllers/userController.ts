@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as _ from "lodash";
 import { Request, Response } from "express";
 import { config } from "@src/config";
-import { User, IUser, UserRole } from "@src/models/userModel";
+import { User, IUser, UserRole, UserView } from "@src/models/userModel";
 import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 import { RevokedToken } from "@src/models/revokedTokenModel";
@@ -139,6 +139,7 @@ export default class UserController {
 			user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
 			await user.save();
+
 			sendMail(EmailType.ForgetPassword, user.email, res, token.token);
 		} catch (error) {
 			console.error(error);
@@ -150,21 +151,21 @@ export default class UserController {
 		try {
 			const { newPassword, confirmPassword } = req.body;
 			const user = req.user;
-	
+
 			if (newPassword !== confirmPassword) {
 				return res.status(400).json({
 					message: "The new password and confirm password fields must match.",
 				});
 			}
-			console.log("Password: ", user)
+
 			const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
-	
+
 			if (oldPasswordMatch) {
 				return res.status(400).json({
 					message: "The new password must be different from the old password.",
 				});
 			}
-	
+
 			try {
 				const hashedNewPassword = await bcrypt.hash(
 					newPassword,
@@ -173,7 +174,9 @@ export default class UserController {
 				user.password = hashedNewPassword;
 				user.resetPasswordToken = null;
 				await user.save();
-				return res.status(200).json({ message: "Password updated successfully." });
+				return res
+					.status(200)
+					.json({ message: "Password updated successfully." });
 			} catch (error) {
 				console.error(error);
 				return res
@@ -184,7 +187,7 @@ export default class UserController {
 			console.error(error);
 			return res.status(500).send({ message: "Internal Server Error" });
 		}
-	};	
+	};
 
 	public me = async (req: CustomRequest, res: Response) => {
 		try {
@@ -220,52 +223,62 @@ export default class UserController {
 		try {
 			const newUser = req.body;
 			const dbUser = await User.findById(req.params.id);
-	
+
 			if (dbUser === null) {
 				throw new Error("User not found!");
 			}
-	
+
 			if (newUser.email && !(await this.isEmailUnique(newUser.email))) {
 				throw new Error("Email already in use.");
 			}
-	
-			if (newUser.password && !(await bcrypt.compare(newUser.password, dbUser.password))) {
+
+			if (
+				newUser.password &&
+				!(await bcrypt.compare(newUser.password, dbUser.password))
+			) {
 				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
 				newUser.password = hashedNewPassword;
 			} else {
 				newUser.password = dbUser.password;
 			}
-	
+
 			if (newUser.name && newUser.name.length > 50) {
 				throw new Error("Name must be 50 characters or less.");
 			}
-	
-			if (newUser.role && !(Object.values(UserRole).includes(newUser.role))) {
+
+			if (newUser.role && !Object.values(UserRole).includes(newUser.role)) {
 				throw new Error("Invalid user role.");
 			}
-	
+
 			if (newUser.picture && !this.isValidPictureFormat(newUser.picture)) {
-				throw new Error("Invalid picture format. Allowed formats are jpg, jpeg, or png.");
+				throw new Error(
+					"Invalid picture format. Allowed formats are jpg, jpeg, or png."
+				);
 			}
-	
+
 			if (newUser.address && newUser.address.length > 100) {
 				throw new Error("Address must be 100 characters or less.");
 			}
-	
+
 			if (newUser.country && !this.isValidCountry(newUser.country)) {
 				throw new Error("Invalid country.");
 			}
-	
-			if (newUser.isVerified !== undefined && typeof newUser.isVerified !== "boolean") {
+
+			if (
+				newUser.isVerified !== undefined &&
+				typeof newUser.isVerified !== "boolean"
+			) {
 				throw new Error("Invalid value for isVerified. Must be a boolean.");
 			}
-	
+
 			if (newUser.cart && !this.isValidCart(newUser.cart)) {
 				throw new Error("Invalid cart format.");
 			}
-	
-			const updatedUser = await User.findByIdAndUpdate(req.params.id, newUser, { new: true });
-	
+
+			const updatedUser = await User.findByIdAndUpdate(req.params.id, newUser, {
+				new: true,
+			});
+
 			res.status(200).send(updatedUser);
 		} catch (error) {
 			console.error(error);
@@ -283,6 +296,40 @@ export default class UserController {
 		} catch (error) {
 			console.error(error);
 			return res.status(500).send({ message: "Internal Server Error" });
+		}
+	};
+
+	public changeView = async (req: Request, res: Response) => {
+		try {
+			const token = req.headers.authorization as string;
+
+			if (!token) {
+				res.status(401).json({ message: "Invalid token" });
+				return;
+			}
+
+			const user = req.user;
+
+			const roleToViewMap: { [key in UserRole]: UserView } = {
+				[UserRole.Admin]: UserView.Admin,
+				[UserRole.Security]: UserView.Security,
+				[UserRole.Manager]: UserView.Manager,
+				[UserRole.Member]: UserView.Member,
+				[UserRole.NonMember]: UserView.NonMember,
+			};
+
+			user.view = user.view === UserView.Member ? roleToViewMap[user.role] : UserView.Member;
+
+			await this.revokeUserToken(token);
+
+			const accessToken = UserController.createToken(user, config.expiresIn);
+
+			await user.save();
+
+			res.status(200).json({ message: "View changed successfully", user: user, accessToken: accessToken });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ message: "Internal Server Error" });
 		}
 	};
 
@@ -329,7 +376,7 @@ export default class UserController {
 				email: user.email,
 				country: user.country,
 				role: user.role,
-				view: user.view
+				view: user.view,
 			},
 			config.secret,
 			{ expiresIn }
