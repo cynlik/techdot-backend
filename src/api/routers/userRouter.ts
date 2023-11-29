@@ -29,13 +29,13 @@ router.put("/resetpassword", Validator.validateFields({ required: ["newPassword"
 // My information
 router.get('/me', validateToken(), userController.me);
 
-// Change view
-router.put('/change-view', validateToken(), userController.changeView);
-
 // Logout
 router.post('/logout', validateToken(), userController.logout);
 
 ///  -- ADMIN ROUTES --
+
+// Change view
+router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), userController.changeView);
 
 // Get user by id
 router.get('/:id?', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);

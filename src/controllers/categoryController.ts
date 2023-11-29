@@ -11,12 +11,13 @@ export class CategoryController {
   // =================|USERS|=================
 
   public getAllCategory = async (req: Request, res: Response, next: Function) => {
+    
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
+      const viewUser = req.user.view;
 
       const conditions: any = {};
 
-      if (!isAdmin) {
+      if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
       }
 
@@ -36,11 +37,11 @@ export class CategoryController {
     const { categoryId } = req.params;
 
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
+      const viewUser = req.user.view;
 
-      const conditions: any = { category: categoryId };
+      const conditions: any = { category: categoryId};
 
-      if (!isAdmin) {
+      if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
       }
 
@@ -63,11 +64,11 @@ export class CategoryController {
 
       const subcategories = await Subcategory.find({ category: categoryId })
 
-      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
-
       let conditions: any = { subcategoryId: { $in: subcategories.map(sc => sc._id) } };
+      
+      const viewUser = req.user.view;
 
-      if (!isAdmin) {
+      if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
       }
 

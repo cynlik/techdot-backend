@@ -11,11 +11,11 @@ export class SubcategoryController {
 
   public getAllSubcategory = async (req: Request, res: Response, next: Function) => {
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
+      const viewUser = req.user.view;
 
       const conditions: any = {};
 
-      if (!isAdmin) {
+      if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
       }
 
@@ -33,11 +33,11 @@ export class SubcategoryController {
   public getAllProductBySubcategory = async (req: Request, res: Response, next: Function) => {
     const { id } = req.params
     try {
-      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
+      const viewUser = req.user.view;
 
-      const conditions: any = { subcategoryId: id };
+      const conditions: any = { subcategoryId: id};
 
-      if (!isAdmin) {
+      if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
       }
 
