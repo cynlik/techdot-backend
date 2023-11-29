@@ -25,11 +25,10 @@ export class ProductController {
         return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
       }
 
-      const isAdmin = req.user && hasPermission(req.user.role, UserStatus.Manager);
-
+      const viewUser = req.user.view;
       const conditions: any = {};
 
-      if (!isAdmin) {
+      if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
       }
 
@@ -41,7 +40,7 @@ export class ProductController {
       const count = await Product.countDocuments(conditions);
       const totalPages = Math.ceil(count / limitNumber);
 
-      let query = Product.find(conditions).populate({ path: 'subcategoryId', populate: [{ path: 'category' }] });
+      let query = Product.find(conditions)
 
       switch (sort) {
         case 'preco_maior':
