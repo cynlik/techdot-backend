@@ -9,7 +9,11 @@ export interface ISubcategory extends Document {
 const subcategorySchema = new Schema<ISubcategory>({
     name: { type: String, required: true, unique: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-    visible: { type: Boolean, required: true, default: false}
-});
+    visible: { type: Boolean, required: true, default: false},
+},
+{
+    timestamps: true
+}
+);
 
 export const Subcategory = model<ISubcategory>("Subcategory", subcategorySchema);

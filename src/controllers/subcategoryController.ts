@@ -109,7 +109,8 @@ export class SubcategoryController {
   public getSubcategoryByName = async (req: Request, res: Response, next: Function) => {
 
     try {
-      const { name, page = '1', limit = '6' } = req.query as {
+      const { name, sort, page = '1', limit = '6' } = req.query as {
+        sort?: string;
         name?: string;
         page?: string;
         limit?: string;
@@ -133,6 +134,27 @@ export class SubcategoryController {
       const totalPages = Math.ceil(count / limitNumber);
 
       let query = Subcategory.find(conditions);
+
+      switch (sort) {
+        case 'Ordem A-Z':
+          query = query.sort({ name: 1 });
+          break;
+        case 'Ordem Z-A':
+          query = query.sort({ name: -1 });
+          break;
+        case 'Criado recentemente':
+          query = query.sort({ createdAt: 1 });
+          break;
+        case 'Ultimo Criado':
+          query = query.sort({ createdAt: -1 });
+          break;
+        case 'Modificado recentemente':
+          query = query.sort({ updatedAt: 1});
+          break;
+        case 'Ultimo Modificado':
+          query = query.sort({ updatedAt: -1});
+          break;
+      }
 
       const subcategory = await query
         .limit(limitNumber)
