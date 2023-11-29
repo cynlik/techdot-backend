@@ -11,7 +11,7 @@ import { getUserCountry } from "@src/services/geoLocation";
 
 interface CustomRequest extends Request {
 	user: IUser;
-  }  
+}
 
 export default class UserController {
 	public registerUser = async (req: Request, res: Response) => {
@@ -302,30 +302,34 @@ export default class UserController {
 	public changeView = async (req: Request, res: Response) => {
 		try {
 		  const user = req.user;
-
+	
 		  if (!user) {
 			res.status(401).json({ message: "Invalid user" });
 			return;
 		  }
-
-		  user.view = user.view === user.role ? UserStatus.Member : user.role;
-
-		  const updatedUser = await User.findById(user._id);
-		  if (updatedUser) {
-			updatedUser.view = user.view;
-
-			await updatedUser.save();
+	
+		  const newView = user.view === user.role ? UserStatus.Member : user.role;
+	
+		  const updatedUser = await User.findByIdAndUpdate(
+			user.id,
+			{ view: newView },
+			{ new: true } 
+		  );
+	
+		  if (!updatedUser) {
+			res.status(404).json({ message: "User not found" });
+			return;
 		  }
-
-		  const accessToken = UserController.createToken(user, config.expiresIn);
-
-		  res.status(200).json({ message: "View changed successfully", user: user, accessToken: accessToken });
+	
+		  const accessToken = UserController.createToken(updatedUser, config.expiresIn);
+	
+		  res.status(200).json({ message: "View changed successfully", user: updatedUser, accessToken: accessToken });
 		} catch (error) {
 		  console.error(error);
 		  res.status(500).json({ message: "Internal Server Error" });
 		}
 	};
-
+	
 	public logout = async (req: Request, res: Response) => {
 		try {
 			const token = req.headers.authorization as string;
