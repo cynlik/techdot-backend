@@ -199,6 +199,39 @@ export default class UserController {
 		}
 	};
 
+	public meUpdate = async (req: CustomRequest, res: Response) => {
+		try {
+			const newUser = req.body;
+			const user = req.user;
+	
+			if (newUser.name === user.name) {
+				return res.status(400).json({ message: "The new name is the same as the current name" });
+			}
+	
+			if (newUser.password === user.password) {
+				return res.status(400).json({ message: "The new password is the same as the current password" });
+			}
+	
+			const updateFields: { [key: string]: any } = {};
+			if (newUser.name) updateFields.name = newUser.name;
+			if (newUser.password) updateFields.password = newUser.password;
+			if (newUser.picture) updateFields.picture = newUser.picture;
+			if (newUser.address) updateFields.address = newUser.address;
+			if (newUser.country) updateFields.country = newUser.country;
+	
+			const updatedUser = await User.findByIdAndUpdate(
+				user._id,
+				updateFields,
+				{ new: true }
+			);
+	
+			res.status(200).json({ message: "Info updated successfully", user: updatedUser });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ message: "Internal Server Error" });
+		}
+	};
+
 	public getUserById = async (req: Request, res: Response) => {
 		try {
 			const { id } = req.params;
