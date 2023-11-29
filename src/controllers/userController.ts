@@ -308,12 +308,17 @@ export default class UserController {
 			return;
 		  }
 
-		  user.view = user.view === UserStatus.Member ? user.role : UserStatus.Member;
-	
+		  user.view = user.view === user.role ? UserStatus.Member : user.role;
+
+		  const updatedUser = await User.findById(user._id);
+		  if (updatedUser) {
+			updatedUser.view = user.view;
+
+			await updatedUser.save();
+		  }
+
 		  const accessToken = UserController.createToken(user, config.expiresIn);
 
-		  await user.save();
-	  
 		  res.status(200).json({ message: "View changed successfully", user: user, accessToken: accessToken });
 		} catch (error) {
 		  console.error(error);

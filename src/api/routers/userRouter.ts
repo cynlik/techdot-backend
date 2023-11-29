@@ -30,7 +30,7 @@ router.put("/resetpassword", Validator.validateFields({ required: ["newPassword"
 router.get('/me', validateToken(), userController.me);
 
 // Change view
-router.post('/change-view', validateToken(), userController.changeView);
+router.put('/change-view', validateToken(), userController.changeView);
 
 // Logout
 router.post('/logout', validateToken(), userController.logout);
