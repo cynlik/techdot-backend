@@ -214,7 +214,12 @@ export default class UserController {
 	
 			const updateFields: { [key: string]: any } = {};
 			if (newUser.name) updateFields.name = newUser.name;
-			if (newUser.password) updateFields.password = newUser.password;
+	
+			if (newUser.password) {
+				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
+				updateFields.password = hashedNewPassword;
+			}
+	
 			if (newUser.picture) updateFields.picture = newUser.picture;
 			if (newUser.address) updateFields.address = newUser.address;
 			if (newUser.country) updateFields.country = newUser.country;
@@ -265,16 +270,17 @@ export default class UserController {
 				throw new Error("Email already in use.");
 			}
 
-			if (
-				newUser.password &&
-				!(await bcrypt.compare(newUser.password, dbUser.password))
-			) {
+			if (newUser.password) {
+				if (await bcrypt.compare(newUser.password, dbUser.password)) {
+					throw new Error("New password must be different from the previous one.");
+				}
+			
 				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
 				newUser.password = hashedNewPassword;
 			} else {
 				newUser.password = dbUser.password;
 			}
-
+			
 			if (newUser.name && newUser.name.length > 50) {
 				throw new Error("Name must be 50 characters or less.");
 			}
@@ -356,7 +362,7 @@ export default class UserController {
 	
 		  const accessToken = UserController.createToken(updatedUser, config.expiresIn);
 	
-		  res.status(200).json({ message: "View changed successfully", user: updatedUser, accessToken: accessToken });
+		  res.status(200).json({ message: "View changed successfully", view: updatedUser.view, accessToken: accessToken });
 		} catch (error) {
 		  console.error(error);
 		  res.status(500).json({ message: "Internal Server Error" });
