@@ -29,6 +29,9 @@ router.put("/resetpassword", Validator.validateFields({ required: ["newPassword"
 // My information
 router.get('/me', validateToken(), userController.me);
 
+// Update my information
+router.put('/me', validateToken(), Validator.validateFields({ optional: ["name","password","picture","address","country"]}), userController.meUpdate)
+
 // Logout
 router.post('/logout', validateToken(), userController.logout);
 

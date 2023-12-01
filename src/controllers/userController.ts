@@ -8,20 +8,21 @@ import { sendMail } from "@src/services/emailConfig";
 import { EmailType } from "@src/utils/emailType";
 import { RevokedToken } from "@src/models/revokedTokenModel";
 import { getUserCountry } from "@src/services/geoLocation";
+import { CustomError } from "@src/utils/customError";
+import { HttpStatus } from "@src/utils/constant";
 
 interface CustomRequest extends Request {
 	user: IUser;
 }
 
 export default class UserController {
-	public registerUser = async (req: Request, res: Response) => {
+	public registerUser = async (req: Request, res: Response, next: Function) => {
 		try {
 			const { name, email, password } = req.body;
 
 			const userExists = await User.findOne({ email });
 			if (userExists) {
-				res.status(400).json({ message: "User already registered!" });
-				return;
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "User already registered!" ));
 			}
 
 			const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,24 +43,20 @@ export default class UserController {
 			sendMail(EmailType.Welcome, user.email, res, token.token);
 			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
-			res.status(201).json({
-				message: `Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`,
-			});
+			return next(new CustomError(HttpStatus.OK, `Account registered successfully. Please verify your account through the email sent to your email: ${user.email}` ));
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public loginUser = async (req: Request, res: Response) => {
+	public loginUser = async (req: Request, res: Response, next: Function) => {
 		try {
 			const { email, password } = req.body;
 
 			const user = await User.findOne({ email });
 
 			if (!user) {
-				res.status(400).json({ error: "User not found!" });
-				return;
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!" ));
 			}
 
 			if (!user.isVerified) {
@@ -73,8 +70,7 @@ export default class UserController {
 
 				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
-				res.status(401).json({ error: "Verify your email" });
-				return;
+				return next(new CustomError(HttpStatus.UNAUTHORIZED, "Verify your email" ));
 			}
 
 			const passwordMatch = await bcrypt.compare(password, user.password);
@@ -97,41 +93,35 @@ export default class UserController {
 				}
 
 				const accessToken = UserController.createToken(user, config.expiresIn);
-				res.status(200).json({ accessToken: accessToken });
+				return res.status(HttpStatus.OK).json(accessToken);
 			} else {
-				res.status(401).json({ error: "Invalid email or password" });
+				return next(new CustomError(HttpStatus.UNAUTHORIZED, "Invalid email or password" ));
 			}
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public verifyAccount = async (req: Request, res: Response) => {
+	public verifyAccount = async (req: Request, res: Response, next: Function) => {
 		try {
 			const user = req.user;
 			user.isVerified = true;
 			user.verifyAccountToken = null;
 			await user.save();
 
-			return res
-				.status(200)
-				.json({ message: "Account verified successfully." });
+			return res.status(HttpStatus.OK).json( "Account verified successfully!" );
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public forgetPassword = async (req: Request, res: Response) => {
+	public forgetPassword = async (req: Request, res: Response, next: Function) => {
 		try {
 			const { email } = req.body;
 
 			const user = await User.findOne({ email });
 			if (!user) {
-				return res
-					.status(500)
-					.json({ error: "User with this email does not exist." });
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!" ));
 			}
 
 			const token = UserController.createToken(user, config.expiresIn);
@@ -142,28 +132,23 @@ export default class UserController {
 
 			sendMail(EmailType.ForgetPassword, user.email, res, token.token);
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public resetPassword = async (req: Request, res: Response) => {
+	public resetPassword = async (req: Request, res: Response, next: Function) => {
 		try {
 			const { newPassword, confirmPassword } = req.body;
 			const user = req.user;
 
 			if (newPassword !== confirmPassword) {
-				return res.status(400).json({
-					message: "The new password and confirm password fields must match.",
-				});
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new password and confirm password fields must match." ));
 			}
 
 			const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
 
 			if (oldPasswordMatch) {
-				return res.status(400).json({
-					message: "The new password must be different from the old password.",
-				});
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new password must be different from the old password." ));
 			}
 
 			try {
@@ -174,32 +159,60 @@ export default class UserController {
 				user.password = hashedNewPassword;
 				user.resetPasswordToken = null;
 				await user.save();
-				return res
-					.status(200)
-					.json({ message: "Password updated successfully." });
+				return res.status(HttpStatus.OK).json({ message: "Password updated successfully." });
 			} catch (error) {
-				console.error(error);
-				return res
-					.status(500)
-					.json({ message: "An error occurred while updating the password." });
+				return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 			}
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public me = async (req: CustomRequest, res: Response) => {
+	public me = async (req: CustomRequest, res: Response, next: Function) => {
 		try {
 			const user = req.user;
-			res.status(200).json({ message: user });
+			res.status(HttpStatus.OK).json({ message: user });
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public getUserById = async (req: Request, res: Response) => {
+	public meUpdate = async (req: CustomRequest, res: Response, next: Function) => {
+		try {
+			const newUser = req.body;
+			const user = req.user;
+
+			if (newUser.name === user.name) {
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new name is the same as the current name" ));
+			}
+
+			if (newUser.password === user.password) {
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new password is the same as the current password" ));
+			}
+
+			const updateFields: { [key: string]: any } = {};
+			if (newUser.name) updateFields.name = newUser.name;
+
+			if (newUser.password) {
+				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
+				updateFields.password = hashedNewPassword;
+			}
+
+			if (newUser.picture) updateFields.picture = newUser.picture;
+			if (newUser.address) updateFields.address = newUser.address;
+			if (newUser.country) updateFields.country = newUser.country;
+
+			const updatedUser = await User.findByIdAndUpdate(user._id, updateFields, {
+				new: true,
+			});
+
+			res.status(HttpStatus.OK).json({ message: "Info updated successfully", user: updatedUser });
+		} catch (error) {
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+		}
+	};
+
+	public getUserById = async (req: Request, res: Response, next: Function) => {
 		try {
 			const { id } = req.params;
 
@@ -212,30 +225,30 @@ export default class UserController {
 				users = await User.find();
 			}
 
-			res.status(200).send(users);
+			res.status(HttpStatus.OK).send(users);
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public updateUserById = async (req: Request, res: Response) => {
+	public updateUserById = async (req: Request, res: Response, next: Function) => {
 		try {
 			const newUser = req.body;
 			const dbUser = await User.findById(req.params.id);
 
 			if (dbUser === null) {
-				throw new Error("User not found!");
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!" ));
 			}
 
 			if (newUser.email && !(await this.isEmailUnique(newUser.email))) {
-				throw new Error("Email already in use.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Email already in use." ));
 			}
 
-			if (
-				newUser.password &&
-				!(await bcrypt.compare(newUser.password, dbUser.password))
-			) {
+			if (newUser.password) {
+				if (await bcrypt.compare(newUser.password, dbUser.password)) {
+					return next(new CustomError(HttpStatus.BAD_REQUEST, "New password must be different from the previous one." ));
+				}
+
 				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
 				newUser.password = hashedNewPassword;
 			} else {
@@ -243,105 +256,112 @@ export default class UserController {
 			}
 
 			if (newUser.name && newUser.name.length > 50) {
-				throw new Error("Name must be 50 characters or less.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Name must be 50 characters or less." ));
 			}
 
 			if (newUser.role && !Object.values(UserStatus).includes(newUser.role)) {
-				throw new Error("Invalid user role.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid user role." ));
 			}
 
 			if (newUser.picture && !this.isValidPictureFormat(newUser.picture)) {
-				throw new Error(
-					"Invalid picture format. Allowed formats are jpg, jpeg, or png."
-				);
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid picture format. Allowed formats are jpg, jpeg, or png." ));
 			}
 
 			if (newUser.address && newUser.address.length > 100) {
-				throw new Error("Address must be 100 characters or less.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Address must be 100 characters or less." ));
 			}
 
 			if (newUser.country && !this.isValidCountry(newUser.country)) {
-				throw new Error("Invalid country.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid country" ));
 			}
 
 			if (
 				newUser.isVerified !== undefined &&
 				typeof newUser.isVerified !== "boolean"
 			) {
-				throw new Error("Invalid value for isVerified. Must be a boolean.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid value for isVerified. Must be a boolean." ));
 			}
 
 			if (newUser.cart && !this.isValidCart(newUser.cart)) {
-				throw new Error("Invalid cart format.");
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid cart format." ));
 			}
 
 			const updatedUser = await User.findByIdAndUpdate(req.params.id, newUser, {
 				new: true,
 			});
 
-			res.status(200).send(updatedUser);
+			res.status(HttpStatus.OK).send(updatedUser);
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public deleteUserById = async (req: Request, res: Response) => {
+	public deleteUserById = async (req: Request, res: Response, next: Function) => {
 		try {
 			const { id } = req.params;
 
 			const user = await User.findByIdAndDelete(id);
 
-			res.status(200).send(user);
+			res.status(HttpStatus.OK).send(user);
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
-	public changeView = async (req: Request, res: Response) => {
+	public changeView = async (req: Request, res: Response, next: Function) => {
 		try {
-		  const user = req.user;
-	
-		  if (!user) {
-			res.status(401).json({ message: "Invalid user" });
-			return;
-		  }
-	
-		  const newView = user.view === user.role ? UserStatus.Member : user.role;
-	
-		  const updatedUser = await User.findByIdAndUpdate(
-			user.id,
-			{ view: newView },
-			{ new: true } 
-		  );
-	
-		  if (!updatedUser) {
-			res.status(404).json({ message: "User not found" });
-			return;
-		  }
-	
-		  const accessToken = UserController.createToken(updatedUser, config.expiresIn);
-	
-		  res.status(200).json({ message: "View changed successfully", user: updatedUser, accessToken: accessToken });
+			const user = req.user;
+			const token = req.headers.authorization as string;
+
+			if (!token) {
+				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No token provided." ));
+			}
+
+			if (!user) {
+				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No user." ));
+			}
+
+			const newView = user.view === user.role ? UserStatus.Member : user.role;
+
+			const updatedUser = await User.findByIdAndUpdate(
+				user.id,
+				{ view: newView },
+				{ new: true }
+			);
+
+			if (!updatedUser) {
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found." ));
+			}
+
+			await this.revokeUserToken(token);
+
+			const accessToken = UserController.createToken(
+				updatedUser,
+				config.expiresIn
+			);
+
+			res.status(HttpStatus.OK).json({
+					message: "View changed successfully",
+					view: updatedUser.view,
+					accessToken: accessToken,
+				});
 		} catch (error) {
-		  console.error(error);
-		  res.status(500).json({ message: "Internal Server Error" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
-	
-	public logout = async (req: Request, res: Response) => {
+
+	public logout = async (req: Request, res: Response, next: Function) => {
 		try {
 			const token = req.headers.authorization as string;
 
 			if (!token) {
-				res.status(401).json({ message: "Invalid token" });
+				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No token provided." ));
 			}
 			await this.revokeUserToken(token);
 
-			res.status(200).json({ message: "Logout successful" });
+			res.status(HttpStatus.OK).json({ message: "Logout successful" });
 		} catch (error) {
-			res.status(500).json({ message: "Failed to logout" });
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
 		}
 	};
 
@@ -391,3 +411,4 @@ export default class UserController {
 		}
 	};
 }
+
