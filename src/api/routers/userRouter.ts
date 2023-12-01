@@ -88,7 +88,7 @@ const userController = new UserController();
  *       confirmPassword:
  *         type: string 
  * 
- *   ResetPasswordResponse:
+ *   SingleMessageResponse:
  *     type: object
  *     properties:
  *       message:
@@ -101,12 +101,6 @@ const userController = new UserController();
  *         type: string  
  *       confirmPassword:
  *         type: string 
- * 
- *   MeResponse:
- *     type: object
- *     properties:
- *       message:
- *         type: string
  */
 
 /**
@@ -225,13 +219,13 @@ router.post('/forgetpassword', Validator.validateFields({ required: ['email'] })
  *        content:
  *          application/json:
  *            schema: 
- *              $ref: '#/components/schemas/ResetPasswordResponse'
+ *              $ref: '#/components/schemas/SingleMessageResponse'
  *      400:
  *        description: Success
  *        content:
  *          application/json:
  *            schema: 
- *              $ref: '#/components/schemas/ResetPasswordResponse'
+ *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Reset
 router.put('/resetpassword', Validator.validateFields({ required: ['newPassword', 'confirmPassword'] }), Validator.validateTokenMatch('token', 'resetPasswordToken'), userController.resetPassword);
@@ -254,7 +248,13 @@ router.put('/resetpassword', Validator.validateFields({ required: ['newPassword'
  *        content:
  *          application/json:
  *            schema: 
- *              $ref: '#/components/schemas/MeResponse'
+ *              $ref: '#/components/schemas/User'
+ *      500:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // My information
 router.get('/me', validateToken(), userController.me);
@@ -262,6 +262,26 @@ router.get('/me', validateToken(), userController.me);
 // Update my information
 router.put('/me', validateToken(), Validator.validateFields({ optional: ["name","password","picture","address","country"]}), userController.meUpdate)
 
+/**
+ * @openapi
+ * /api/user/logout:
+ *  post:
+ *    tags:
+ *      - User Routes
+ *    summary: Log out user
+ *    parameters:
+ *      - in: header
+ *        name: authorization
+ *        schema:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/SingleMessageResponse'
+ */
 // Logout
 router.post('/logout', validateToken(), userController.logout);
 
@@ -270,6 +290,36 @@ router.post('/logout', validateToken(), userController.logout);
 // Change view
 router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), userController.changeView);
 
+/**
+ * @openapi
+ * /api/user/{id}:
+ *  get:
+ *     tags:
+ *      - User Routes
+ *     summary: Admin - Get user by ID
+ *     parameters: 
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/User'
+ *      500:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/SingleMessageResponse'
+ */
 // Get user by id
 router.get('/:id?', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
@@ -280,9 +330,75 @@ router.put('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validato
 router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
 router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
+/**
+ * @openapi
+ * /api/user/{id}:
+ *  put:
+ *     tags:
+ *      - User Routes
+ *     summary: Admin - Edit user by ID
+ *     parameters: 
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *      required: false
+ *      content:
+ *        application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/User'
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/User'
+ *      500:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/SingleMessageResponse'
+ */
 // Update user by id
 router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User }]), Validator.validateFields({ optional: ['name', 'email', 'role', 'picture', 'address', 'country', 'isVerified', 'cart'] }), userController.updateUserById);
 
+/**
+ * @openapi
+ * /api/user/{id}:
+ *  delete:
+ *     tags:
+ *      - User Routes
+ *     summary: Admin - Delete user by ID
+ *     parameters: 
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/User'
+ *      500:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/SingleMessageResponse'
+ */
 // Delete user by id
 router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User }]), userController.deleteUserById);
 
