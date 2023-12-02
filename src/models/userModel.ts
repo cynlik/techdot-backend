@@ -24,7 +24,6 @@ export interface IUser extends Document {
   resetPasswordExpires: Date | null;
   isVerified: boolean | false;
   lastLoginIP: string;
-  cart: CartItem[] | null;
   cart: mongoose.Types.ObjectId;
 }
 

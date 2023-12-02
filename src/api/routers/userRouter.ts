@@ -5,11 +5,6 @@ import validateToken from '@src/middlewares/validateToken';
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
 import { User, UserStatus } from "@src/models/userModel";
-import { UserRole } from '@src/utils/roles';
-import validateToken from '@src/middlewares/validateToken';
-import Validator from '@src/middlewares/validator';
-import { Constant } from '@src/utils/constant';
-import { User } from '@src/models/userModel';
 
 const router = express.Router();
 const userController = new UserController();
@@ -323,13 +318,6 @@ router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), 
 // Get user by id
 router.get('/:id?', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
-// Update user by id
-router.put('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
-
-// Delete user by id
-router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
-router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
-
 /**
  * @openapi
  * /api/user/{id}:
@@ -367,7 +355,7 @@ router.get('/:id?', validateToken, roleMiddleware(UserRole.Manager), Validator.v
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Update user by id
-router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User }]), Validator.validateFields({ optional: ['name', 'email', 'role', 'picture', 'address', 'country', 'isVerified', 'cart'] }), userController.updateUserById);
+router.put('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]), Validator.validateFields({ optional: ["name","email","role","picture","address","country","isVerified","cart"] }), userController.updateUserById);
 
 /**
  * @openapi
@@ -400,6 +388,6 @@ router.put('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.va
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Delete user by id
-router.delete('/:id', validateToken, roleMiddleware(UserRole.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User }]), userController.deleteUserById);
+router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: User, type: Constant.User }]),userController.deleteUserById);
 
 export default router;
