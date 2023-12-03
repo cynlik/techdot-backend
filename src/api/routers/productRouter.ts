@@ -10,7 +10,46 @@ import { Product, ProductType } from "@src/models/productModel";
 
 const router = express.Router();
 const productController = new ProductController();
-
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *   User:
+ *    type: object
+ *    required:
+ *        - name 
+ *        - description
+ *        - imageUrl
+ *        - manufacturer
+ *        - stockQuantity
+ *        - price
+ *        - visible
+ *        - subcategoryId
+ *        - productType
+ *        - specifications
+ *    properties:
+ *      name:
+ *        type: string
+ *      description:
+ *        type: string
+ *      imageUrl:
+ *        type: string
+ *      manufacturer:
+ *        type: string
+ *      stockQuantity:
+ *        type: string
+ *      visible:
+ *        type: number
+ *      subcategoryId:
+ *        type: string
+ *      productType:
+ *        type: string
+ *      specifications:
+ *        type: string
+ *      warranty: 
+ *        type: string
+ *      TODO: COMO DECLARAR O SPECIFICATIONS EM RELACAO AO ENUM DO PRODUCT TYPE
+ */
 // =================|USER|=================
 
 // Rota para devolver um produto pelo ID | devolver produtos todos
