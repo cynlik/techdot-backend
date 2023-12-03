@@ -1,4 +1,6 @@
 import mongoose, { model, Document, Schema } from 'mongoose';
+import { CartItem, cartItemSchema } from './cartModel';
+import { WishListItem, wishListItemSchema } from './wishListModel';
 
 export enum UserStatus {
   Admin = 'admin',
@@ -23,8 +25,9 @@ export interface IUser extends Document {
   resetPasswordToken: string | null;
   resetPasswordExpires: Date | null;
   isVerified: boolean | false;
-  lastLoginIP: string;
-  cart: mongoose.Types.ObjectId;
+  lastLoginIP: string | null;
+  cart: CartItem[];
+  wishList: WishListItem[];
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -48,13 +51,14 @@ export const UserSchema = new Schema<IUser>(
     age: { type: Number, default: null },
     address: { type: String, default: null },
     country: { type: String, default: null },
-    verifyAccountToken: { type: String, default: null },
+    verifyAccountToken: { type: String, default: null as string | null },
     verifyAccountTokenExpires: { type: Date, default: null },
-    resetPasswordToken: { type: String, default: null },
+    resetPasswordToken: { type: String, default: null as string | null },
     resetPasswordExpires: { type: Date, default: null },
     isVerified: { type: Boolean, default: false },
     lastLoginIP: { type: String, default: null },
-    cart: [{ type: Schema.Types.ObjectId, ref: 'CartItem' }],
+    cart: [cartItemSchema],
+    wishList: [wishListItemSchema],
   },
   {
     timestamps: true,

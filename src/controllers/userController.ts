@@ -10,6 +10,9 @@ import { RevokedToken } from "@src/models/revokedTokenModel";
 import { getUserCountry } from "@src/services/geoLocation";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
+import { IProduct, Product } from "@src/models/productModel";
+import { CartItem, CartItemModel } from "@src/models/cartModel";
+import { WishListItem, WishListItemModel } from "@src/models/wishListModel";
 
 interface CustomRequest extends Request {
 	user: IUser;
@@ -22,7 +25,9 @@ export default class UserController {
 
 			const userExists = await User.findOne({ email });
 			if (userExists) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "User already registered!" ));
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "User already registered!")
+				);
 			}
 
 			const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,9 +48,19 @@ export default class UserController {
 			sendMail(EmailType.Welcome, user.email, res, token.token);
 			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
-			return next(new CustomError(HttpStatus.OK, `Account registered successfully. Please verify your account through the email sent to your email: ${user.email}` ));
+			return next(
+				new CustomError(
+					HttpStatus.OK,
+					`Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`
+				)
+			);
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
@@ -56,7 +71,7 @@ export default class UserController {
 			const user = await User.findOne({ email });
 
 			if (!user) {
-				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!" ));
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!"));
 			}
 
 			if (!user.isVerified) {
@@ -70,7 +85,9 @@ export default class UserController {
 
 				sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
-				return next(new CustomError(HttpStatus.UNAUTHORIZED, "Verify your email" ));
+				return next(
+					new CustomError(HttpStatus.UNAUTHORIZED, "Verify your email")
+				);
 			}
 
 			const passwordMatch = await bcrypt.compare(password, user.password);
@@ -95,33 +112,53 @@ export default class UserController {
 				const accessToken = UserController.createToken(user, config.expiresIn);
 				return res.status(HttpStatus.OK).json(accessToken);
 			} else {
-				return next(new CustomError(HttpStatus.UNAUTHORIZED, "Invalid email or password" ));
+				return next(
+					new CustomError(HttpStatus.UNAUTHORIZED, "Invalid email or password")
+				);
 			}
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public verifyAccount = async (req: Request, res: Response, next: Function) => {
+	public verifyAccount = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const user = req.user;
 			user.isVerified = true;
 			user.verifyAccountToken = null;
 			await user.save();
 
-			return res.status(HttpStatus.OK).json( "Account verified successfully!" );
+			return res.status(HttpStatus.OK).json("Account verified successfully!");
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public forgetPassword = async (req: Request, res: Response, next: Function) => {
+	public forgetPassword = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const { email } = req.body;
 
 			const user = await User.findOne({ email });
 			if (!user) {
-				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!" ));
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!"));
 			}
 
 			const token = UserController.createToken(user, config.expiresIn);
@@ -132,23 +169,42 @@ export default class UserController {
 
 			sendMail(EmailType.ForgetPassword, user.email, res, token.token);
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public resetPassword = async (req: Request, res: Response, next: Function) => {
+	public resetPassword = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const { newPassword, confirmPassword } = req.body;
 			const user = req.user;
 
 			if (newPassword !== confirmPassword) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new password and confirm password fields must match." ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"The new password and confirm password fields must match."
+					)
+				);
 			}
 
 			const oldPasswordMatch = await bcrypt.compare(newPassword, user.password);
 
 			if (oldPasswordMatch) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new password must be different from the old password." ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"The new password must be different from the old password."
+					)
+				);
 			}
 
 			try {
@@ -159,12 +215,24 @@ export default class UserController {
 				user.password = hashedNewPassword;
 				user.resetPasswordToken = null;
 				await user.save();
-				return res.status(HttpStatus.OK).json({ message: "Password updated successfully." });
+				return res
+					.status(HttpStatus.OK)
+					.json({ message: "Password updated successfully." });
 			} catch (error) {
-				return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+				return next(
+					new CustomError(
+						HttpStatus.INTERNAL_SERVER_ERROR,
+						"Internal Server Error"
+					)
+				);
 			}
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
@@ -173,21 +241,40 @@ export default class UserController {
 			const user = req.user;
 			res.status(HttpStatus.OK).json({ message: user });
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public meUpdate = async (req: CustomRequest, res: Response, next: Function) => {
+	public meUpdate = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const newUser = req.body;
 			const user = req.user;
 
 			if (newUser.name === user.name) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new name is the same as the current name" ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"The new name is the same as the current name"
+					)
+				);
 			}
 
 			if (newUser.password === user.password) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "The new password is the same as the current password" ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"The new password is the same as the current password"
+					)
+				);
 			}
 
 			const updateFields: { [key: string]: any } = {};
@@ -206,9 +293,319 @@ export default class UserController {
 				new: true,
 			});
 
-			res.status(HttpStatus.OK).json({ message: "Info updated successfully", user: updatedUser });
+			res
+				.status(HttpStatus.OK)
+				.json({ message: "Info updated successfully", user: updatedUser });
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
+		}
+	};
+
+	public addToWishList = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = await User.findById(req.user.id).populate("wishList.product");
+			const product = await Product.findById(req.params.id);
+
+			if (!user) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
+				);
+			}
+
+			if (!product) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+				);
+			}
+
+			const userWishList: WishListItem[] = user.wishList || [];
+
+			const existingWishListItemIndex = userWishList.findIndex((item) =>
+				item.product.equals(product.id)
+			);
+
+
+			if (existingWishListItemIndex !== -1) {
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"Product already in your wishlist."
+					)
+				);
+			} else {
+				const newItem = new WishListItemModel({
+					product: product.id,
+				});
+
+				userWishList.push(newItem);
+			}
+
+			await User.findByIdAndUpdate(user.id, {
+				$set: { wishList: userWishList },
+			});
+
+			const updatedUser = await User.findById(user.id).populate(
+				"wishList.product"
+			);
+
+			if (!updatedUser) {
+				return res.status(HttpStatus.NOT_FOUND).json({
+					message: "User not found",
+				});
+			}
+
+			res.status(HttpStatus.OK).json({
+				message: "Info updated successfully",
+				wishList: updatedUser.wishList,
+			});
+		} catch (error) {
+			console.error(error);
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
+		}
+	};
+
+	public getWishList = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = await User.findById(req.user.id).populate("wishList.product");
+
+			if (!user?.wishList || user.wishList.length === 0) {
+				res.status(HttpStatus.OK).json({ message: "Your wishlist is empty" });
+			} else {
+				res.status(HttpStatus.OK).json({
+					wishList: user.wishList.map((wishListItem) => ({
+						product: wishListItem.product
+							? wishListItem.product.toObject()
+							: "Product Not Found"
+					})),
+				});
+			}
+		} catch (error) {
+			console.log(error);
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
+		}
+	};
+
+	public addToCart = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = await User.findById(req.user.id).populate("cart.product");
+			const { quantity } = req.body;
+			const parsedQuantity = parseInt(quantity, 10);
+			const product = await Product.findById(req.params.id);
+
+			if (!user) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
+				);
+			}
+
+			if (quantity <= 0) {
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Invalid quantity")
+				);
+			}
+
+			if (!product) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+				);
+			}
+
+			if (product.stockQuantity === 0) {
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Out of stock."));
+			}
+
+			const userCart: CartItem[] = user.cart || [];
+
+			const existingCartItemIndex = userCart.findIndex((item) =>
+				item.product.equals(product.id)
+			);
+
+			if (existingCartItemIndex !== -1) {
+				userCart[existingCartItemIndex].quantity += parsedQuantity || 1;
+			} else {
+				const newItem = new CartItemModel({
+					product: product.id,
+					quantity: parsedQuantity || 1,
+				});
+
+				userCart.push(newItem);
+			}
+
+			await User.findByIdAndUpdate(user.id, { $set: { cart: userCart } });
+
+			const updatedUser = await User.findById(user.id).populate("cart.product");
+
+			if (!updatedUser) {
+				return res.status(HttpStatus.NOT_FOUND).json({
+					message: "User not found",
+				});
+			}
+
+			res.status(HttpStatus.OK).json({
+				message: "Info updated successfully",
+				cart: updatedUser.cart,
+			});
+		} catch (error) {
+			console.error(error);
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
+		}
+	};
+
+	public getCartItems = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = await User.findById(req.user.id).populate("cart.product");
+
+			if (!user) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
+				);
+			}
+
+			if (!user.cart || user.cart.length === 0) {
+				res.status(HttpStatus.OK).json({ message: "Your cart is empty" });
+			} else {
+				res.status(HttpStatus.OK).json({
+					cart: user.cart.map((cartItem) => ({
+						product: cartItem.product
+							? cartItem.product.toObject()
+							: "Product Not Found",
+						quantity: cartItem.quantity,
+					})),
+				});
+			}
+		} catch (error) {
+			console.log(error);
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
+		}
+	};
+
+	public updateCart = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = await User.findById(req.user.id).populate("cart.product");
+			const { id, quantity, action } = req.body;
+
+			if (!user) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
+				);
+			}
+
+			if (!id) {
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Product ID is required")
+				);
+			}
+
+			const product = await Product.findById(id);
+
+			if (!product) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+				);
+			}
+
+			const userCart: CartItem[] = user.cart || [];
+
+			const existingCartItemIndex = userCart.findIndex((item) =>
+				item.product.equals(id)
+			);
+
+			if (action === "add") {
+				if (existingCartItemIndex !== -1) {
+					userCart[existingCartItemIndex].quantity += quantity || 1;
+				} else {
+					const newItem = new CartItemModel({
+						product: id,
+						quantity: quantity || 1,
+					});
+					userCart.push(newItem);
+				}
+			} else if (action === "remove") {
+				if (existingCartItemIndex !== -1) {
+					if (
+						quantity &&
+						userCart[existingCartItemIndex].quantity >= quantity
+					) {
+						userCart[existingCartItemIndex].quantity -= quantity;
+					} else {
+						userCart.splice(existingCartItemIndex, 1);
+					}
+				}
+			} else if (action === "removeProduct") {
+				if (existingCartItemIndex !== -1) {
+					userCart.splice(existingCartItemIndex, 1);
+				}
+			}
+
+			const updatedUser = await User.findByIdAndUpdate(
+				user.id,
+				{ $set: { cart: userCart } },
+				{ new: true }
+			).populate("cart.product");
+
+			if (!updatedUser) {
+				return res.status(HttpStatus.NOT_FOUND).json({
+					message: "User not found",
+				});
+			}
+
+			res.status(HttpStatus.OK).json({
+				message: "Cart updated successfully",
+				cart: updatedUser.cart,
+			});
+		} catch (error) {
+			console.error(error);
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
@@ -220,6 +617,7 @@ export default class UserController {
 
 			if (id) {
 				const user = await User.findById(id);
+
 				users = [user];
 			} else {
 				users = await User.find();
@@ -227,26 +625,42 @@ export default class UserController {
 
 			res.status(HttpStatus.OK).send(users);
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public updateUserById = async (req: Request, res: Response, next: Function) => {
+	public updateUserById = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const newUser = req.body;
 			const dbUser = await User.findById(req.params.id);
 
 			if (dbUser === null) {
-				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!" ));
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!"));
 			}
 
 			if (newUser.email && !(await this.isEmailUnique(newUser.email))) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Email already in use." ));
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Email already in use.")
+				);
 			}
 
 			if (newUser.password) {
 				if (await bcrypt.compare(newUser.password, dbUser.password)) {
-					return next(new CustomError(HttpStatus.BAD_REQUEST, "New password must be different from the previous one." ));
+					return next(
+						new CustomError(
+							HttpStatus.BAD_REQUEST,
+							"New password must be different from the previous one."
+						)
+					);
 				}
 
 				const hashedNewPassword = await bcrypt.hash(newUser.password, 10);
@@ -256,34 +670,58 @@ export default class UserController {
 			}
 
 			if (newUser.name && newUser.name.length > 50) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Name must be 50 characters or less." ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"Name must be 50 characters or less."
+					)
+				);
 			}
 
 			if (newUser.role && !Object.values(UserStatus).includes(newUser.role)) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid user role." ));
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Invalid user role.")
+				);
 			}
 
 			if (newUser.picture && !this.isValidPictureFormat(newUser.picture)) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid picture format. Allowed formats are jpg, jpeg, or png." ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"Invalid picture format. Allowed formats are jpg, jpeg, or png."
+					)
+				);
 			}
 
 			if (newUser.address && newUser.address.length > 100) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Address must be 100 characters or less." ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"Address must be 100 characters or less."
+					)
+				);
 			}
 
 			if (newUser.country && !this.isValidCountry(newUser.country)) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid country" ));
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid country"));
 			}
 
 			if (
 				newUser.isVerified !== undefined &&
 				typeof newUser.isVerified !== "boolean"
 			) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid value for isVerified. Must be a boolean." ));
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"Invalid value for isVerified. Must be a boolean."
+					)
+				);
 			}
 
 			if (newUser.cart && !this.isValidCart(newUser.cart)) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid cart format." ));
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Invalid cart format.")
+				);
 			}
 
 			const updatedUser = await User.findByIdAndUpdate(req.params.id, newUser, {
@@ -292,11 +730,20 @@ export default class UserController {
 
 			res.status(HttpStatus.OK).send(updatedUser);
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public deleteUserById = async (req: Request, res: Response, next: Function) => {
+	public deleteUserById = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const { id } = req.params;
 
@@ -304,21 +751,32 @@ export default class UserController {
 
 			res.status(HttpStatus.OK).send(user);
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
-	public changeView = async (req: Request, res: Response, next: Function) => {
+	public changeView = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
 		try {
 			const user = req.user;
 			const token = req.headers.authorization as string;
 
 			if (!token) {
-				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No token provided." ));
+				return next(
+					new CustomError(HttpStatus.UNAUTHORIZED, "No token provided.")
+				);
 			}
 
 			if (!user) {
-				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No user." ));
+				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No user."));
 			}
 
 			const newView = user.view === user.role ? UserStatus.Member : user.role;
@@ -330,7 +788,7 @@ export default class UserController {
 			);
 
 			if (!updatedUser) {
-				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found." ));
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
 			await this.revokeUserToken(token);
@@ -341,12 +799,17 @@ export default class UserController {
 			);
 
 			res.status(HttpStatus.OK).json({
-					message: "View changed successfully",
-					view: updatedUser.view,
-					accessToken: accessToken,
-				});
+				message: "View changed successfully",
+				view: updatedUser.view,
+				accessToken: accessToken,
+			});
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
@@ -355,13 +818,20 @@ export default class UserController {
 			const token = req.headers.authorization as string;
 
 			if (!token) {
-				return next(new CustomError(HttpStatus.UNAUTHORIZED, "No token provided." ));
+				return next(
+					new CustomError(HttpStatus.UNAUTHORIZED, "No token provided.")
+				);
 			}
 			await this.revokeUserToken(token);
 
 			res.status(HttpStatus.OK).json({ message: "Logout successful" });
 		} catch (error) {
-			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error" ));
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
 		}
 	};
 
@@ -371,15 +841,15 @@ export default class UserController {
 		return format ? allowedFormats.includes(format) : false;
 	}
 
-	private isValidCountry(country: string): boolean {
+	private isValidCountry = async (country: string): Promise<boolean> => {
 		// Aceita tudo menos vazio
 		return country.trim() !== "";
-	}
+	};
 
-	private isValidCart(cart: any): boolean {
+	private isValidCart = async (cart: any): Promise<boolean> => {
 		// Aceita tudo menos null
 		return cart !== null && typeof cart === "object";
-	}
+	};
 
 	private isEmailUnique = async (email: string) => {
 		return (await User.find({ email }).exec()).length <= 0;
@@ -411,4 +881,3 @@ export default class UserController {
 		}
 	};
 }
-
