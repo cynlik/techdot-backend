@@ -96,8 +96,20 @@ const userController = new UserController();
  *         type: string  
  *       confirmPassword:
  *         type: string 
+ * 
+ *   ChangeView:
+ *     type: object
+ *     properties:
+ *       message:
+ *         type: string  
+ *       view:
+ *         type: string  
+ *       accessToken:
+ *         type: string
+ * 
  */
 
+///  -- USER ROUTES --
 /**
  * @openapi
  * /api/user/register:
@@ -119,7 +131,6 @@ const userController = new UserController();
  *            schema:
  *              $ref: '#/components/schemas/User'
  */
-///  -- USER ROUTES --
 // Register user
 router.post('/register', Validator.validateFields({ required: ['name', 'email', 'password'] }), userController.registerUser);
 
@@ -253,7 +264,33 @@ router.put('/resetpassword', Validator.validateFields({ required: ['newPassword'
  */
 // My information
 router.get('/me', validateToken(), userController.me);
-
+// TODO:
+/**
+ * @openapi
+ * /api/user/me:
+ *  put:
+ *     tags:
+ *      - User Routes
+ *     summary: Update me 
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema: 
+ *            $ref: '#/components/schemas/User'
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                user:
+ *                  type: object
+ */
 // Update my information
 router.put('/me', validateToken(), Validator.validateFields({ optional: ["name","password","picture","address","country"]}), userController.meUpdate)
 
@@ -281,7 +318,26 @@ router.put('/me', validateToken(), Validator.validateFields({ optional: ["name",
 router.post('/logout', validateToken(), userController.logout);
 
 ///  -- ADMIN ROUTES --
-
+/**
+ * @openapi
+ * /api/user/change-view:
+ *   put:
+ *    tags:
+ *     - User Routes
+ *    summary: Change user permissions to view content
+ *    parameters:
+ *      - in: header
+ *        name: authorization
+ *        schema:
+ *          type: string
+ *   responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/ChangeView' 
+ */
 // Change view
 router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), userController.changeView);
 
