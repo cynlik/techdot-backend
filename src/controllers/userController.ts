@@ -312,13 +312,13 @@ export default class UserController {
 		next: Function
 	) => {
 		try {
-			const user = await User.findById(req.user.id).populate("wishList.product");
+			const user = await User.findById(req.user.id).populate(
+				"wishList.product"
+			);
 			const product = await Product.findById(req.params.id);
 
 			if (!user) {
-				return next(
-					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
-				);
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
 			if (!product) {
@@ -332,7 +332,6 @@ export default class UserController {
 			const existingWishListItemIndex = userWishList.findIndex((item) =>
 				item.product.equals(product.id)
 			);
-
 
 			if (existingWishListItemIndex !== -1) {
 				return next(
@@ -384,12 +383,12 @@ export default class UserController {
 		next: Function
 	) => {
 		try {
-			const user = await User.findById(req.user.id).populate("wishList.product");
+			const user = await User.findById(req.user.id).populate(
+				"wishList.product"
+			);
 
 			if (!user) {
-				return next(
-					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
-				);
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
 			if (!user.wishList || user.wishList.length === 0) {
@@ -399,12 +398,74 @@ export default class UserController {
 					wishList: user.wishList.map((wishListItem) => ({
 						product: wishListItem.product
 							? wishListItem.product.toObject()
-							: "Product Not Found"
+							: "Product Not Found",
 					})),
 				});
 			}
 		} catch (error) {
 			console.log(error);
+			return next(
+				new CustomError(
+					HttpStatus.INTERNAL_SERVER_ERROR,
+					"Internal Server Error"
+				)
+			);
+		}
+	};
+
+	public removeFromWishList = async (
+		req: CustomRequest,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = await User.findById(req.user.id);
+
+			if (!user) {
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+			}
+
+			const product = await Product.findById(req.params.id);
+
+			if (!product) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+				);
+			}
+
+			const existingWishListItemIndex = user.wishList.findIndex((item) =>
+				item.product.equals(product.id)
+			);
+
+			if (existingWishListItemIndex === -1) {
+				return next(
+					new CustomError(
+						HttpStatus.BAD_REQUEST,
+						"Product not found in your wishlist."
+					)
+				);
+			} else {
+				user.wishList.splice(existingWishListItemIndex, 1);
+			}
+
+			await user.save();
+
+			const updatedUser = await User.findById(user.id).populate(
+				"wishList.product"
+			);
+
+			if (!updatedUser) {
+				return res.status(HttpStatus.NOT_FOUND).json({
+					message: "User not found",
+				});
+			}
+
+			res.status(HttpStatus.OK).json({
+				message: "Item removed from wishlist successfully",
+				wishList: updatedUser.wishList,
+			});
+		} catch (error) {
+			console.error(error);
 			return next(
 				new CustomError(
 					HttpStatus.INTERNAL_SERVER_ERROR,
@@ -426,9 +487,7 @@ export default class UserController {
 			const product = await Product.findById(req.params.id);
 
 			if (!user) {
-				return next(
-					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
-				);
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
 			if (quantity <= 0) {
@@ -498,9 +557,7 @@ export default class UserController {
 			const user = await User.findById(req.user.id).populate("cart.product");
 
 			if (!user) {
-				return next(
-					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
-				);
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
 			if (!user.cart || user.cart.length === 0) {
@@ -536,9 +593,7 @@ export default class UserController {
 			const { id, quantity, action } = req.body;
 
 			if (!user) {
-				return next(
-					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
-				);
+				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
 			if (!id) {

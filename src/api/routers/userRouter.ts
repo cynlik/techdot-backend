@@ -39,6 +39,9 @@ router.post("/wishlist/:id", validateToken(), Validator.validateIds([{ paramName
 // Get wish list
 router.get("/wishlist", validateToken(), userController.getWishList);
 
+// Remove item from wish list
+router.delete('/wishlist/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), userController.removeFromWishList);
+
 // Add item to cart
 router.post("/cart/:id", validateToken(), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), userController.addToCart);
 
