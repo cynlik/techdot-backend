@@ -386,7 +386,13 @@ export default class UserController {
 		try {
 			const user = await User.findById(req.user.id).populate("wishList.product");
 
-			if (!user?.wishList || user.wishList.length === 0) {
+			if (!user) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "User not found.")
+				);
+			}
+
+			if (!user.wishList || user.wishList.length === 0) {
 				res.status(HttpStatus.OK).json({ message: "Your wishlist is empty" });
 			} else {
 				res.status(HttpStatus.OK).json({
