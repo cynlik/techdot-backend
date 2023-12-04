@@ -49,32 +49,56 @@ const productController = new ProductController();
  *        enum: ['cpu', 'gpu', 'motherboard', 'ram', 'case'] 
  *      warranty: 
  *        type: string
- *      TODO: COMO DECLARAR O SPECIFICATIONS EM RELACAO AO ENUM DO PRODUCT TYPE
  */
 // =================|USER|=================
+
 /**
  * @openapi
- * /api/product:
- *  get:
- *    tags:
- *    - Product Router
- *    summary: Get all products
- *    parameters:
- *      - in: query
- *        name: token
- *        required: false
+ * /api/product/:
+ *   get:
+ *     tags:
+ *       - Product Routes
+ *     summary: Get products
+ *     parameters: 
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
  *     responses:
  *      200:
  *        description: Success
  *        content:
  *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/TODO:'
- *      
+ *            schema: 
+ *              $ref: '#/components/schemas/Product'
  */
 // Rota para devolver um produto pelo ID | devolver produtos todos
 router.get("/", validateToken(true), productController.getProductsByName);
 
+/**
+ * @openapi
+ * /api/product/{id}:
+ *   get:
+ *     tags:
+ *       - Product Routes
+ *     summary: Get product by ID
+ *     parameters: 
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema: 
+ *              $ref: '#/components/schemas/Product'
+ */
 // Rota para devolver um produto pelo ID
 router.get("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), productController.getProductById);
 
