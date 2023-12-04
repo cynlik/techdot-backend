@@ -11,6 +11,9 @@ interface FieldValidationConfig {
 
 class Validator {
 
+  //adicionar validação para arrays
+  
+
   // Validar campos (required: obrigatórios || optional: opcional)
   // Pode ser inserido apenas required ou optional, caso seja necessário usar os dois também dá
   // Como usar Validator.validateFields({ required: ['name', ...] , optional: ['name', ...]})
