@@ -48,12 +48,7 @@ export default class UserController {
 			sendMail(EmailType.Welcome, user.email, res, token.token);
 			sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
-			return next(
-				new CustomError(
-					HttpStatus.OK,
-					`Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`
-				)
-			);
+			return res.status(HttpStatus.OK).json(`Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`);
 		} catch (error) {
 			return next(
 				new CustomError(
