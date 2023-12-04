@@ -49,6 +49,12 @@ const productController = new ProductController();
  *        enum: ['cpu', 'gpu', 'motherboard', 'ram', 'case']
  *      warranty:
  *        type: string
+ * 
+ *   SingleMessageResponse:
+ *     type: object
+ *     properties:
+ *       message:
+ *         type: string 
  */
 // =================|USER|=================
 
@@ -140,6 +146,36 @@ router.post(
   productController.createProduct
 );
 
+/**
+ * @openapi
+ * /api/product/{id}:
+ *  put:
+ *    tags:
+ *      - Product Routes
+ *    summary: Create product
+ *    parameters:
+ *      - in: header
+ *        name: authorization
+ *        schema:
+ *          type: string
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: string
+ *    requestBody:
+ *      required: false
+ *      content:
+ *        application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/Product'
+ *    responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Product'
+ */
 // Rota para dar update a um produto pelo ID
 router.put(
   '/:id',
@@ -153,6 +189,36 @@ router.put(
   productController.updateProduct
 );
 
+/**
+ * @openapi
+ * /api/product/{id}:
+ *  delete:
+ *    tags:
+ *      - Product Routes
+ *    summary: Create product
+ *    parameters:
+ *      - in: header
+ *        name: authorization
+ *        schema:
+ *          type: string
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: string
+ *    requestBody:
+ *      required: false
+ *      content:
+ *        application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/Product'
+ *    responses:
+ *      204:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/SingleMessageResponse'
+ */
 // Rota para eliminar um produto pelo ID
 router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), productController.deleteProduct);
 
