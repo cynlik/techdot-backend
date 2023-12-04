@@ -1,14 +1,15 @@
 import mongoose, { Document, Schema, model } from "mongoose";
-import { IProduct } from "./productModel";
+
+export interface ISaleProduct {
+        product: mongoose.Types.ObjectId,
+        quantity: number
+}
 
 export interface ISale extends Document {
         userId: mongoose.Types.ObjectId;
-        products: {
-                product: IProduct;  
-                quantity: number;
-        }[] 
+        products: ISaleProduct[];
         date: Date;
-        totalAmount: Number;
+        totalAmount: number;
 }
 
 export const saleSchema = new Schema<ISale>({
