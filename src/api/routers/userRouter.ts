@@ -49,7 +49,7 @@ router.post("/cart/:id", validateToken(), Validator.validateIds([{ paramName: "i
 router.get("/cart", validateToken(), userController.getCartItems);
 
 // Update cart items
-router.put("/cart", validateToken(), Validator.validateFields({ required: ["id", "action"], optional: ["quantity"] }), userController.updateCart);
+router.put("/cart", validateToken(), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), userController.updateCart);
 
 // Logout
 router.post('/logout', validateToken(), userController.logout);
