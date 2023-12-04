@@ -10,9 +10,68 @@ import { Product, ProductType } from "@src/models/productModel";
 
 const router = express.Router();
 const productController = new ProductController();
-
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *   Product:
+ *    type: object
+ *    required:
+ *        - name 
+ *        - description
+ *        - imageUrl
+ *        - manufacturer
+ *        - stockQuantity
+ *        - price
+ *        - visible
+ *        - subcategoryId
+ *        - productType
+ *        - specifications
+ *    properties:
+ *      name:
+ *        type: string
+ *      description:
+ *        type: string
+ *      imageUrl:
+ *        type: string
+ *      manufacturer:
+ *        type: string
+ *      stockQuantity:
+ *        type: string
+ *      visible:
+ *        type: number
+ *      subcategoryId:
+ *        type: string
+ *      productType:
+ *        type: string
+ *      specifications:
+ *        type: string
+ *        enum: ['cpu', 'gpu', 'motherboard', 'ram', 'case'] 
+ *      warranty: 
+ *        type: string
+ *      TODO: COMO DECLARAR O SPECIFICATIONS EM RELACAO AO ENUM DO PRODUCT TYPE
+ */
 // =================|USER|=================
-
+/**
+ * @openapi
+ * /api/product:
+ *  get:
+ *    tags:
+ *    - Product Router
+ *    summary: Get all products
+ *    parameters:
+ *      - in: query
+ *        name: token
+ *        required: false
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/TODO:'
+ *      
+ */
 // Rota para devolver um produto pelo ID | devolver produtos todos
 router.get("/", validateToken(true), productController.getProductsByName);
 
