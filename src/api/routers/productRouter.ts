@@ -14,7 +14,7 @@ const productController = new ProductController();
  * @swagger
  * components:
  *  schemas:
- *   User:
+ *   Product:
  *    type: object
  *    required:
  *        - name 
@@ -46,12 +46,32 @@ const productController = new ProductController();
  *        type: string
  *      specifications:
  *        type: string
+ *        enum: ['cpu', 'gpu', 'motherboard', 'ram', 'case'] 
  *      warranty: 
  *        type: string
  *      TODO: COMO DECLARAR O SPECIFICATIONS EM RELACAO AO ENUM DO PRODUCT TYPE
  */
 // =================|USER|=================
-
+/**
+ * @openapi
+ * /api/product:
+ *  get:
+ *    tags:
+ *    - Product Router
+ *    summary: Get all products
+ *    parameters:
+ *      - in: query
+ *        name: token
+ *        required: false
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/TODO:'
+ *      
+ */
 // Rota para devolver um produto pelo ID | devolver produtos todos
 router.get("/", validateToken(true), productController.getProductsByName);
 
