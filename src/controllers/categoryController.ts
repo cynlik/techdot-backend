@@ -13,7 +13,13 @@ export class CategoryController {
   public getAllCategory = async (req: Request, res: Response, next: Function) => {
     
     try {
-      const viewUser = req.user.view;
+      const user = req.user;
+
+      let viewUser = UserStatus.NonMember;
+      
+      if(user) {
+        viewUser = user.view;
+      }
 
       const conditions: any = {};
 
@@ -37,7 +43,13 @@ export class CategoryController {
     const { categoryId } = req.params;
 
     try {
-      const viewUser = req.user.view;
+      const user = req.user;
+
+      let viewUser = UserStatus.NonMember;
+      
+      if(user) {
+        viewUser = user.view;
+      }
 
       const conditions: any = { category: categoryId};
 
@@ -62,11 +74,17 @@ export class CategoryController {
 
     try {
 
+      const user = req.user;
+
       const subcategories = await Subcategory.find({ category: categoryId })
 
       let conditions: any = { subcategoryId: { $in: subcategories.map(sc => sc._id) } };
       
-      const viewUser = req.user.view;
+      let viewUser = UserStatus.NonMember;
+      
+      if(user) {
+        viewUser = user.view;
+      }
 
       if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;

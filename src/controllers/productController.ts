@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
 import { IProduct, Product } from "@src/models/productModel";
-import { UserStatus } from "@src/models/userModel";
+import { IUser, UserStatus } from "@src/models/userModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
+
+interface CustomRequest extends Request {
+  user: IUser;
+}
 
 export class ProductController {
 
@@ -11,6 +15,7 @@ export class ProductController {
   
   public getProductsByName = async (req: Request, res: Response, next: Function) => {
     try {
+      const user = req.user
       const { name, sort, page = '1', limit = '6' } = req.query as {
         name?: string;
         sort?: string;
@@ -25,7 +30,12 @@ export class ProductController {
         return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
       }
 
-      const viewUser = req.user.view;
+      let viewUser = UserStatus.NonMember
+      
+      if(user) {
+        viewUser = user.view
+      }
+      
       const conditions: any = {};
 
       if (viewUser !== UserStatus.Admin) {
