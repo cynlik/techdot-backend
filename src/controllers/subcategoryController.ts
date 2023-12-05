@@ -3,7 +3,6 @@ import { Subcategory } from "@src/models/subcategoryModel";
 import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
-import { hasPermission } from "@src/middlewares/roleMiddleware";
 import { UserStatus } from "@src/models/userModel";
 export class SubcategoryController {
 
