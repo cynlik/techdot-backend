@@ -82,4 +82,9 @@ const productSchema = new Schema<IProduct>({
   warranty: { type: Date, default: null },
 });
 
+productSchema.path('specifications').validate(function (specs) {
+  return specs.cpu || specs.gpu || specs.motherboard || specs.ram || specs.case;
+}, 'Pelo menos um conjunto de especificações deve ser fornecido.');
+
+
 export const Product = model<IProduct>("Product", productSchema);
