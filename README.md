@@ -79,36 +79,36 @@ Follow these steps to set up and run the server locally:
 
 The API will be accessible at http://localhost:3000.
 
-### API Features
-## Categories
+## API Features
+### Categories
 [Description of categories feature...]
 
-## Subcategories
+### Subcategories
 [Description of subcategories feature...]
 
-## Products
+### Products
 [Description of products feature...]
 
-## Users
+### Users
 [Description of users feature...]
 
-## Shopping Carts
+### Shopping Carts
 [Description of shopping carts feature...]
 
-## Wish Lists
+### Wish Lists
 [Description of wish lists feature...]
 
-## Guests
+### Guests
 [Description of guests feature...]
 
-## Discount Codes
+### Discount Codes
 [Description of discount codes feature...]
 
-## Promotions
+### Promotions
 [Description of promotions feature...]
 
-## Contribution
+### Contribution
 We welcome contributions to enhance and improve the functionality of this API. If you have ideas, bug reports, or feature requests, feel free to open an issue or submit a pull request.
 
-## License
+### License
 This project is licensed under the [GPL-3.0 License](./LICENSE).
