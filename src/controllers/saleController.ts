@@ -3,44 +3,60 @@ import { SaleModel, ISaleProduct } from '@src/models/saleModel';
 import { UserStatus } from '@src/models/userModel';
 import { HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
-import { hasPermission } from '@src/middlewares/roleMiddleware';
-import { Product } from '@src/models/productModel';
-import mongoose from 'mongoose';
+import { hasPermission } from "@src/middlewares/roleMiddleware";
+import { IProduct, Product } from "@src/models/productModel";
 
 export class SaleController {
-  public create = async (req: Request, res: Response, next: Function) => {
-    try {
-      const { userId, products } = req.body as { userId: mongoose.Types.ObjectId; products: ISaleProduct[] };
+public create = async (req: Request, res: Response, next: Function) => {
+  try { 
+    const {userName, userEmail, userAdress, userPhone, paymentMethod, products } = req.body
+    const user = req.user
 
-      // Verificar o stock
-      for (const productItem of products) {
-        const product = await Product.findById(productItem.product);
+    // Verificar o stock*
+    for (const productItem of products) {
+      const product = await Product.findOne({ name: productItem.nameProduct });
 
-        if (!product) {
-          return next(new CustomError(HttpStatus.NOT_FOUND, 'Not found'));
-        }
+       if (!product) {  
+        console.log(products);      
+         return next(new CustomError(HttpStatus.NOT_FOUND, 'Not found'));
+       }
 
-        // Verificar se a quantidade na venda é maior do que o stock disponível
-        if (productItem.quantity > product.stockQuantity) {
-          return next(new CustomError(HttpStatus.BAD_REQUEST, 'Bad Request'));
-        }
+      // Verificar se a quantidade na sale é maior do que o stock disponível*
+      if (productItem.quantity > product.stockQuantity) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Out of stock'));
       }
 
-      // Se todos os produtos têm stock suficiente, criar a venda
-      // const totalAmount = products.reduce((total, item) => total + item.quantity, 0);
+    // TotalAmount
+    let totalAmount = 0;
 
-      const newSale = new SaleModel({
-        userId,
-        products,
-      });
+    for (const productItem of products) {
+      const product = await Product.findOne({ name: productItem.nameProduct });
+    
+      if (product) {
+        // Adicionar o price do produto ao totalAmount
+        console.log(`Quantidade: ${productItem.quantity}, Preço unitário: ${product.price}`);
+        totalAmount += productItem.quantity * product.price;
+        console.log(`Total atual: ${totalAmount}`);
+      } else {
+        console.log(`Produto não encontrado para ${productItem.nameProduct}`);
+      }
+    }
+      
+    const newSale = new SaleModel({
+      userName,
+      userEmail,
+      userAdress,
+      userPhone,
+      paymentMethod,
+      products,
+    } as ISale);
 
-      // Subtrair a quantidade vendida do stock de cada produto
-      for (const productItem of products) {
-        const product = await Product.findById(productItem.product);
-        if (product) {
-          product.stockQuantity -= productItem.quantity;
-          await product.save();
-        }
+    // Subtrair a quantidade vendida do stock de cada produto*
+    for (const productItem of products) {
+      const product = await Product.findOne({ name: productItem.nameProduct });
+      if (product) {
+        product.stockQuantity -= productItem.quantity;
+        await product.save();
       }
 
       await newSale.save();
@@ -50,9 +66,17 @@ export class SaleController {
     }
   };
 
-  public getAll = async (req: Request, res: Response, next: Function) => {
+    await newSale.save();
+    res.status(HttpStatus.CREATED).json(newSale);
+  } catch (error) {
+    console.error(error); 
+    return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+  }
+}
+
+  public getAll = async(req: Request, res: Response, next: Function) => {    
     try {
-      const saleId = req.params.id;
+      const userEmail = req.params.id;
       const user = req.user;
 
       if (!user) {
@@ -61,14 +85,15 @@ export class SaleController {
 
       const isAdmin = hasPermission(user.role, UserStatus.Manager);
       const isMember = hasPermission(user.role, UserStatus.Member);
-
-      if (saleId) {
-        const sale = await SaleModel.findById(saleId);
+  
+      if (userEmail) {
+        
+        const sale = await SaleModel.findById(userEmail);
         if (!sale) {
           return next(new CustomError(HttpStatus.NOT_FOUND, 'Not Found'));
         }
-
-        if (isAdmin || (isMember && sale.userId.equals(user.id))) {
+  
+        if (isAdmin || (isMember && sale.userEmail === (user.email))) {
           return res.status(HttpStatus.OK).json(sale);
         } else {
           return next(new CustomError(HttpStatus.FORBIDDEN, 'Forbidden'));
@@ -78,8 +103,8 @@ export class SaleController {
           const sales = await SaleModel.find();
           return res.status(HttpStatus.OK).json(sales);
         } else if (isMember) {
-          const sales = await SaleModel.find({ userId: user.id });
-          return res.status(HttpStatus.OK).send(sales);
+          const sales = await SaleModel.find({ userEmail: user.email });
+           return res.status(HttpStatus.OK).send(sales)
         } else {
           return next(new CustomError(HttpStatus.FORBIDDEN, 'Forbidden'));
         }
@@ -88,7 +113,7 @@ export class SaleController {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
     }
-  };
+} 
 
   public deleteById = async (req: Request, res: Response, next: Function) => {
     try {
@@ -101,23 +126,14 @@ export class SaleController {
     } catch (error) {
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
     }
-  };
+}
 
-  // public updateById = async (req: Request, res: Response, next: Function) =>  {
-  //user, products, purchaseDate, totalAmount } = req.body;
-  //     const updatedSale = await SaleModel.findByIdAndUpdate(
-  //       saleId,
-  //       { user, products, purchaseDate, totalAmount },
-  //       { new: true }
-  //     )
-  //       .populate("user")
-  //       .populate("products");
-  //     if (!updatedSale) {
-  //       return res.status(404).json({ error: "Sale not found" });
-  //     }
-  //     res.status(200).json(updatedSale);
-  //   } catch (error) {
-  //     res.status(500).json({ error: "Error updating the sale" });
-  //   }
-  // }
+//   public cancel = async (req: Request,  res: Response, next: Function) => {
+//   try{
+    
+//   }catch(error){
+//     return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
+//   }
+// }
+
 }
