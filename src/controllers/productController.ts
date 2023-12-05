@@ -1,13 +1,9 @@
 import { Request, Response } from "express";
 import { IProduct, Product } from "@src/models/productModel";
-import { IUser, UserStatus } from "@src/models/userModel";
+import { UserStatus } from "@src/models/userModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
-
-interface CustomRequest extends Request {
-  user: IUser;
-}
 
 export class ProductController {
 
@@ -31,7 +27,7 @@ export class ProductController {
       }
 
       let viewUser = UserStatus.NonMember
-      
+
       if(user) {
         viewUser = user.view
       }
