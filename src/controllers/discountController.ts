@@ -3,6 +3,7 @@ import { IProduct, Product } from "@src/models/productModel";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Discount } from "@src/models/dicountModel";
+import { UserStatus } from "@src/models/userModel";
 
 export class DiscountController {
 
@@ -31,15 +32,20 @@ export class DiscountController {
   // =================|ADMIN|=================
 
   public createDiscount = async (req: Request, res: Response, next: Function) => {
-    const { description, isActive, applicableProducts, discountType }= req.body;
+    const { description, discountType, startDate, endDate, isActive, promoCode, isPromoCode, applicableProducts, usageLimit, minimumPurchaseValue  }= req.body;
 
     try {
       const newDiscount = new Discount({
         description,
-        isActive,
-        applicableProducts,
         discountType,
-        
+        startDate,
+        endDate,
+        isActive,
+        promoCode,
+        isPromoCode,
+        applicableProducts,
+        usageLimit,
+        minimumPurchaseValue,
       });
 
       const savedDiscount = await newDiscount.save();
@@ -76,6 +82,70 @@ export class DiscountController {
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
+    }
+  };
+
+  public getDiscountByName = async (req: Request, res: Response, next: Function) => {
+    try {
+      const user = req.user
+
+      const { name, sort, page = '1', limit = '6' } = req.query as {
+        name?: string;
+        sort?: string;
+        page?: string;
+        limit?: string;
+      };
+
+      const pageNumber = parseInt(page, 10);
+      const limitNumber = parseInt(limit, 10);
+
+      if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
+      }
+
+      let viewUser = UserStatus.NonMember
+
+      if(user) {
+        viewUser = user.view
+      }
+      
+      const conditions: any = {};
+
+      if (viewUser !== UserStatus.Admin) {
+        conditions.visible = true;
+      }
+
+      if (name) {
+        const regex = new RegExp(name, 'i');
+        conditions.name = regex;
+      }
+
+      const count = await Discount.countDocuments(conditions);
+      const totalPages = Math.ceil(count / limitNumber);
+
+      let query = Discount.find(conditions)
+
+      switch (sort) {
+        case 'isActive':
+          query = query.sort({ price: -1 });
+          break;
+        case 'preco_menor':
+          query = query.sort({ price: 1 });
+          break;
+      }
+
+      const products = await query
+        .limit(limitNumber)
+        .skip((pageNumber - 1) * limitNumber);
+
+      if (products.length === 0) {
+        next(new CustomError(HttpStatus.NOT_FOUND, 'Nenhum desconto encontrado.'))
+      } else {
+        res.status(200).send({ products, totalPages });
+      }
+    } catch (error) {
+      console.error(error);
+      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Erro ao procurar descontos.'));
     }
   };
 
