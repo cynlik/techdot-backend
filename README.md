@@ -18,7 +18,10 @@ Welcome to the open-source E-Commerce API project developed by our team. This Ty
   - [Guests](#guests)
   - [Discount Codes](#discount-codes)
   - [Promotions](#promotions)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
 - [Contribution](#contribution)
+- [Contributing Guidelines](./CONTRIBUTING.md)
 - [License](#license)
 
 ## Project Overview
