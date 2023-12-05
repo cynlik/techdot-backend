@@ -17,9 +17,9 @@ export interface IDiscount extends Document {
 const discountSchema = new Schema({
   description: { type: String, required: true },
   discountType: { type: String, required: true }, // Ex: 'percentual', 'valor fixo'
-  amount: { type: Number, required: true, min: 0 },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
+  //amount: { type: Number, required: true, min: 0 },
+  //startDate: { type: Date, required: true },
+  //endDate: { type: Date, required: true },
   isActive: { type: Boolean, default: false },
   promoCode: { type: String, unique: true, sparse: true }, // Código promocional
   isPromoCode: { type: Boolean, default: false },         // Indica se é um código promocional

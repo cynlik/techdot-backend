@@ -38,7 +38,8 @@ export class DiscountController {
         description,
         isActive,
         applicableProducts,
-        discountType
+        discountType,
+        
       });
 
       const savedDiscount = await newDiscount.save();
