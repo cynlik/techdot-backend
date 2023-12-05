@@ -5,6 +5,7 @@ import validateToken from '@src/middlewares/validateToken';
 import Validator from "@src/middlewares/validator";
 import { Constant } from "@src/utils/constant";
 import { User, UserStatus } from "@src/models/userModel";
+import { Product } from '@src/models/productModel';
 
 const router = express.Router();
 const userController = new UserController();
@@ -264,6 +265,7 @@ router.put('/resetpassword', Validator.validateFields({ required: ['newPassword'
  */
 // My information
 router.get('/me', validateToken(), userController.me);
+
 // TODO:
 /**
  * @openapi
@@ -293,6 +295,15 @@ router.get('/me', validateToken(), userController.me);
  */
 // Update my information
 router.put('/me', validateToken(), Validator.validateFields({ optional: ["name","password","picture","address","country"]}), userController.meUpdate)
+
+// Add item to wish list
+router.post("/wishlist/:id", validateToken(), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), userController.addToWishList);
+
+// Get wish list
+router.get("/wishlist", validateToken(), userController.getWishList);
+
+// Remove item from wish list
+router.delete('/wishlist/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), userController.removeFromWishList);
 
 /**
  * @openapi
