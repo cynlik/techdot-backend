@@ -11,7 +11,6 @@ import { getUserCountry } from "@src/services/geoLocation";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Product } from "@src/models/productModel";
-import { CartItem, CartItemModel } from "@src/models/cartModel";
 import { WishListItem, WishListItemModel } from "@src/models/wishListModel";
 
 interface CustomRequest extends Request {
