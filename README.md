@@ -35,7 +35,7 @@ Our E-Commerce API is designed to power online shopping experiences, offering a 
 
 ### Download Release
 
-To get the latest stable release, you can visit the [Releases](https://github.com/samusafe/techdot-backend/releases) section of this GitHub repository. Download the source code or the pre-built binaries, depending on your preference.
+To get the latest stable release, you can visit the [Releases](https://github.com/cynlik/techdot-backend/releases) section of this GitHub repository. Download the source code or the pre-built binaries, depending on your preference.
 
 ### Run the Server
 
@@ -66,7 +66,7 @@ Follow these steps to set up and run the server locally:
    IPGEOAPI=
    EMAIL=
    PASSWORD=
-   
+
   Replace the placeholders with your actual configuration.
 
 4. Start your project
