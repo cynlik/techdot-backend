@@ -11,10 +11,8 @@ interface CustomRequest extends Request {
 
 const validateToken = (isOptional: boolean = false) => {
   return async (req: CustomRequest, res: Response, next: NextFunction) => {
-    let token;
     const authHeader = req.headers.authorization || req.headers.Authorization;
 
-    // Se não há cabeçalho de autorização e o token é opcional, avança sem validar
     if (!authHeader) {
       if (isOptional) {
         return next();
@@ -24,20 +22,21 @@ const validateToken = (isOptional: boolean = false) => {
     }
 
     try {
-      if (authHeader && typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer')) {
-        token = authHeader.split(' ')[1];
-
-        const isRevoked = await RevokedToken.exists({ token: `Bearer ${token}` });
-        if (isRevoked) {
-          throw new CustomError(HttpStatus.UNAUTHORIZED, 'Token revoked. Login again');
-        }
-
-        const decoded = jwt.verify(token, process.env.SECRET as string) as IUser;
-        req.user = decoded;
-        next();
-      } else {
+      if (typeof authHeader !== 'string' || !authHeader.toLowerCase().startsWith('bearer ')) {
         throw new CustomError(HttpStatus.UNAUTHORIZED, 'Invalid token format');
       }
+
+      const token = authHeader.split(' ')[1];
+
+      const isRevoked = await RevokedToken.findOne({ token: `Bearer ${token}` });
+
+      if (isRevoked) {
+        next(new CustomError(HttpStatus.UNAUTHORIZED, 'Token revoked. Login again'));
+      }
+
+      const decoded = jwt.verify(token, process.env.SECRET as string) as IUser;
+      req.user = decoded;
+      next();
     } catch (err: any) {
       if (err instanceof jwt.JsonWebTokenError) {
         next(new CustomError(HttpStatus.UNAUTHORIZED, 'Invalid or expired token'));
