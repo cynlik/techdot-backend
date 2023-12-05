@@ -17,29 +17,27 @@ export default class CategoryController {
 		next: Function
 	) => {
 		try {
-            const { quantity } = req.body;
+			const { quantity } = req.body;
 			const parsedQuantity = parseInt(quantity, 10);
 			const product = await Product.findById(req.params.id);
 
-            if (quantity <= 0) {
-                return next(
-                    new CustomError(HttpStatus.BAD_REQUEST, "Invalid quantity")
-                );
-            }
+			if (quantity <= 0) {
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Invalid quantity")
+				);
+			}
 
-            if (!product) {
-                return next(
-                    new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
-                );
-            }
+			if (!product) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+				);
+			}
 
-            if (product.stockQuantity === 0) {
-                return next(new CustomError(HttpStatus.BAD_REQUEST, "Out of stock."));
-            }
+			if (product.stockQuantity === 0) {
+				return next(new CustomError(HttpStatus.BAD_REQUEST, "Out of stock."));
+			}
 
 			if (!req.user) {
-                
-
 			} else {
 				const user = await User.findById(req.user.id).populate("cart.product");
 
@@ -143,21 +141,21 @@ export default class CategoryController {
 			const userCart: CartItem[] = user.cart || [];
 
 			if (action == "removeAll") {
-                if (id) {
-                    return next(
+				if (id) {
+					return next(
 						new CustomError(
 							HttpStatus.BAD_REQUEST,
 							"Please provide only required fields. Remove id."
 						)
 					);
-                } else if (quantity) {
-                    return next(
+				} else if (quantity) {
+					return next(
 						new CustomError(
 							HttpStatus.BAD_REQUEST,
 							"Please provide only required fields. Remove quantity."
 						)
 					);
-                }
+				}
 				userCart.splice(0, userCart.length);
 			} else {
 				if (!quantity) {
