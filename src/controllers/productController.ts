@@ -12,6 +12,7 @@ export class ProductController {
   public getProductsByName = async (req: Request, res: Response, next: Function) => {
     try {
       const user = req.user
+
       const { name, sort, page = '1', limit = '6' } = req.query as {
         name?: string;
         sort?: string;
