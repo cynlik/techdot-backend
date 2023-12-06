@@ -71,8 +71,8 @@ const productSchema = new Schema<IProduct>({
   visible: { type: Boolean, required: true, default: false },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
   productType: { type: String, enum: [...Object.keys(ProductType)], required: true },
-  discountype: { trype: String },
-  onDiscount: { trype: Boolean, required: true, default: false},
+  discountype: { type: String },
+  onDiscount: { type: Boolean, required: true, default: false },
   specifications: {
     type: {
       cpu: cpuSpecificationsSchema,

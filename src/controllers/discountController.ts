@@ -8,8 +8,8 @@ import { UserStatus } from "@src/models/userModel";
 export class DiscountController {
 
   // =================|USERS|=================
-  
-  
+
+
 
   public getDiscountByID = async (req: Request, res: Response, next: Function) => {
     const { id } = req.params;
@@ -19,55 +19,26 @@ export class DiscountController {
       const discount = await Discount.findById(id);
 
       if (!discount) {
-        return next(new CustomError(HttpStatus.NOT_FOUND ,'Discount not found'));
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
       }
 
       return res.status(200).send(discount);
     } catch (error) {
       console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
     }
   };
 
   // =================|ADMIN|=================
 
   public createDiscount = async (req: Request, res: Response, next: Function) => {
-    const { description, discountType, startDate, endDate, promoCode, isPromoCode, applicableProducts, usageLimit, minimumPurchaseValue  } = req.body;
+    const { description, discountType, promoCode, isPromoCode, applicableProducts, usageLimit, minimumPurchaseValue } = req.body;
 
     try {
-      
-      const discountDecimal = discountType / 100
-
-      if ( !isPromoCode ) {
-        
-        const lenghtProducts = applicableProducts.length
-
-        for(let i = 0; i < lenghtProducts; i++) {
-          let productId = applicableProducts[i]
-
-          
-          let product = await Product.findById(productId)
-
-          if(!product) {
-            console.log("saiu");
-            return;
-          }
-
-          let newPrice = product.price - ( product.price * discountDecimal )
-
-          let priceUpdated = await Product.findByIdAndUpdate({id: productId,discountType: discountType, onDiscount: true, price: newPrice  });
-
-          return res.status(HttpStatus.OK).send(priceUpdated)
-           
-        }
-
-      }
 
       const newDiscount = new Discount({
         description,
         discountType,
-        startDate,
-        endDate,
         promoCode,
         isPromoCode,
         usageLimit,
@@ -80,7 +51,7 @@ export class DiscountController {
       return res.status(HttpStatus.CREATED).json(savedDiscount);
     } catch (error) {
       console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error" ));
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
     }
   };
 
@@ -94,7 +65,7 @@ export class DiscountController {
       return res.status(HttpStatus.OK).json(updateDiscount);
     } catch (error) {
       console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
     }
   };
 
@@ -105,10 +76,10 @@ export class DiscountController {
 
       await Discount.findByIdAndDelete(id);
 
-      return res.status(204).json({message: "Discount successfully deleted!"});
+      return res.status(204).json({ message: "Discount successfully deleted!" });
     } catch (error) {
       console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
     }
   };
 
@@ -127,15 +98,15 @@ export class DiscountController {
       const limitNumber = parseInt(limit, 10);
 
       if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
       }
 
       let viewUser = UserStatus.NonMember
 
-      if(user) {
+      if (user) {
         viewUser = user.view
       }
-      
+
       const conditions: any = {};
 
       if (viewUser !== UserStatus.Admin) {

@@ -1,4 +1,4 @@
-import express  from "express";
+import express from "express";
 import { DiscountController } from "@src/controllers/discountController";
 import validateToken from "@src/middlewares/validateToken";
 import Validator from "@src/middlewares/validator";
@@ -15,11 +15,11 @@ const discountController = new DiscountController();
 
 // =================|ADMIN|=================
 
-router.post('/', validateToken(), Validator.validateFields({ required: ['description', 'applicableProducts'], optional: ['isActive']}) ,Validator.validateIds([{ paramName: "applicableProducts", model: Product, type: Constant.Product}]), discountController.createDiscount)
+router.post('/', validateToken(), Validator.validateFields({ required: ['description', 'discountType', 'applicableProducts'], optional: ['isActive', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'] }), discountController.createDiscount)
 
-router.put('/:id', validateToken(), Validator.validateFields({optional: ['description', 'applicableProducts', 'discountType']}), discountController.updateDiscount)
+router.put('/:id', validateToken(), Validator.validateFields({ optional: ['description', 'discountType', 'isActive', 'promoCode', 'isPromoCode', 'applicableProducts', 'usageLimit', 'minimumPurchaseValue'] }), discountController.updateDiscount)
 
-router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount}]), discountController.deleteDiscount)
+router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount)
 
 
 export default router;
