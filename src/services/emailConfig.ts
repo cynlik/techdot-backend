@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { Response } from 'express';
 import { emailContent, EmailType } from '@src/utils/emailType';
-import { HttpStatus } from "@src/utils/constant";
+import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from "@src/utils/constant";
 
 interface MailOptions {
   to: string;
@@ -35,9 +35,9 @@ export function sendMail(emailType: EmailType, to: string, res: Response, token?
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json({ message: 'Error in sending email', error: error.message });
+      return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json({ message: ERROR_MESSAGES.SENDING_EMAIL, error: error.message });
     } else {
-      return res.status(HttpStatus.OK).json({ message: 'Email sent successfully' });
+      return res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMAIL_SENT_SUCCESSFULLY });
     }
   });
 }
