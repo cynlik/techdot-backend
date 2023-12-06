@@ -10,7 +10,7 @@ interface CustomRequest extends Request {
 	user: IUser;
 }
 
-export default class CategoryController {
+export default class CartController {
 	public addToCart = async (
 		req: CustomRequest,
 		res: Response,
