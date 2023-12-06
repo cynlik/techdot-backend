@@ -9,9 +9,17 @@ import { Product } from "@src/models/productModel";
 const router = express.Router()
 const discountController = new DiscountController();
 
+// =================|USER|=================
+
+
+
+// =================|ADMIN|=================
+
 router.post('/', validateToken(), Validator.validateFields({ required: ['description', 'applicableProducts'], optional: ['isActive']}) ,Validator.validateIds([{ paramName: "applicableProducts", model: Product, type: Constant.Product}]), discountController.createDiscount)
 
 router.put('/:id', validateToken(), Validator.validateFields({optional: ['description', 'applicableProducts', 'discountType']}), discountController.updateDiscount)
 
-router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount}]))
+router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount}]), discountController.deleteDiscount)
+
+
 export default router;

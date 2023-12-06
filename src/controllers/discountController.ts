@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { IProduct, Product } from "@src/models/productModel";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
-import { Discount } from "@src/models/dicountModel";
+import { Discount, IDiscount } from "@src/models/dicountModel";
 import { UserStatus } from "@src/models/userModel";
 
 export class DiscountController {
@@ -32,20 +32,47 @@ export class DiscountController {
   // =================|ADMIN|=================
 
   public createDiscount = async (req: Request, res: Response, next: Function) => {
-    const { description, discountType, startDate, endDate, isActive, promoCode, isPromoCode, applicableProducts, usageLimit, minimumPurchaseValue  }= req.body;
+    const { description, discountType, startDate, endDate, promoCode, isPromoCode, applicableProducts, usageLimit, minimumPurchaseValue  } = req.body;
 
     try {
+      
+      const discountDecimal = discountType / 100
+
+      if ( !isPromoCode ) {
+        
+        const lenghtProducts = applicableProducts.length
+
+        for(let i = 0; i < lenghtProducts; i++) {
+          let productId = applicableProducts[i]
+
+          
+          let product = await Product.findById(productId)
+
+          if(!product) {
+            console.log("saiu")
+            return;
+          }
+
+          let newPrice = product.price - ( product.price * discountDecimal )
+
+          let priceUpdated = await Product.findByIdAndUpdate({id: productId,discountType: discountType, onDiscount: true, price: newPrice  });
+
+          return res.status(HttpStatus.OK).send(priceUpdated)
+           
+        }
+
+      }
+
       const newDiscount = new Discount({
         description,
         discountType,
         startDate,
         endDate,
-        isActive,
         promoCode,
         isPromoCode,
-        applicableProducts,
         usageLimit,
         minimumPurchaseValue,
+        applicableProducts,
       });
 
       const savedDiscount = await newDiscount.save();
