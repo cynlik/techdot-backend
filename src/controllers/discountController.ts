@@ -49,7 +49,7 @@ export class DiscountController {
           let product = await Product.findById(productId)
 
           if(!product) {
-            console.log("saiu")
+            console.log("saiu");
             return;
           }
 
