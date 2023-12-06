@@ -3,7 +3,6 @@ import { Subcategory } from "@src/models/subcategoryModel";
 import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
-import { hasPermission } from "@src/middlewares/roleMiddleware";
 import { UserStatus } from "@src/models/userModel";
 export class SubcategoryController {
 
@@ -11,7 +10,13 @@ export class SubcategoryController {
 
   public getAllSubcategory = async (req: Request, res: Response, next: Function) => {
     try {
-      const viewUser = req.user.view;
+      const user = req.user;
+
+      let viewUser = UserStatus.NonMember;
+      
+      if(user) {
+        viewUser = user.view;
+      }
 
       const conditions: any = {};
 
@@ -31,9 +36,15 @@ export class SubcategoryController {
   }
 
   public getAllProductBySubcategory = async (req: Request, res: Response, next: Function) => {
-    const { id } = req.params
+    const { id } = req.params;
+    const user = req.user;
+
     try {
-      const viewUser = req.user.view;
+      let viewUser = UserStatus.NonMember;
+      
+      if(user) {
+        viewUser = user.view;
+      }
 
       const conditions: any = { subcategoryId: id};
 

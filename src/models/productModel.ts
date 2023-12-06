@@ -49,6 +49,8 @@ export interface IProduct extends Document {
   visible: boolean;
   subcategoryId: mongoose.Types.ObjectId;
   productType: string;
+  discountype: string;
+  onDiscount: boolean;
   specifications: {
     cpu?: typeof cpuSpecificationsSchema,
     gpu?: typeof gpuSpecificationSchema,
@@ -69,6 +71,8 @@ const productSchema = new Schema<IProduct>({
   visible: { type: Boolean, required: true, default: false },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
   productType: { type: String, enum: [...Object.keys(ProductType)], required: true },
+  discountype: { trype: String },
+  onDiscount: { trype: Boolean, required: true, default: false},
   specifications: {
     type: {
       cpu: cpuSpecificationsSchema,
@@ -81,5 +85,10 @@ const productSchema = new Schema<IProduct>({
   },
   warranty: { type: Date, default: null },
 });
+
+productSchema.path('specifications').validate(function (specs) {
+  return specs.cpu || specs.gpu || specs.motherboard || specs.ram || specs.case;
+}, 'Pelo menos um conjunto de especificações deve ser fornecido.');
+
 
 export const Product = model<IProduct>("Product", productSchema);

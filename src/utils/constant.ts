@@ -3,7 +3,8 @@ export enum Constant {
     Subcategory = "Subcategory",
     Category = "Category",
     User = "User",
-    Sale = "Sale"
+    Sale = "Sale",
+    Discount = "Discount"
 }
 
 export enum HttpStatus {
