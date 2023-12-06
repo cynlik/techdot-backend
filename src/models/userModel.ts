@@ -1,5 +1,5 @@
 import mongoose, { model, Document, Schema } from 'mongoose';
-import { CartItem, cartItemSchema } from './cartModel';
+import { ShoppingCart, shoppingCartSchema } from './cartModel';
 import { WishListItem, wishListItemSchema } from './wishListModel';
 
 export enum UserStatus {
@@ -26,7 +26,7 @@ export interface IUser extends Document {
   resetPasswordExpires: Date | null;
   isVerified: boolean | false;
   lastLoginIP: string | null;
-  cart: CartItem[];
+  cart: ShoppingCart;
   wishList: WishListItem[];
 }
 
@@ -57,7 +57,7 @@ export const UserSchema = new Schema<IUser>(
     resetPasswordExpires: { type: Date, default: null },
     isVerified: { type: Boolean, default: false },
     lastLoginIP: { type: String, default: null },
-    cart: [cartItemSchema],
+    cart: shoppingCartSchema,
     wishList: [wishListItemSchema],
   },
   {
