@@ -38,6 +38,7 @@ export default class CategoryController {
 			}
 
 			if (!req.user) {
+				
 			} else {
 				const user = await User.findById(req.user.id).populate("cart.product");
 
