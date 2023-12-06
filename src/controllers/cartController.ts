@@ -4,7 +4,7 @@ import { User, IUser } from "@src/models/userModel";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Product } from "@src/models/productModel";
-import { CartItem, CartItemModel } from "@src/models/cartModel";
+import { CartItem, ShoppingCart } from "@src/models/cartModel";
 
 interface CustomRequest extends Request {
 	user: IUser;
@@ -38,35 +38,54 @@ export default class CategoryController {
 			}
 
 			if (!req.user) {
+				// Lógica para usuário não autenticado
 			} else {
-				const user = await User.findById(req.user.id).populate("cart.product");
+				const user = await User.findById(req.user.id).populate(
+					"cart.items.product"
+				);
 
 				if (!user) {
 					return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 				}
 
-				const userCart: CartItem[] = user.cart || [];
+				const userCart: ShoppingCart | null = user.cart || {
+					items: [],
+					total: 0,
+				};
 
-				const existingCartItemIndex = userCart.findIndex((item) =>
+				const existingCartItemIndex = userCart.items.findIndex((item) =>
 					item.product.equals(product.id)
 				);
 
 				if (existingCartItemIndex !== -1) {
-					userCart[existingCartItemIndex].quantity += parsedQuantity || 1;
+					userCart.items[existingCartItemIndex].quantity += parsedQuantity || 1;
+					userCart.items[existingCartItemIndex].totalPrice = (
+						product.price * userCart.items[existingCartItemIndex].quantity
+					).toFixed(2);
 				} else {
-					const newItem = new CartItemModel({
+					const newItem: CartItem = {
 						product: product.id,
 						quantity: parsedQuantity || 1,
-					});
+						totalPrice: (product.price * parsedQuantity).toFixed(2),
+					} as CartItem;
 
-					userCart.push(newItem);
+					userCart.items.push(newItem);
 				}
 
-				await User.findByIdAndUpdate(user.id, { $set: { cart: userCart } });
+				const newCartTotal = userCart.items
+					.reduce(
+						(total, cartItem) => total + parseFloat(cartItem.totalPrice),
+						0
+					)
+					.toFixed(2);
 
-				const updatedUser = await User.findById(user.id).populate(
-					"cart.product"
-				);
+				userCart.total = parseFloat(newCartTotal);
+
+				await User.findByIdAndUpdate(user.id, {
+					$set: { cart: { items: userCart.items, total: userCart.total } },
+				});
+
+				const updatedUser = await User.findById(user.id).populate("cart.items");
 
 				if (!updatedUser) {
 					return res.status(HttpStatus.NOT_FOUND).json({
@@ -76,7 +95,8 @@ export default class CategoryController {
 
 				res.status(HttpStatus.OK).json({
 					message: "Info updated successfully",
-					cart: updatedUser.cart,
+					cart: updatedUser.cart.items,
+					cartTotal: updatedUser.cart.total,
 				});
 			}
 		} catch (error) {
@@ -96,22 +116,22 @@ export default class CategoryController {
 		next: Function
 	) => {
 		try {
-			const user = await User.findById(req.user.id).populate("cart.product");
+			const user = await User.findById(req.user.id).populate("cart.items");
 
 			if (!user) {
 				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
-			if (!user.cart || user.cart.length === 0) {
+			if (!user.cart) {
 				res.status(HttpStatus.OK).json({ message: "Your cart is empty" });
 			} else {
 				res.status(HttpStatus.OK).json({
-					cart: user.cart.map((cartItem) => ({
-						product: cartItem.product
-							? cartItem.product.toObject()
-							: "Product Not Found",
+					cart: user.cart.items.map((cartItem) => ({
+						product: cartItem.product,
 						quantity: cartItem.quantity,
+						total: cartItem.totalPrice,
 					})),
+					cartTotal: user.cart.total,
 				});
 			}
 		} catch (error) {
@@ -131,16 +151,20 @@ export default class CategoryController {
 		next: Function
 	) => {
 		try {
-			const user = await User.findById(req.user.id).populate("cart.product");
+			const user = await User.findById(req.user.id).populate("cart.items");
 			const { id, quantity, action } = req.body;
+			const parsedQuantity = parseInt(quantity, 10);
 
 			if (!user) {
 				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
 			}
 
-			const userCart: CartItem[] = user.cart || [];
+			const userCart: ShoppingCart | null = user.cart || {
+				items: [],
+				total: 0,
+			};
 
-			if (action == "removeAll") {
+			if (action === "removeAll") {
 				if (id) {
 					return next(
 						new CustomError(
@@ -156,20 +180,20 @@ export default class CategoryController {
 						)
 					);
 				}
-				userCart.splice(0, userCart.length);
+				userCart.items = [];
 			} else {
 				if (!quantity) {
 					return next(
 						new CustomError(
 							HttpStatus.BAD_REQUEST,
-							"Quantity is required for this action"
+							"Quantity is required for this action."
 						)
 					);
 				}
 
 				if (!id) {
 					return next(
-						new CustomError(HttpStatus.BAD_REQUEST, "Product ID is required")
+						new CustomError(HttpStatus.BAD_REQUEST, "Product ID is required.")
 					);
 				}
 
@@ -181,42 +205,74 @@ export default class CategoryController {
 					);
 				}
 
-				const existingCartItemIndex = userCart.findIndex((item) =>
-					item.product.equals(id)
+				if (product.stockQuantity === 0) {
+					return next(new CustomError(HttpStatus.BAD_REQUEST, "Out of stock."));
+				}
+
+				const existingCartItem = userCart.items.find((item) =>
+					item.product.equals(product.id)
 				);
 
+				if (!existingCartItem) {
+					return next(
+						new CustomError(HttpStatus.NOT_FOUND, "Product not found in cart.")
+					);
+				}
+
 				if (action === "add") {
-					if (existingCartItemIndex !== -1) {
-						userCart[existingCartItemIndex].quantity += quantity || 1;
+					if (existingCartItem) {
+						existingCartItem.quantity += parsedQuantity || 1;
+						existingCartItem.totalPrice = (
+							product.price * existingCartItem.quantity
+						).toFixed(2);
 					} else {
-						const newItem = new CartItemModel({
-							product: id,
-							quantity: quantity || 1,
-						});
-						userCart.push(newItem);
+						const newItem: CartItem = {
+							product: product.id,
+							quantity: parsedQuantity || 1,
+							totalPrice: (product.price * parsedQuantity).toFixed(2),
+						} as CartItem;
+
+						userCart.items.push(newItem);
 					}
 				} else if (action === "remove") {
-					if (existingCartItemIndex !== -1) {
-						if (
-							quantity &&
-							userCart[existingCartItemIndex].quantity >= quantity
-						) {
-							userCart[existingCartItemIndex].quantity -= quantity;
+					if (existingCartItem) {
+						if (existingCartItem.quantity >= quantity) {
+							existingCartItem.quantity -= quantity;
+							existingCartItem.totalPrice = (
+								product.price * existingCartItem.quantity
+							).toFixed(2);
 						} else {
-							userCart.splice(existingCartItemIndex, 1);
+							userCart.items = userCart.items.filter(
+								(item) => !item.product.equals(product.id)
+							);
 						}
 					}
 				} else if (action === "removeProduct") {
-					if (existingCartItemIndex !== -1) {
-						userCart.splice(existingCartItemIndex, 1);
+					if (quantity) {
+						return next(
+							new CustomError(
+								HttpStatus.BAD_REQUEST,
+								"Please provide only required fields. Remove quantity."
+							)
+						);
 					}
+					userCart.items = userCart.items.filter(
+						(item) => !item.product.equals(product.id)
+					);
 				}
 			}
-			const updatedUser = await User.findByIdAndUpdate(
-				user.id,
-				{ $set: { cart: userCart } },
-				{ new: true }
-			).populate("cart.product");
+
+			const newCartTotal = userCart.items
+				.reduce((total, cartItem) => total + parseFloat(cartItem.totalPrice), 0)
+				.toFixed(2);
+
+			userCart.total = parseFloat(newCartTotal);
+
+			await User.findByIdAndUpdate(user.id, {
+				$set: { cart: { items: userCart.items, total: userCart.total } },
+			});
+
+			const updatedUser = await User.findById(user.id).populate("cart.items");
 
 			if (!updatedUser) {
 				return res.status(HttpStatus.NOT_FOUND).json({
@@ -226,7 +282,8 @@ export default class CategoryController {
 
 			res.status(HttpStatus.OK).json({
 				message: "Cart updated successfully",
-				cart: updatedUser.cart,
+				cart: updatedUser.cart.items,
+				cartTotal: updatedUser.cart.total,
 			});
 		} catch (error) {
 			console.error(error);
