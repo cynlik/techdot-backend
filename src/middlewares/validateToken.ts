@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel';
 import { RevokedToken } from '@src/models/revokedTokenModel';
 import jwt from 'jsonwebtoken';
-import { HttpStatus } from '@src/utils/constant';
+import { ERROR_MESSAGES, HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 
 interface CustomRequest extends Request {
@@ -17,13 +17,13 @@ const validateToken = (isOptional: boolean = false) => {
       if (isOptional) {
         return next();
       } else {
-        return next(new CustomError(HttpStatus.UNAUTHORIZED, 'User is not authorized or token is missing'));
+        return next(new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED_MISSING_TOKEN));
       }
     }
 
     try {
       if (typeof authHeader !== 'string' || !authHeader.toLowerCase().startsWith('bearer ')) {
-        throw new CustomError(HttpStatus.UNAUTHORIZED, 'Invalid token format');
+        throw new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.INVALID_TOKEN_FORMAT);
       }
 
       const token = authHeader.split(' ')[1];
@@ -31,7 +31,7 @@ const validateToken = (isOptional: boolean = false) => {
       const isRevoked = await RevokedToken.findOne({ token: `Bearer ${token}` });
 
       if (isRevoked) {
-        next(new CustomError(HttpStatus.UNAUTHORIZED, 'Token revoked. Login again'));
+        next(new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.TOKEN_REVOKED));
       }
 
       const decoded = jwt.verify(token, process.env.SECRET as string) as IUser;
@@ -39,9 +39,9 @@ const validateToken = (isOptional: boolean = false) => {
       next();
     } catch (err: any) {
       if (err instanceof jwt.JsonWebTokenError) {
-        next(new CustomError(HttpStatus.UNAUTHORIZED, 'Invalid or expired token'));
+        next(new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.INVALID_EXPIRED_TOKEN));
       } else {
-        next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'An unexpected error occurred'));
+        next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.UNEXPECTED_ERROR));
       }
     }
   };

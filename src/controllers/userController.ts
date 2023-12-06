@@ -9,7 +9,7 @@ import { EmailType } from "@src/utils/emailType";
 import { RevokedToken } from "@src/models/revokedTokenModel";
 import { getUserCountry } from "@src/services/geoLocation";
 import { CustomError } from "@src/utils/customError";
-import { HttpStatus } from "@src/utils/constant";
+import { HttpStatus, ERROR_MESSAGES, SUCCESS_MESSAGES } from "@src/utils/constant";
 import { Product } from "@src/models/productModel";
 import { WishListItem, WishListItemModel } from "@src/models/wishListModel";
 
@@ -25,7 +25,7 @@ export default class UserController {
       const userExists = await User.findOne({ email });
       if (userExists) {
         return next(
-          new CustomError(HttpStatus.BAD_REQUEST, "User already registered!")
+          new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.USER_ALREADY_EXISTS)
         );
       }
 
@@ -47,16 +47,15 @@ export default class UserController {
       sendMail(EmailType.Welcome, user.email, res, token.token);
       sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
-      return res
-        .status(HttpStatus.OK)
-        .json(
-          `Account registered successfully. Please verify your account through the email sent to your email: ${user.email}`
-        );
+      return res.status(HttpStatus.OK).json({
+        message: SUCCESS_MESSAGES.ACCOUNT_REGISTERED_SUCCESSFULLY,
+        email: user.email,
+    });
     } catch (error) {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -69,7 +68,7 @@ export default class UserController {
       const user = await User.findOne({ email });
 
       if (!user) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!"));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       if (!user.isVerified) {
@@ -84,7 +83,7 @@ export default class UserController {
         sendMail(EmailType.VerifyAccount, user.email, res, token.token);
 
         return next(
-          new CustomError(HttpStatus.UNAUTHORIZED, "Verify your email")
+          new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.VERIFY_EMAIL)
         );
       }
 
@@ -111,14 +110,14 @@ export default class UserController {
         return res.status(HttpStatus.OK).json(accessToken);
       } else {
         return next(
-          new CustomError(HttpStatus.UNAUTHORIZED, "Invalid email or password")
+          new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.INVALID_EMAIL_PASSWORD)
         );
       }
     } catch (error) {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -135,12 +134,12 @@ export default class UserController {
       user.verifyAccountToken = null;
       await user.save();
 
-      return res.status(HttpStatus.OK).json("Account verified successfully!");
+      return res.status(HttpStatus.OK).json(SUCCESS_MESSAGES.ACCOUNT_VERIFIED_SUCCESSFULLY);
     } catch (error) {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -156,7 +155,7 @@ export default class UserController {
 
       const user = await User.findOne({ email });
       if (!user) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!"));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       const token = UserController.createToken(user, config.expiresIn);
@@ -170,7 +169,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -189,7 +188,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "The new password and confirm password fields must match."
+            ERROR_MESSAGES.EMAIL_PASSWORD_MATCH
           )
         );
       }
@@ -200,7 +199,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "The new password must be different from the old password."
+            ERROR_MESSAGES.PASSWORD_SAME_AS_CURRENT
           )
         );
       }
@@ -220,7 +219,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.INTERNAL_SERVER_ERROR,
-            "Internal Server Error"
+            SUCCESS_MESSAGES.PASSWORD_UPDATED_SUCCESSFULLY
           )
         );
       }
@@ -228,7 +227,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -242,7 +241,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -261,7 +260,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "The new name is the same as the current name"
+            ERROR_MESSAGES.NAME_SAME_AS_CURRENT
           )
         );
       }
@@ -270,7 +269,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "The new password is the same as the current password"
+            ERROR_MESSAGES.PASSWORD_SAME_AS_CURRENT
           )
         );
       }
@@ -293,12 +292,12 @@ export default class UserController {
 
       res
         .status(HttpStatus.OK)
-        .json({ message: "Info updated successfully", user: updatedUser });
+        .json({ message: SUCCESS_MESSAGES.INFO_UPDATED_SUCCESSFULLY, user: updatedUser });
     } catch (error) {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -316,12 +315,12 @@ export default class UserController {
       const product = await Product.findById(req.params.id);
 
       if (!user) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       if (!product) {
         return next(
-          new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+          new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.PRODUCT_NOT_FOUND)
         );
       }
 
@@ -335,7 +334,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "Product already in your wishlist."
+            ERROR_MESSAGES.PRODUCT_ALREADY_IN_WISHLIST
           )
         );
       } else {
@@ -356,12 +355,12 @@ export default class UserController {
 
       if (!updatedUser) {
         return res.status(HttpStatus.NOT_FOUND).json({
-          message: "User not found",
+          message: ERROR_MESSAGES.USER_NOT_FOUND,
         });
       }
 
       res.status(HttpStatus.OK).json({
-        message: "Info updated successfully",
+        message: SUCCESS_MESSAGES.INFO_UPDATED_SUCCESSFULLY,
         wishList: updatedUser.wishList,
       });
     } catch (error) {
@@ -369,7 +368,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -386,17 +385,17 @@ export default class UserController {
       );
 
       if (!user) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       if (!user.wishList || user.wishList.length === 0) {
-        res.status(HttpStatus.OK).json({ message: "Your wishlist is empty" });
+        res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMPTY_WISH_LIST });
       } else {
         res.status(HttpStatus.OK).json({
           wishList: user.wishList.map((wishListItem) => ({
             product: wishListItem.product
               ? wishListItem.product.toObject()
-              : "Product Not Found",
+              : ERROR_MESSAGES.PRODUCT_NOT_FOUND,
           })),
         });
       }
@@ -405,7 +404,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -420,14 +419,14 @@ export default class UserController {
       const user = await User.findById(req.user.id);
 
       if (!user) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       const product = await Product.findById(req.params.id);
 
       if (!product) {
         return next(
-          new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+          new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.PRODUCT_NOT_FOUND)
         );
       }
 
@@ -439,7 +438,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "Product not found in your wishlist."
+            ERROR_MESSAGES.PRODUCT_NOT_FOUND
           )
         );
       } else {
@@ -454,12 +453,12 @@ export default class UserController {
 
       if (!updatedUser) {
         return res.status(HttpStatus.NOT_FOUND).json({
-          message: "User not found",
+          message: ERROR_MESSAGES.USER_NOT_FOUND,
         });
       }
 
       res.status(HttpStatus.OK).json({
-        message: "Item removed from wishlist successfully",
+        message: SUCCESS_MESSAGES.ITEM_REMOVED_FROM_WISHLIST_SUCCESSFULLY,
         wishList: updatedUser.wishList,
       });
     } catch (error) {
@@ -467,7 +466,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -492,7 +491,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -508,12 +507,12 @@ export default class UserController {
       const dbUser = await User.findById(req.params.id);
 
       if (dbUser === null) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found!"));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       if (newUser.email && !(await this.isEmailUnique(newUser.email))) {
         return next(
-          new CustomError(HttpStatus.BAD_REQUEST, "Email already in use.")
+          new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE)
         );
       }
 
@@ -522,7 +521,7 @@ export default class UserController {
           return next(
             new CustomError(
               HttpStatus.BAD_REQUEST,
-              "New password must be different from the previous one."
+              ERROR_MESSAGES.NEW_PASSWORD_DIFFERENT
             )
           );
         }
@@ -537,14 +536,14 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "Name must be 50 characters or less."
+            ERROR_MESSAGES.NAME_LENGTH_EXCEEDED
           )
         );
       }
 
       if (newUser.role && !Object.values(UserStatus).includes(newUser.role)) {
         return next(
-          new CustomError(HttpStatus.BAD_REQUEST, "Invalid user role.")
+          new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.INVALID_USER_ROLE)
         );
       }
 
@@ -552,7 +551,7 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "Invalid picture format. Allowed formats are jpg, jpeg, or png."
+            ERROR_MESSAGES.INVALID_PICTURE_FORMAT
           )
         );
       }
@@ -561,13 +560,13 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "Address must be 100 characters or less."
+            ERROR_MESSAGES.ADDRESS_LENGTH_EXCEEDED
           )
         );
       }
 
       if (newUser.country && !this.isValidCountry(newUser.country)) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST, "Invalid country"));
+        return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.INVALID_COUNTRY));
       }
 
       if (
@@ -577,14 +576,14 @@ export default class UserController {
         return next(
           new CustomError(
             HttpStatus.BAD_REQUEST,
-            "Invalid value for isVerified. Must be a boolean."
+            ERROR_MESSAGES.INVALID_VALUE_IS_VERIFIED
           )
         );
       }
 
       if (newUser.cart && !this.isValidCart(newUser.cart)) {
         return next(
-          new CustomError(HttpStatus.BAD_REQUEST, "Invalid cart format.")
+          new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.INVALID_CART_FORMAT)
         );
       }
 
@@ -597,7 +596,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -618,7 +617,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -635,12 +634,12 @@ export default class UserController {
 
       if (!token) {
         return next(
-          new CustomError(HttpStatus.UNAUTHORIZED, "No token provided.")
+          new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.NO_TOKEN_PROVIDED)
         );
       }
 
       if (!user) {
-        return next(new CustomError(HttpStatus.UNAUTHORIZED, "No user."));
+        return next(new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.NO_USER));
       }
 
       const newView = user.view === user.role ? UserStatus.Member : user.role;
@@ -652,7 +651,7 @@ export default class UserController {
       );
 
       if (!updatedUser) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
       await this.revokeUserToken(token);
@@ -663,7 +662,7 @@ export default class UserController {
       );
 
       res.status(HttpStatus.OK).json({
-        message: "View changed successfully",
+        message: SUCCESS_MESSAGES.VIEW_CHANGED_SUCCESSFULLY,
         view: updatedUser.view,
         accessToken: accessToken,
       });
@@ -671,7 +670,7 @@ export default class UserController {
       return next(
         new CustomError(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
+          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
       );
     }
@@ -683,12 +682,12 @@ export default class UserController {
 
       if (!token) {
         return next(
-          new CustomError(HttpStatus.UNAUTHORIZED, "No token provided.")
+          new CustomError(HttpStatus.UNAUTHORIZED, ERROR_MESSAGES.NO_TOKEN_PROVIDED)
         );
       }
       await this.revokeUserToken(token);
 
-      res.status(HttpStatus.OK).json({ message: "Logout successful" });
+      res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.LOGOUT_SUCCESSFUL });
     } catch (error) {
       return next(
         new CustomError(

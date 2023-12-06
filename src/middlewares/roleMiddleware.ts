@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { IUser, UserStatus } from '@src/models/userModel';
+import { HttpStatus, ERROR_MESSAGES } from '@src/utils/constant';
 
 declare global {
   namespace Express {
@@ -28,7 +29,7 @@ const roleMiddleware = (allowedRole: UserStatus) => {
       const userRole = req.user?.role;
 
       if (!userRole) {
-        return res.status(403).json({ message: 'Access denied. User has no valid role.' });
+        return res.status(HttpStatus.FORBIDDEN).json({ message: ERROR_MESSAGES.NO_VALID_ROLE });
       }
 
       const allowedRoleOrder = calculateRoleOrder(allowedRole);
@@ -37,10 +38,14 @@ const roleMiddleware = (allowedRole: UserStatus) => {
       if (userRoleOrder >= allowedRoleOrder) {
         next();
       } else {
-        return res.status(403).json({ message: `Access denied. Only ${allowedRole} or higher users allowed.` });
+        return res.status(HttpStatus.FORBIDDEN).json({
+          message: `${ERROR_MESSAGES.ACCESS_DENIED} ${allowedRole} ${ERROR_MESSAGES.OR_HIGHER}`,
+        });
       }
     } catch (error) {
-      return res.status(500).json({ message: `Error in ${allowedRole} middleware` });
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: `${ERROR_MESSAGES.ERROR_IN_MIDDLEWARE} ${allowedRole}`,
+      });
     }
   };
 };

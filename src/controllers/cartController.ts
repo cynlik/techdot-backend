@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import { Request, Response } from "express";
 import { User, IUser } from "@src/models/userModel";
 import { CustomError } from "@src/utils/customError";
-import { HttpStatus } from "@src/utils/constant";
+import { HttpStatus, ERROR_MESSAGES, SUCCESS_MESSAGES } from "@src/utils/constant";
 import { Product } from "@src/models/productModel";
 import { CartItem, ShoppingCart } from "@src/models/cartModel";
 
@@ -22,19 +22,15 @@ export default class CategoryController {
 			const product = await Product.findById(req.params.id);
 
 			if (quantity <= 0) {
-				return next(
-					new CustomError(HttpStatus.BAD_REQUEST, "Invalid quantity")
-				);
+				return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.INVALID_QUANTITY));
 			}
 
 			if (!product) {
-				return next(
-					new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
-				);
+				return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.PRODUCT_NOT_FOUND));
 			}
 
 			if (product.stockQuantity === 0) {
-				return next(new CustomError(HttpStatus.BAD_REQUEST, "Out of stock."));
+				return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.OUT_OF_STOCK));
 			}
 
 			if (!req.user) {
@@ -45,7 +41,7 @@ export default class CategoryController {
 				);
 
 				if (!user) {
-					return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+					return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
 				}
 
 				const userCart: ShoppingCart | null = user.cart || {
@@ -88,25 +84,18 @@ export default class CategoryController {
 				const updatedUser = await User.findById(user.id).populate("cart.items");
 
 				if (!updatedUser) {
-					return res.status(HttpStatus.NOT_FOUND).json({
-						message: "User not found",
-					});
+					return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
 				}
 
 				res.status(HttpStatus.OK).json({
-					message: "Info updated successfully",
+					message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
 					cart: updatedUser.cart.items,
 					cartTotal: updatedUser.cart.total,
 				});
 			}
 		} catch (error) {
 			console.error(error);
-			return next(
-				new CustomError(
-					HttpStatus.INTERNAL_SERVER_ERROR,
-					"Internal Server Error"
-				)
-			);
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_SERVER_ERROR));
 		}
 	};
 
@@ -119,11 +108,11 @@ export default class CategoryController {
 			const user = await User.findById(req.user.id).populate("cart.items");
 
 			if (!user) {
-				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+				return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
 			}
 
 			if (!user.cart) {
-				res.status(HttpStatus.OK).json({ message: "Your cart is empty" });
+				res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMPTY_CART });
 			} else {
 				res.status(HttpStatus.OK).json({
 					cart: user.cart.items.map((cartItem) => ({
@@ -136,12 +125,7 @@ export default class CategoryController {
 			}
 		} catch (error) {
 			console.log(error);
-			return next(
-				new CustomError(
-					HttpStatus.INTERNAL_SERVER_ERROR,
-					"Internal Server Error"
-				)
-			);
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_SERVER_ERROR));
 		}
 	};
 
@@ -156,7 +140,7 @@ export default class CategoryController {
 			const parsedQuantity = parseInt(quantity, 10);
 
 			if (!user) {
-				return next(new CustomError(HttpStatus.NOT_FOUND, "User not found."));
+				return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
 			}
 
 			const userCart: ShoppingCart | null = user.cart || {
@@ -169,44 +153,37 @@ export default class CategoryController {
 					return next(
 						new CustomError(
 							HttpStatus.BAD_REQUEST,
-							"Please provide only required fields. Remove id."
+							ERROR_MESSAGES.REMOVE_PRODUCT_ID
 						)
 					);
 				} else if (quantity) {
 					return next(
 						new CustomError(
 							HttpStatus.BAD_REQUEST,
-							"Please provide only required fields. Remove quantity."
+							ERROR_MESSAGES.REMOVE_PRODUCT_QUANTITY
 						)
 					);
 				}
 				userCart.items = [];
 			} else {
 				if (!quantity) {
-					return next(
-						new CustomError(
-							HttpStatus.BAD_REQUEST,
-							"Quantity is required for this action."
-						)
-					);
+					return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.QUANTITY_REQUIRED));
 				}
 
 				if (!id) {
-					return next(
-						new CustomError(HttpStatus.BAD_REQUEST, "Product ID is required.")
-					);
+					return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.PRODUCT_ID_REQUIRED));
 				}
 
 				const product = await Product.findById(id);
 
 				if (!product) {
 					return next(
-						new CustomError(HttpStatus.NOT_FOUND, "Product not found.")
+						new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.PRODUCT_NOT_FOUND)
 					);
 				}
 
 				if (product.stockQuantity === 0) {
-					return next(new CustomError(HttpStatus.BAD_REQUEST, "Out of stock."));
+					return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.OUT_OF_STOCK));
 				}
 
 				const existingCartItem = userCart.items.find((item) =>
@@ -215,7 +192,7 @@ export default class CategoryController {
 
 				if (!existingCartItem) {
 					return next(
-						new CustomError(HttpStatus.NOT_FOUND, "Product not found in cart.")
+						new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.PRODUCT_NOT_IN_CART)
 					);
 				}
 
@@ -252,7 +229,7 @@ export default class CategoryController {
 						return next(
 							new CustomError(
 								HttpStatus.BAD_REQUEST,
-								"Please provide only required fields. Remove quantity."
+								ERROR_MESSAGES.REMOVE_PRODUCT_QUANTITY
 							)
 						);
 					}
@@ -276,23 +253,18 @@ export default class CategoryController {
 
 			if (!updatedUser) {
 				return res.status(HttpStatus.NOT_FOUND).json({
-					message: "User not found",
+					message: ERROR_MESSAGES.USER_NOT_FOUND,
 				});
 			}
 
 			res.status(HttpStatus.OK).json({
-				message: "Cart updated successfully",
+				message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
 				cart: updatedUser.cart.items,
 				cartTotal: updatedUser.cart.total,
 			});
 		} catch (error) {
 			console.error(error);
-			return next(
-				new CustomError(
-					HttpStatus.INTERNAL_SERVER_ERROR,
-					"Internal Server Error"
-				)
-			);
+			return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_SERVER_ERROR));
 		}
 	};
 }
