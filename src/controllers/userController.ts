@@ -718,12 +718,21 @@ export default class UserController {
     return (await User.find({ email }).exec()).length <= 0;
   };
 
+  private static encryptEmail(email: string) {
+    const saltRounds = config.saltRounds;
+    const hashedEmail = bcrypt.hashSync(email, saltRounds);
+  
+    return hashedEmail;
+  }
+
   private static createToken(user: IUser, expiresIn = config.expiresIn) {
+    const hashedEmail = this.encryptEmail(user.email);
+
     let token = jwt.sign(
       {
         id: user._id,
         name: user.name,
-        email: user.email,
+        hashedEmail,
         country: user.country,
         role: user.role,
         view: user.view,
