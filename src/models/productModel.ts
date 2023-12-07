@@ -50,7 +50,7 @@ export interface IProduct extends Document {
   visible: boolean;
   subcategoryId: mongoose.Types.ObjectId;
   productType: string;
-  discountype: string;
+  discountType: number;
   onDiscount: boolean;
   specifications: {
     cpu?: typeof cpuSpecificationsSchema,
@@ -69,11 +69,11 @@ const productSchema = new Schema<IProduct>({
   manufacturer: { type: String, required: true },
   stockQuantity: { type: Number, required: true, min: 0 },
   price: { type: Number, required: true, min: 0 },
-  originalPrice: { type: Number },
+  originalPrice: { type: Number, required: true, default: 0 },
   visible: { type: Boolean, required: true, default: false },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
   productType: { type: String, enum: [...Object.keys(ProductType)], required: true },
-  discountype: { type: String },
+  discountType: { type: Number, required: true, default: 0 },
   onDiscount: { type: Boolean, required: true, default: false },
   specifications: {
     type: {
