@@ -3,44 +3,13 @@ import { SaleModel, ISaleProduct } from '@src/models/saleModel';
 import { UserStatus } from '@src/models/userModel';
 import { HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
-import { hasPermission } from "@src/middlewares/roleMiddleware";
-import { IProduct, Product } from "@src/models/productModel";
+import { Product } from "@src/models/productModel";
 
 export class SaleController {
 public create = async (req: Request, res: Response, next: Function) => {
   try { 
-    const {userName, userEmail, userAdress, userPhone, paymentMethod, products } = req.body
+    const {userName, userEmail, userAdress, userPhone, paymentMethod, shoppingCart } = req.body
     const user = req.user
-
-    // Verificar o stock*
-    for (const productItem of products) {
-      const product = await Product.findOne({ name: productItem.nameProduct });
-
-       if (!product) {  
-        console.log(products);      
-         return next(new CustomError(HttpStatus.NOT_FOUND, 'Not found'));
-       }
-
-      // Verificar se a quantidade na sale é maior do que o stock disponível*
-      if (productItem.quantity > product.stockQuantity) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Out of stock'));
-      }
-
-    // TotalAmount
-    let totalAmount = 0;
-
-    for (const productItem of products) {
-      const product = await Product.findOne({ name: productItem.nameProduct });
-    
-      if (product) {
-        // Adicionar o price do produto ao totalAmount
-        console.log(`Quantidade: ${productItem.quantity}, Preço unitário: ${product.price}`);
-        totalAmount += productItem.quantity * product.price;
-        console.log(`Total atual: ${totalAmount}`);
-      } else {
-        console.log(`Produto não encontrado para ${productItem.nameProduct}`);
-      }
-    }
       
     const newSale = new SaleModel({
       userName,
@@ -48,11 +17,11 @@ public create = async (req: Request, res: Response, next: Function) => {
       userAdress,
       userPhone,
       paymentMethod,
-      products,
+      shoppingCart,
     } as ISale);
 
     // Subtrair a quantidade vendida do stock de cada produto*
-    for (const productItem of products) {
+    for (const productItem of shoppingCart) {
       const product = await Product.findOne({ name: productItem.nameProduct });
       if (product) {
         product.stockQuantity -= productItem.quantity;
@@ -74,46 +43,65 @@ public create = async (req: Request, res: Response, next: Function) => {
   }
 }
 
-  public getAll = async(req: Request, res: Response, next: Function) => {    
-    try {
-      const userEmail = req.params.id;
-      const user = req.user;
+public getSalesByName = async (req: Request, res: Response, next: Function) => {
+  const userEmail = req.user.email
+  try {
+    const { userEmail, sort, page = '1', limit = '6' } = req.query as {
+      userEmail?: string;
+      sort?: string;
+      page?: string;
+      limit?: string;
+    };
 
-      if (!user) {
-        return next(new CustomError(HttpStatus.UNAUTHORIZED, 'Unauthorized'));
-      }
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
 
-      const isAdmin = hasPermission(user.role, UserStatus.Manager);
-      const isMember = hasPermission(user.role, UserStatus.Member);
-  
-      if (userEmail) {
-        
-        const sale = await SaleModel.findById(userEmail);
-        if (!sale) {
-          return next(new CustomError(HttpStatus.NOT_FOUND, 'Not Found'));
-        }
-  
-        if (isAdmin || (isMember && sale.userEmail === (user.email))) {
-          return res.status(HttpStatus.OK).json(sale);
-        } else {
-          return next(new CustomError(HttpStatus.FORBIDDEN, 'Forbidden'));
-        }
-      } else {
-        if (isAdmin) {
-          const sales = await SaleModel.find();
-          return res.status(HttpStatus.OK).json(sales);
-        } else if (isMember) {
-          const sales = await SaleModel.find({ userEmail: user.email });
-           return res.status(HttpStatus.OK).send(sales)
-        } else {
-          return next(new CustomError(HttpStatus.FORBIDDEN, 'Forbidden'));
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+    if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
+      return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
     }
-} 
+
+    const viewUser = req.user.view;
+    const conditions: any = {};
+
+    if (viewUser !== UserStatus.Admin) {
+      console.log(userEmail);
+      
+      conditions.userEmail = userEmail;
+    }
+
+    if (userEmail) {
+      const regex = new RegExp(userEmail, 'i');
+      conditions.name = regex;
+    }
+
+    const count = await SaleModel.countDocuments(conditions);
+    const totalPages = Math.ceil(count / limitNumber);
+
+    let query = SaleModel.find(conditions)
+
+    switch (sort) {
+      case 'preco_maior':
+        query = query.sort({ price: -1 });
+        break;
+      case 'preco_menor':
+        query = query.sort({ price: 1 });
+        break;
+    }
+
+    const sales = await query
+      .limit(limitNumber)
+      .skip((pageNumber - 1) * limitNumber);
+
+    if (sales.length === 0) {
+      next(new CustomError(HttpStatus.NOT_FOUND, 'Nenhuma sale encontrada.'))
+    } else {
+      res.status(200).send({ sales, totalPages });
+    }
+  } catch (error) {
+    console.error(error);
+    next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Erro ao procurar produtos.'));
+  }
+};
 
   public deleteById = async (req: Request, res: Response, next: Function) => {
     try {
