@@ -725,6 +725,11 @@ export default class UserController {
     return hashedEmail;
   }
 
+  private static decryptEmail(userProvidedEmail: string, hashedEmail: string) {
+    const isEmailMatch = bcrypt.compareSync(userProvidedEmail, hashedEmail);
+    return isEmailMatch;
+  }
+
   private static createToken(user: IUser, expiresIn = config.expiresIn) {
     const hashedEmail = this.encryptEmail(user.email);
 
