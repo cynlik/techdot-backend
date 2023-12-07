@@ -95,7 +95,7 @@ export default class CartController {
 				guest.total = parseFloat(newCartTotal);
 
 				res.status(HttpStatus.OK).json({
-					message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
+					message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
 					cart: guest.items || [],
 					cartTotal: guest.total || 0,
 				});
