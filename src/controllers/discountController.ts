@@ -60,6 +60,42 @@ export class DiscountController {
     const updateFields = req.body;
 
     try {
+
+      const discount = await Discount.findById(id);
+
+      if (!discount) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
+      }
+
+      const discountDecimal = discount.discountType / 100
+
+      if (!discount.isPromoCode) {
+        if (updateFields.isActive) {
+
+          const lenghtProducts = discount.applicableProducts.length
+
+          for (let i = 0; i < lenghtProducts; i++) {
+            let productId = discount.applicableProducts[i]
+
+            let product = await Product.findById(productId)
+
+            if (!product) {
+              console.log("saiu")
+              return;
+            }
+
+            let newPrice = product.price - (product.price * discountDecimal)
+
+            let priceUpdated = await Product.findByIdAndUpdate({ id: productId, discountType: discountType, onDiscount: true, price: newPrice });
+
+            return res.status(HttpStatus.OK).send(priceUpdated)
+          }
+
+        } else {
+          console.log("ola")
+        }
+      }
+
       const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
 
       return res.status(HttpStatus.OK).json(updateDiscount);

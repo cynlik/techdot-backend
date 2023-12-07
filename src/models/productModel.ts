@@ -46,6 +46,7 @@ export interface IProduct extends Document {
   manufacturer: string;
   stockQuantity: number;
   price: number;
+  originalPrice: number;
   visible: boolean;
   subcategoryId: mongoose.Types.ObjectId;
   productType: string;
@@ -68,6 +69,7 @@ const productSchema = new Schema<IProduct>({
   manufacturer: { type: String, required: true },
   stockQuantity: { type: Number, required: true, min: 0 },
   price: { type: Number, required: true, min: 0 },
+  originalPrice: { type: Number },
   visible: { type: Boolean, required: true, default: false },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
   productType: { type: String, enum: [...Object.keys(ProductType)], required: true },
