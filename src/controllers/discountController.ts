@@ -3,7 +3,7 @@ import { IProduct, Product } from "@src/models/productModel";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Discount, IDiscount } from "@src/models/dicountModel";
-import { UserStatus } from "@src/models/userModel";
+import { IUser, UserStatus } from "@src/models/userModel";
 
 export class DiscountController {
 
@@ -69,10 +69,11 @@ export class DiscountController {
 
       const discountDecimal = discount.discountType / 100
 
+      const lenghtProducts = discount.applicableProducts.length
+
+
       if (!discount.isPromoCode) {
         if (updateFields.isActive) {
-
-          const lenghtProducts = discount.applicableProducts.length
 
           for (let i = 0; i < lenghtProducts; i++) {
             let productId = discount.applicableProducts[i]
@@ -93,7 +94,24 @@ export class DiscountController {
           }
 
         } else {
-          console.log("ola")
+
+          for (let i = 0; i < lenghtProducts; i++) {
+            let productId = discount.applicableProducts[i]
+
+            let product = await Product.findById(productId)
+
+            if (!product) {
+              console.log("saiu")
+              return;
+            }
+
+            let newPrice = product.originalPrice
+
+            let priceUpdated = await Product.findByIdAndUpdate( productId, { $set: {discountType: 0, onDiscount: false, price: newPrice} });
+
+
+            return res.status(HttpStatus.OK).send(priceUpdated)
+          }
         }
       }
 
