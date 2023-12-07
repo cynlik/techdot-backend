@@ -6,7 +6,6 @@ import "./config"
 import { errorHandler } from './middlewares/errorHandler';
 import swaggerDocs from '@src/utils/swagger';
 import cookieSession from 'cookie-session';
-import csrf from 'csurf';
 
 dotenv.config();
 
@@ -31,9 +30,6 @@ for (const route of routes) {
   app.use(route.path, route.router);
 }
 app.use(errorHandler)// Tratamento de erros
-
-const csrfProtection = csrf({ cookie: true });
-app.use(csrfProtection);
 app.disable('x-powered-by');
 
 app.listen(port, hostname, () => {
