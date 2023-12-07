@@ -86,7 +86,8 @@ export class DiscountController {
 
             let newPrice = product.price - (product.price * discountDecimal)
 
-            let priceUpdated = await Product.findByIdAndUpdate({ id: productId, discountType: discountType, onDiscount: true, price: newPrice });
+            let priceUpdated = await Product.findByIdAndUpdate( productId, { $set: {discountType: discount.discountType, onDiscount: true, price: newPrice, originalPrice: product.price} });
+
 
             return res.status(HttpStatus.OK).send(priceUpdated)
           }
