@@ -9,12 +9,12 @@ const router = express.Router();
 const cartController = new CartController();
 
 // Add item to cart
-router.post("/:id", validateToken(), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), cartController.addToCart);
+router.post("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), cartController.addToCart);
 
 // Get cart items
-router.get("/", validateToken(), cartController.getCartItems);
+router.get("/", validateToken(true), cartController.getCartItems);
 
 // Update cart items
-router.put("/", validateToken(), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), cartController.updateCart);
+router.put("/", validateToken(true), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), cartController.updateCart);
 
 export default router;
