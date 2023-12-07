@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { SaleModel, ISaleProduct } from '@src/models/saleModel';
+import { SaleModel, ISale } from '@src/models/saleModel';
 import { UserStatus } from '@src/models/userModel';
 import { HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 import { Product } from "@src/models/productModel";
 
 export class SaleController {
+
 public create = async (req: Request, res: Response, next: Function) => {
   try { 
     const {userName, userEmail, userAdress, userPhone, paymentMethod, shoppingCart } = req.body
@@ -30,17 +31,11 @@ public create = async (req: Request, res: Response, next: Function) => {
 
       await newSale.save();
       res.status(HttpStatus.CREATED).json(newSale);
+      }
     } catch (error) {
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
     }
-  };
 
-    await newSale.save();
-    res.status(HttpStatus.CREATED).json(newSale);
-  } catch (error) {
-    console.error(error); 
-    return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
-  }
 }
 
 public getSalesByName = async (req: Request, res: Response, next: Function) => {
@@ -123,5 +118,4 @@ public getSalesByName = async (req: Request, res: Response, next: Function) => {
 //     return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
 //   }
 // }
-
 }

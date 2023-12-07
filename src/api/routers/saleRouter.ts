@@ -11,14 +11,8 @@ const router = express.Router();
 const saleController = new SaleController();
 
 
-router.post("/create", saleController.create)
 // Create Sale
-// router.post("/create", Validator.validateFields({ required: ["userId", "products"]}), Validator.validateIds([
-//     { paramName: "userId", model: User, type: Constant.User },
-//     { paramName: "product", model: Product, type: Constant.Product },
-//   ]),
-//   saleController.create
-//);
+ router.post("/create", Validator.validateFields({ required: ["userName", "userEmail", "userAdress", "userPhone", "paymentMethod"]}), saleController.create);
 
 // Get all sales(find by email)
 router.get("/all/", validateToken(), saleController.getSalesByName); 

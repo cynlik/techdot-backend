@@ -29,7 +29,7 @@ export const saleSchema = new Schema<ISale>({
         userAdress: {type: String, required: true},
         userPhone: {type: String, required: true},
         paymentMethod: {type: String, required: true},
-        
+        shoppingCart:[] ,
         date: {type: Date, default: Date.now()},
 });
 
