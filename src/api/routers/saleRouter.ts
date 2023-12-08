@@ -14,8 +14,8 @@ const saleController = new SaleController();
 // Create Sale
  router.post("/create", Validator.validateFields({ required: ["userName", "userEmail", "userAdress", "userPhone", "paymentMethod"]}), saleController.create);
 
-// Get all sales(find by email)
-router.get("/all/", validateToken(), saleController.getSalesByName); 
+// Get all sales
+router.get("/all", validateToken(), saleController.getSalesByName); 
 
 // Delete Sale By Id
 router.delete("/delete/:id",validateToken(),Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale },]), roleMiddleware(UserStatus.Manager),saleController.deleteById

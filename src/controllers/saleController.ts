@@ -58,15 +58,14 @@ public getSalesByName = async (req: Request, res: Response, next: Function) => {
     const viewUser = req.user.view;
     const conditions: any = {};
 
-    if (viewUser !== UserStatus.Admin) {
-      console.log(userEmail);
-      
+    if (viewUser === UserStatus.Admin) {
+      // Se for um admin, não há restrições de acesso
+    } else if (viewUser === UserStatus.Member) {
+      // Se for um member, só terá acesso às vendas associadas ao seu email
       conditions.userEmail = userEmail;
-    }
-
-    if (userEmail) {
-      const regex = new RegExp(userEmail, 'i');
-      conditions.name = regex;
+    } else {
+      // Caso o tipo de usuário não seja reconhecido, você pode lidar com isso aqui
+      return next(new CustomError(HttpStatus.UNAUTHORIZED, 'Tipo de usuário não reconhecido.'));
     }
 
     const count = await SaleModel.countDocuments(conditions);
