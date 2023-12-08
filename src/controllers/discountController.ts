@@ -47,24 +47,6 @@ export class DiscountController {
     return updatedPrices;
   }
 
-  public getDiscountByID = async (req: Request, res: Response, next: Function) => {
-    const { id } = req.params;
-
-    try {
-
-      const discount = await Discount.findById(id);
-
-      if (!discount) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
-      }
-
-      return res.status(200).send(discount);
-    } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
-    }
-  };
-
   // =================|ADMIN|=================
 
   public createDiscount = async (req: Request, res: Response, next: Function) => {
@@ -278,6 +260,24 @@ export class DiscountController {
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
+    }
+  };
+
+  public getDiscountByID = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+
+    try {
+
+      const discount = await Discount.findById(id);
+
+      if (!discount) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
+      }
+
+      return res.status(200).send(discount);
+    } catch (error) {
+      console.error(error);
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
     }
   };
 
