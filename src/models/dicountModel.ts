@@ -5,7 +5,7 @@ export interface IDiscount extends Document {
   discountType: number;
   startDate: Date;
   //endDate: Date;
-  //isActive: boolean;
+  isActive: boolean;
   promoCode: string;
   isPromoCode: boolean;
   applicableProducts: mongoose.Types.ObjectId[];

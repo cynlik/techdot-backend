@@ -5,16 +5,12 @@ import jwt from 'jsonwebtoken';
 import { ERROR_MESSAGES, HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user: IUser;
-    }
-  }
+interface CustomRequest extends Request {
+  user: IUser;
 }
 
 const validateToken = (isOptional: boolean = false) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: CustomRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization || req.headers.Authorization;
 
     if (!authHeader) {
