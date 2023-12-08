@@ -178,8 +178,7 @@ export class SubcategoryController {
         res.status(200).send({ subcategory, totalPages });
       }
     } catch (error) {
-      console.error(error);
-      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error.'));
+      Error(error, next)
     }
   };
 
