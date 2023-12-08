@@ -29,4 +29,6 @@ router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id',
 
 router.get('/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.getDiscountByID)
 
+router.get('/query', validateToken(), Validator.validateFields({ optional: ['description', 'sort', 'page', 'limit', 'isActive', 'promoCode']}), discountController.getDiscountByName)
+
 export default router;
