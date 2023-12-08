@@ -4,7 +4,6 @@ import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Discount, IDiscount } from "@src/models/dicountModel";
 import { IUser, UserStatus } from "@src/models/userModel";
-import mongoose from "mongoose";
 import { Error } from "@src/utils/errorCatch";
 
 interface CustomRequest extends Request {
