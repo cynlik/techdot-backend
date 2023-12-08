@@ -219,16 +219,7 @@ export class DiscountController {
 
       return res.status(HttpStatus.OK).json({message: "Desconto Atualizado: ", updateDiscount});
     } catch (error) {
-      if (error instanceof mongoose.Error.ValidationError) {
-        // Trata erros de validação
-        return next(new CustomError(HttpStatus.BAD_REQUEST, error.message));
-      } else if (error instanceof mongoose.Error.CastError) {
-        // Trata erros de cast, como um ID inválido
-        return next(new CustomError(HttpStatus.BAD_REQUEST, "ID inválido fornecido"));
-      } else {
-        // Trata outros tipos de erros internos do servidor
-        return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
-      }
+      Error(error, next)
     }
   };
 
@@ -250,8 +241,7 @@ export class DiscountController {
 
       return res.status(204).json({ message: "Discount successfully deleted!" });
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
+      Error(error, next)
     }
   };
 
@@ -268,8 +258,7 @@ export class DiscountController {
 
       return res.status(200).send(discount);
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
+      Error(error, next)
     }
   };
 
