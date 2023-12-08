@@ -10,52 +10,6 @@ import { Product, ProductType } from '@src/models/productModel';
 
 const router = express.Router();
 const productController = new ProductController();
-/**
- * @swagger
- * components:
- *  schemas:
- *   Product:
- *    type: object
- *    required:
- *        - name
- *        - description
- *        - imageUrl
- *        - manufacturer
- *        - stockQuantity
- *        - price
- *        - visible
- *        - subcategoryId
- *        - productType
- *        - specifications
- *    properties:
- *      name:
- *        type: string
- *      description:
- *        type: string
- *      imageUrl:
- *        type: string
- *      manufacturer:
- *        type: string
- *      stockQuantity:
- *        type: string
- *      visible:
- *        type: number
- *      subcategoryId:
- *        type: string
- *      productType:
- *        type: string
- *      specifications:
- *        type: string
- *        enum: ['cpu', 'gpu', 'motherboard', 'ram', 'case']
- *      warranty:
- *        type: string
- * 
- *   SingleMessageResponse:
- *     type: object
- *     properties:
- *       message:
- *         type: string 
- */
 // =================|USER|=================
 
 /**
