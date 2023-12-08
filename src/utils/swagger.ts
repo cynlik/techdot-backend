@@ -71,6 +71,32 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        RegisterUser: {
+          type: 'object',
+          required: ['name', 'email', 'password'],
+          properties: {
+            name: {
+              type: 'string',
+            },
+            email: {
+              type: 'string',
+            },
+            password: {
+              type: 'string',
+            },
+          },
+        },
+        RegisterResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+            },
+            email: {
+              type: 'string',
+            },
+          },
+        },
         LoginUser: {
           type: 'object',
           required: ['email', 'password'],

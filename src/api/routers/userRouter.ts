@@ -23,14 +23,14 @@ const userController = new UserController();
  *      content:
  *        application/json:
  *           schema:
- *              $ref: '#/components/schemas/User'
+ *              $ref: '#/components/schemas/RegisterUser'
  *     responses:
  *      200:
  *        description: Success
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/User'
+ *              $ref: '#/components/schemas/RegisterResponse'
  */
 // Register user
 router.post('/register', Validator.validateFields({ required: ['name', 'email', 'password'] }), userController.registerUser);
