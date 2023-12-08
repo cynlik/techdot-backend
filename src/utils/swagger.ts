@@ -9,7 +9,40 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.1.0',
     info: {
       title: 'REST API Docs',
-      'version': version,
+      version: version,
+    },
+    components: {
+      schemas: {
+        Cart: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+            },
+            cart: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  product: {
+                    $ref: '#/components/schemas/Product',
+                  },
+                  quantity: {
+                    type: 'number',
+                  },
+                  totalPrice: {
+                    type: 'string',
+                  },
+                },
+              },
+            },
+            cartTotal: {
+              type: 'number',
+            },
+          },
+        },
+        //TODO: ADD SCHEMAS HERE
+      },
     },
   },
   apis: ['./src/api/routers/*.ts'],
