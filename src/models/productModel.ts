@@ -67,13 +67,13 @@ const productSchema = new Schema<IProduct>({
   description: { type: String, required: true },
   imageUrl: { type: String, required: true },
   manufacturer: { type: String, required: true },
-  stockQuantity: { type: Number, required: true, min: 0 },
-  price: { type: Number, required: true, min: 0 },
+  stockQuantity: { type: Number, required: true, min: [0, 'Invalid operation'] },
+  price: { type: Number, required: true, min: [0, 'Invalid operation'] },
   originalPrice: { type: Number, required: true, default: 0 },
   visible: { type: Boolean, required: true, default: false },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
   productType: { type: String, enum: [...Object.keys(ProductType)], required: true },
-  discountType: { type: Number, required: true, default: 0 },
+  discountType: { type: Number, required: true, default: 0, min: 0, max: 100 },
   onDiscount: { type: Boolean, required: true, default: false },
   specifications: {
     type: {

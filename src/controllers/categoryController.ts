@@ -5,6 +5,7 @@ import { HttpStatus } from "@src/utils/constant";
 import { Subcategory } from "@src/models/subcategoryModel";
 import { Product } from "@src/models/productModel";
 import { UserStatus } from "@src/models/userModel";
+import { Error } from "@src/utils/errorCatch";
 export class CategoryController {
 
   // =================|USERS|=================
@@ -120,8 +121,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.CREATED).send(savedCategory);
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar categoria"));
+      Error(error, next)
     }
   }
 
@@ -134,7 +134,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send(updateCategory);
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Error'))
+      Error(error, next)
     }
   }
 
@@ -154,7 +154,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send({ message: 'Category deleted successfully' })
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Error'))
+      Error(error, next)
     }
   }
 
@@ -217,8 +217,7 @@ export class CategoryController {
         res.status(200).send({ category, totalPages });
       }
     } catch (error) {
-      console.error(error);
-      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error.'));
+      Error(error, next)
     }
   };
 

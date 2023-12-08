@@ -4,6 +4,7 @@ import { UserStatus } from "@src/models/userModel";
 import { hasPermission } from "@src/middlewares/roleMiddleware";
 import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
+import { Error } from "@src/utils/errorCatch";
 
 export class ProductController {
 
@@ -68,8 +69,7 @@ export class ProductController {
         res.status(200).send({ products, totalPages });
       }
     } catch (error) {
-      console.error(error);
-      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Erro ao procurar produtos.'));
+      Error(error, next);
     }
   };
 
@@ -93,8 +93,7 @@ export class ProductController {
 
       return res.status(200).send(product);
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,'Internal Server Error'))
+      Error(error, next);
     }
   };
 
@@ -132,8 +131,7 @@ export class ProductController {
 
       return res.status(HttpStatus.CREATED).json(savedProduct)
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error" ));
+      Error(error, next)
     }
   };
 
@@ -146,8 +144,7 @@ export class ProductController {
 
       return res.status(HttpStatus.OK).json(updatedProduct);
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
+      Error(error, next)
     }
   };
 
@@ -160,8 +157,7 @@ export class ProductController {
 
       return res.status(204).json({message: "Product successfully deleted!"});
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR ,"Internal Server Error"))
+      Error(error, next);
     }
   };
 
