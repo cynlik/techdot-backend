@@ -4,6 +4,7 @@ import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Discount, IDiscount } from "@src/models/dicountModel";
 import { IUser, UserStatus } from "@src/models/userModel";
+import mongoose from "mongoose";
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -101,6 +102,10 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
       }
 
+      if (discount.isActive) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Discount needs to be disabled to update'))
+      }
+
       discount.applicableProducts.push(productId); // Add the productId to the array
 
       const updatedDiscount = await discount.save();
@@ -123,6 +128,10 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
       }
 
+      if (discount.isActive) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Discount needs to be disabled to update'))
+      }
+
       const index = discount.applicableProducts.indexOf(productId);
 
       if (index !== -1) {
@@ -138,38 +147,39 @@ export class DiscountController {
     }
   };
 
-  public updateDiscount = async (req: Request, res: Response, next: Function) => {
+  public stateOfIsActive = async (req: Request, res: Response, next: Function) => {
     const { id } = req.params;
-    const updateFields = req.body;
+    const { isActive } = req.body;
 
-    try {
-
+    try { 
       const discount = await Discount.findById(id);
 
       if (!discount) {
         return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
       }
 
-      const discountDecimal = discount.discountType / 100
+      const discountDecimal = discount.discountType / 100;
 
-      const lenghtProducts = discount.applicableProducts.length
+      const lenghtProducts = discount.applicableProducts.length;
 
       if (!discount.isPromoCode) {
 
-        //Implementar for com validação para ver se algum produto está com true em onDiscount caso esteja vai cancelar a operação 
+        if (discount.applicableProducts.length < 1) {
+          return next(new CustomError(HttpStatus.LENGTH_REQUIRED, 'Para ativar o desconto é necessário adicionar produtos'));
+        }
 
         if(discount.isActive) {
 
-          if (updateFields.isActive) {
+          if (isActive) {
             
             return next(new CustomError(HttpStatus.CONFLICT, "Já está ativo"))
   
-          } else {
+          } else if (isActive == false){
             
             try {
               const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, false)
 
-              const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+              const updateDiscount = await Discount.findByIdAndUpdate(id, {isActive: isActive}, { new: true, runValidators: true });
 
               return res.status(HttpStatus.OK).send({updatedPrices, updateDiscount})
             } catch (error) {
@@ -179,19 +189,19 @@ export class DiscountController {
           }
         } else {
 
-          if (updateFields.isActive) {
+          if (isActive) {
   
             try{
               const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true)
     
-              const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+              const updateDiscount = await Discount.findByIdAndUpdate(id, {isActive: isActive}, { new: true, runValidators: true });
 
               return res.status(HttpStatus.OK).send({updatedPrices, updateDiscount})
             }catch (error) {
               return next(error);
             }
 
-          } else {
+          } else if (isActive == false) {
   
             return res.status(HttpStatus.OK).send({ message: "O Desconto já está desativado!"})
   
@@ -200,12 +210,51 @@ export class DiscountController {
 
       }
 
+
+    } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        // Trata erros de validação
+        return next(new CustomError(HttpStatus.BAD_REQUEST, error.message));
+      } else if (error instanceof mongoose.Error.CastError) {
+        // Trata erros de cast, como um ID inválido
+        return next(new CustomError(HttpStatus.BAD_REQUEST, "ID inválido fornecido"));
+      } else {
+        // Trata outros tipos de erros internos do servidor
+        return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+      }
+    }
+
+  };
+
+  public updateDiscount = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+    const updateFields = req.body;
+
+    try {
+      const discount = await Discount.findById(id);
+
+      if (!discount) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
+      }
+
+      if (discount.isActive) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Discount needs to be disabled to update'))
+      }
+
       const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
 
-      return res.status(HttpStatus.OK).json({message: "Bota: ", updateDiscount});
+      return res.status(HttpStatus.OK).json({message: "Desconto Atualizado: ", updateDiscount});
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
+      if (error instanceof mongoose.Error.ValidationError) {
+        // Trata erros de validação
+        return next(new CustomError(HttpStatus.BAD_REQUEST, error.message));
+      } else if (error instanceof mongoose.Error.CastError) {
+        // Trata erros de cast, como um ID inválido
+        return next(new CustomError(HttpStatus.BAD_REQUEST, "ID inválido fornecido"));
+      } else {
+        // Trata outros tipos de erros internos do servidor
+        return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+      }
     }
   };
 
@@ -213,6 +262,15 @@ export class DiscountController {
     const { id } = req.params;
 
     try {
+      const discount = await Discount.findById(id);
+
+      if (!discount) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found!'));
+      }
+
+      if (discount.isActive) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Discount needs to be disabled to update'))
+      }
 
       await Discount.findByIdAndDelete(id);
 
