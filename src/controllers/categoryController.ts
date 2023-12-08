@@ -35,7 +35,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send(categories)
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Error'))
+      Error(error, next)
     }
   }
 
@@ -65,7 +65,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send(subcategories)
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
+      Error(error, next)
     }
   }
 
@@ -99,7 +99,7 @@ export class CategoryController {
       return res.status(HttpStatus.OK).send(products)
 
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error!'))
+      Error(error, next)
     }
   }
 
