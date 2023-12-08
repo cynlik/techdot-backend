@@ -283,13 +283,15 @@ export class DiscountController {
 
   public getDiscountByName = async (req: CustomRequest, res: Response, next: Function) => {
     try {
-      const user = req.user
+      const user = req.user;
 
-      const { name, sort, page = '1', limit = '6' } = req.query as {
-        name?: string;
+      const { description, sort, page = '1', limit = '6', isActive, promoCode } = req.query as {
+        description?: string;
         sort?: string;
         page?: string;
         limit?: string;
+        isActive?: string;
+        promoCode?: string;
       };
 
       const pageNumber = parseInt(page, 10);
@@ -299,10 +301,10 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
       }
 
-      let viewUser = UserStatus.NonMember
+      let viewUser = UserStatus.NonMember;
 
       if (user) {
-        viewUser = user.view
+        viewUser = user.view;
       }
 
       const conditions: any = {};
@@ -311,38 +313,54 @@ export class DiscountController {
         conditions.visible = true;
       }
 
-      if (name) {
-        const regex = new RegExp(name, 'i');
-        conditions.name = regex;
+      if (description) {
+        conditions.description = new RegExp(description, 'i');
+      }
+
+      if (isActive) {
+        conditions.isActive = isActive === 'true';
+      }
+
+      if (promoCode) {
+        conditions.promoCode = new RegExp(promoCode, 'i');
       }
 
       const count = await Discount.countDocuments(conditions);
       const totalPages = Math.ceil(count / limitNumber);
 
-      let query = Discount.find(conditions)
+      let query = Discount.find(conditions);
 
-      switch (sort) {
-        case 'isActive':
-          query = query.sort({ price: -1 });
-          break;
-        case 'preco_menor':
-          query = query.sort({ price: 1 });
-          break;
+      if (sort) {
+        switch (sort) {
+          case 'startDate':
+            query = query.sort({ startDate: -1 });
+            break;
+          case 'discountType':
+            query = query.sort({ discountType: -1 });
+            break;
+          case 'minimumPurchaseValue':
+            query = query.sort({ minimumPurchaseValue: -1 });
+            break;
+          case 'isActive':
+            query = query.sort({ isActive: -1 });
+            break;
+        }
       }
 
-      const products = await query
+      const discounts = await query
         .limit(limitNumber)
         .skip((pageNumber - 1) * limitNumber);
 
-      if (products.length === 0) {
-        next(new CustomError(HttpStatus.NOT_FOUND, 'Nenhum desconto encontrado.'))
+      if (discounts.length === 0) {
+        next(new CustomError(HttpStatus.NOT_FOUND, 'Nenhum desconto encontrado.'));
       } else {
-        res.status(200).send({ products, totalPages });
+        res.status(200).send({ discounts, totalPages });
       }
     } catch (error) {
       console.error(error);
       next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Erro ao procurar descontos.'));
     }
   };
+
 
 }
