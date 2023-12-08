@@ -5,6 +5,7 @@ import { HttpStatus } from "@src/utils/constant";
 import { Discount, IDiscount } from "@src/models/dicountModel";
 import { IUser, UserStatus } from "@src/models/userModel";
 import mongoose from "mongoose";
+import { Error } from "@src/utils/errorCatch";
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -194,16 +195,7 @@ export class DiscountController {
 
 
     } catch (error) {
-      if (error instanceof mongoose.Error.ValidationError) {
-        // Trata erros de validação
-        return next(new CustomError(HttpStatus.BAD_REQUEST, error.message));
-      } else if (error instanceof mongoose.Error.CastError) {
-        // Trata erros de cast, como um ID inválido
-        return next(new CustomError(HttpStatus.BAD_REQUEST, "ID inválido fornecido"));
-      } else {
-        // Trata outros tipos de erros internos do servidor
-        return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
-      }
+      Error(error, next)
     }
 
   };
