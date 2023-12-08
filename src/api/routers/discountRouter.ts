@@ -19,7 +19,7 @@ router.post('/', validateToken(), Validator.validateFields({ required: ['descrip
 
 router.put('/update/:id', validateToken(), Validator.validateFields({ optional: ['description', 'discountType', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'] }), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.updateDiscount);
 
-router.put('/stateOfIsActive/:id', validateToken(), Validator.validateFields({ required: ['isActive']}), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.stateOfIsActive);
+router.put('/stateOfIsActive/:id', validateToken(), Validator.validateFields({ required: ['isActive']}), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.stateOfIsActive)
 
 router.put('/add/:id', validateToken(), Validator.validateFields({ required: ['productId']}), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount}]) , discountController.addProductToDiscount)
 
@@ -27,5 +27,6 @@ router.put('/remove/:id', validateToken(), Validator.validateFields({ required: 
 
 router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount)
 
+router.get('/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.getDiscountByID)
 
 export default router;
