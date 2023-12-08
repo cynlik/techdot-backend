@@ -332,9 +332,6 @@ export class DiscountController {
 
       if (sort) {
         switch (sort) {
-          case 'startDate':
-            query = query.sort({ startDate: -1 });
-            break;
           case 'discountType':
             query = query.sort({ discountType: -1 });
             break;
