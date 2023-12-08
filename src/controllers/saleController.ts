@@ -1,17 +1,32 @@
 import { Request, Response } from 'express';
 import { SaleModel, ISale } from '@src/models/saleModel';
-import { UserStatus } from '@src/models/userModel';
+import { IUser, UserStatus } from '@src/models/userModel';
 import { HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 import { Product } from "@src/models/productModel";
 
+interface CustomRequest extends Request {
+  user: IUser;
+}
+
 export class SaleController {
 
-public create = async (req: Request, res: Response, next: Function) => {
+public create = async (req: CustomRequest, res: Response, next: Function) => {
   try { 
-    const {userName, userEmail, userAdress, userPhone, paymentMethod, shoppingCart } = req.body
+    const {userName, userEmail, userAdress, userPhone, paymentMethod } = req.body
     const user = req.user
-      
+    const guest = req.session
+
+    let shoppingCart;
+
+    if(!user){
+      if (guest && guest.cart) {
+        shoppingCart = guest.cart;
+      } else {        
+        shoppingCart = req.user.cart;
+      }  
+    }
+  
     const newSale = new SaleModel({
       userName,
       userEmail,
@@ -41,8 +56,7 @@ public create = async (req: Request, res: Response, next: Function) => {
 public getSalesByName = async (req: Request, res: Response, next: Function) => {
   const userEmail = req.user.email
   try {
-    const { userEmail, sort, page = '1', limit = '6' } = req.query as {
-      userEmail?: string;
+    const { sort, page = '1', limit = '6' } = req.query as {
       sort?: string;
       page?: string;
       limit?: string;
@@ -56,6 +70,7 @@ public getSalesByName = async (req: Request, res: Response, next: Function) => {
     }
 
     const viewUser = req.user.view;
+    const userEmail = req.user.email;
     const conditions: any = {};
 
     if (viewUser === UserStatus.Admin) {
@@ -64,8 +79,17 @@ public getSalesByName = async (req: Request, res: Response, next: Function) => {
       // Se for um member, só terá acesso às vendas associadas ao seu email
       conditions.userEmail = userEmail;
     } else {
-      // Caso o tipo de usuário não seja reconhecido, você pode lidar com isso aqui
-      return next(new CustomError(HttpStatus.UNAUTHORIZED, 'Tipo de usuário não reconhecido.'));
+      // Caso o tipo de user não seja reconhecido
+      return next(new CustomError(HttpStatus.UNAUTHORIZED, 'Tipo de user não reconhecido.'));
+    }
+
+     if (viewUser !== UserStatus.Admin) {
+      if (userEmail) {
+        const regex = new RegExp(userEmail, 'i');
+        conditions.userEmail = regex;
+      } else {
+        console.error('userEmail is undefined');
+      }
     }
 
     const count = await SaleModel.countDocuments(conditions);
