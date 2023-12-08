@@ -27,8 +27,8 @@ router.put('/remove/:id', validateToken(), Validator.validateFields({ required: 
 
 router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount)
 
-router.get('/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.getDiscountByID)
+router.get('/solo/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.getDiscountByID)
 
-router.get('/query', validateToken(), Validator.validateFields({ optional: ['description', 'sort', 'page', 'limit', 'isActive', 'promoCode']}), discountController.getDiscountByName)
+router.get('/query/', validateToken(), Validator.validateFields({ optional: ['description', 'sort', 'page', 'limit', 'isActive', 'promoCode']}), discountController.getDiscountByName)
 
 export default router;
