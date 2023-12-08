@@ -4,6 +4,7 @@ import { HttpStatus } from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
 import { UserStatus } from "@src/models/userModel";
+import { Error } from "@src/utils/errorCatch";
 export class SubcategoryController {
 
   // =================|USER|=================
@@ -31,7 +32,7 @@ export class SubcategoryController {
       }
       return res.status(HttpStatus.OK).send(subcategorys)
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
+      Error(error, next)
     }
   }
 
