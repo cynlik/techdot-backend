@@ -69,8 +69,7 @@ export class DiscountController {
 
       return res.status(HttpStatus.CREATED).json(savedDiscount);
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+      Error(error, next)
     }
   };
 
@@ -95,8 +94,7 @@ export class DiscountController {
 
       return res.status(HttpStatus.OK).json(updatedDiscount);
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+      Error(error, next)
     }
   };
 
@@ -125,8 +123,7 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.NOT_FOUND, 'Product not found in applicableProducts'));
       }
     } catch (error) {
-      console.error(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+      Error(error, next)
     }
   };
 
@@ -335,8 +332,7 @@ export class DiscountController {
         res.status(200).send({ discounts, totalPages });
       }
     } catch (error) {
-      console.error(error);
-      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Erro ao procurar descontos.'));
+      Error(error, next)
     }
   };
 
