@@ -166,7 +166,6 @@ router.put('/resetpassword', Validator.validateFields({ required: ['newPassword'
 // My information
 router.get('/me', validateToken(), userController.me);
 
-// TODO:
 /**
  * @openapi
  * /api/user/me:
