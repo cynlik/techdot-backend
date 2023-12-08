@@ -12,35 +12,6 @@ const router = express.Router();
 const saleController = new SaleController();
 
 /**
- * @swagger 
- * components:
- *  schemas:
- *   Sale:
- *    type: object
- *    required:
- *     - userId
- *     - products
- *     - date
- *     - totalAmount  
- *    properties:
- *      userId:
- *        type: string
- *      products:
- *        type: array
- *        items:
- *          type: object
- *          properties:
- *            product:
- *              type: object
- *            quantity:
- *              type: number
- *      date:
- *        type: string
- *      totalAmount:
- *        type: number
- */
-
-/**
  * @openapi
  * /api/sale/create:
  *   post:
@@ -50,7 +21,7 @@ const saleController = new SaleController();
  *     requestBody:
  *      required: true
  *      content:
- *        application/json: 
+ *        application/json:
  *           schema:
  *              $ref: '#/components/schemas/Sale'
  *     responses:
@@ -70,53 +41,51 @@ router.post(
     { paramName: 'product', model: Product, type: Constant.Product },
   ]),
   saleController.create
-  );
-  
-  
-  /**
-   * @openapi
-   * /api/sale/all/{id}:
-   *   get:
-   *     tags:
-   *       - Sale Routes
-   *     summary: Get all sales or a specific sale by ID
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         schema:
-   *           type: string
-   *         required: false
-   *     responses:
-   *      200:
-   *        description: Success
-   *        content:
-   *          application/json:
-   *            schema:
-   *              $ref: '#/components/schemas/Sale'
-   */
-  // Get all sales
-  router.get('/all/:id?', validateToken, saleController.getAll);
-  
-  // Get Sales By Id
-  // router.get("/:id?", Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale },]),saleController.getById);
-  
-  
-  /**
-   * @openapi
-   * /api/sale/delete/{id}:
-   *   delete:
-   *     tags:
-   *       - Sale Routes
-   *     summary: Delete a sale by ID
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         schema:
-   *           type: string
-   *     responses:
-   *      204:
-   *        description: Success
-   */
+);
+
+/**
+ * @openapi
+ * /api/sale/all/{id}:
+ *   get:
+ *     tags:
+ *       - Sale Routes
+ *     summary: Get all sales or a specific sale by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: false
+ *     responses:
+ *      200:
+ *        description: Success
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Sale'
+ */
+// Get all sales
+router.get('/all/:id?', validateToken, saleController.getAll);
+
+// Get Sales By Id
+// router.get("/:id?", Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale },]),saleController.getById);
+
+/**
+ * @openapi
+ * /api/sale/delete/{id}:
+ *   delete:
+ *     tags:
+ *       - Sale Routes
+ *     summary: Delete a sale by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *      204:
+ *        description: Success
+ */
 // Delete Sale By Id
 router.delete('/delete/:id', Validator.validateIds([{ paramName: 'id', model: SaleModel, type: Constant.Sale }]), validateToken, roleMiddleware(UserStatus.Manager), saleController.deleteById);
 

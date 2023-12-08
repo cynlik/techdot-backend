@@ -41,7 +41,185 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
-        //TODO: ADD SCHEMAS HERE
+        User: {
+          type: 'object',
+          required: ['name', 'email', 'password'],
+          properties: {
+            name: {
+              type: 'string',
+            },
+            email: {
+              type: 'string',
+            },
+            password: {
+              type: 'string',
+            },
+            role: {
+              type: 'string',
+            },
+            picture: {
+              type: 'string',
+            },
+            age: {
+              type: 'number',
+            },
+            address: {
+              type: 'string',
+            },
+            country: {
+              type: 'string',
+            },
+          },
+        },
+        LoginUser: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: {
+              type: 'string',
+            },
+            password: {
+              type: 'string',
+            },
+          },
+        },
+        LoginUserResponse: {
+          type: 'object',
+          properties: {
+            token: {
+              type: 'string',
+            },
+            user: {
+              $ref: '#/components/schemas/User',
+            },
+          },
+        },
+        ForgetPassword: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: {
+              type: 'string',
+            },
+          },
+        },
+        ForgetPasswordResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+            },
+          },
+        },
+        ResetPassword: {
+          type: 'object',
+          properties: {
+            newPassword: {
+              type: 'string',
+            },
+            confirmPassword: {
+              type: 'string',
+            },
+          },
+        },
+        Me: {
+          type: 'object',
+          properties: {
+            newPassword: {
+              type: 'string',
+            },
+            confirmPassword: {
+              type: 'string',
+            },
+          },
+        },
+        ChangeView: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+            },
+            view: {
+              type: 'string',
+            },
+            accessToken: {
+              type: 'string',
+            },
+          },
+        },
+        Product: {
+          type: 'object',
+          required: ['name', 'description', 'imageUrl', 'manufacturer', 'stockQuantity', 'price', 'visible', 'subcategoryId', 'productType', 'specifications'],
+          properties: {
+            name: {
+              type: 'string',
+            },
+            description: {
+              type: 'string',
+            },
+            imageUrl: {
+              type: 'string',
+            },
+            manufacturer: {
+              type: 'string',
+            },
+            stockQuantity: {
+              type: 'number',
+            },
+            price: {
+              type: 'number',
+            },
+            visible: {
+              type: 'boolean',
+            },
+            subcategoryId: {
+              type: 'string',
+            },
+            productType: {
+              type: 'string',
+            },
+            specifications: {
+              type: 'object',
+            },
+          },
+        },
+        SingleMessageResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+            },
+          },
+        },
+        Sale: {
+          type: 'object',
+          required: ['userId', 'products', 'date', 'totalAmount'],
+          properties: {
+            userId: {
+              type: 'string',
+            },
+            products: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  product: {
+                    type: 'object',
+                  },
+                  quantity: {
+                    type: 'number',
+                  },
+                },
+              },
+            },
+            date: {
+              type: 'string',
+            },
+            totalAmount: {
+              type: 'number',
+            },
+          },
+        },
       },
     },
   },
