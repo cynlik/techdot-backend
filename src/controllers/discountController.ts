@@ -5,11 +5,46 @@ import { HttpStatus } from "@src/utils/constant";
 import { Discount, IDiscount } from "@src/models/dicountModel";
 import { IUser, UserStatus } from "@src/models/userModel";
 
+interface CustomRequest extends Request {
+  user: IUser;
+}
+
+
 export class DiscountController {
 
   // =================|USERS|=================
 
+  private async updateProducts(discount: IDiscount, discountDecimal: number, lengthProducts: number, isActive: boolean) {
+    const updatedPrices = [];
+  
+    for (let i = 0; i < lengthProducts; i++) {
+      const productId = discount.applicableProducts[i];
+      const product = await Product.findById(productId);
+  
+      if (!product) {
+        console.log("Product not found:", productId);
+        return updatedPrices;
+      }
 
+      if (product.onDiscount && isActive) {
+        throw new CustomError(HttpStatus.CONFLICT, `O produto ${ product.name} já tem um desconto aplicado.`);
+      }
+
+      let newPrice = isActive ? product.price - (product.price * discountDecimal) : product.originalPrice;
+  
+      const priceUpdated = await Product.findByIdAndUpdate(productId, {
+        $set: {
+          discountType: isActive ? discount.discountType : 0,
+          onDiscount: isActive,
+          price: newPrice,
+        },
+      });
+  
+      updatedPrices.push(priceUpdated);
+    }
+  
+    return updatedPrices;
+  }
 
   public getDiscountByID = async (req: Request, res: Response, next: Function) => {
     const { id } = req.params;
@@ -55,6 +90,54 @@ export class DiscountController {
     }
   };
 
+  public addProductToDiscount = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+    const { productId } = req.body;
+
+    try {
+      const discount = await Discount.findById(id);
+
+      if (!discount) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
+      }
+
+      discount.applicableProducts.push(productId); // Add the productId to the array
+
+      const updatedDiscount = await discount.save();
+
+      return res.status(HttpStatus.OK).json(updatedDiscount);
+    } catch (error) {
+      console.error(error);
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+    }
+  };
+
+  public removeProductFromDiscount = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+    const { productId } = req.body;
+
+    try {
+      const discount = await Discount.findById(id);
+
+      if (!discount) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Discount not found'));
+      }
+
+      const index = discount.applicableProducts.indexOf(productId);
+
+      if (index !== -1) {
+        discount.applicableProducts.splice(index, 1); // Remove the productId from the array
+        const updatedDiscount = await discount.save();
+        return res.status(HttpStatus.OK).json(updatedDiscount);
+      } else {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Product not found in applicableProducts'));
+      }
+    } catch (error) {
+      console.error(error);
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+    }
+  };
+
   public updateDiscount = async (req: Request, res: Response, next: Function) => {
     const { id } = req.params;
     const updateFields = req.body;
@@ -71,53 +154,55 @@ export class DiscountController {
 
       const lenghtProducts = discount.applicableProducts.length
 
-
       if (!discount.isPromoCode) {
-        if (updateFields.isActive) {
 
-          for (let i = 0; i < lenghtProducts; i++) {
-            let productId = discount.applicableProducts[i]
+        //Implementar for com validação para ver se algum produto está com true em onDiscount caso esteja vai cancelar a operação 
 
-            let product = await Product.findById(productId)
+        if(discount.isActive) {
 
-            if (!product) {
-              console.log("saiu")
-              return;
+          if (updateFields.isActive) {
+            
+            return next(new CustomError(HttpStatus.CONFLICT, "Já está ativo"))
+  
+          } else {
+            
+            try {
+              const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, false)
+
+              const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+
+              return res.status(HttpStatus.OK).send({updatedPrices, updateDiscount})
+            } catch (error) {
+              return next(error)
             }
-
-            let newPrice = product.price - (product.price * discountDecimal)
-
-            let priceUpdated = await Product.findByIdAndUpdate( productId, { $set: {discountType: discount.discountType, onDiscount: true, price: newPrice, originalPrice: product.price} });
-
-
-            return res.status(HttpStatus.OK).send(priceUpdated)
+  
           }
-
         } else {
 
-          for (let i = 0; i < lenghtProducts; i++) {
-            let productId = discount.applicableProducts[i]
+          if (updateFields.isActive) {
+  
+            try{
+              const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true)
+    
+              const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
 
-            let product = await Product.findById(productId)
-
-            if (!product) {
-              console.log("saiu")
-              return;
+              return res.status(HttpStatus.OK).send({updatedPrices, updateDiscount})
+            }catch (error) {
+              return next(error);
             }
 
-            let newPrice = product.originalPrice
-
-            let priceUpdated = await Product.findByIdAndUpdate( productId, { $set: {discountType: 0, onDiscount: false, price: newPrice} });
-
-
-            return res.status(HttpStatus.OK).send(priceUpdated)
+          } else {
+  
+            return res.status(HttpStatus.OK).send({ message: "O Desconto já está desativado!"})
+  
           }
         }
+
       }
 
       const updateDiscount = await Discount.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
 
-      return res.status(HttpStatus.OK).json(updateDiscount);
+      return res.status(HttpStatus.OK).json({message: "Bota: ", updateDiscount});
     } catch (error) {
       console.error(error);
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"))
@@ -138,7 +223,7 @@ export class DiscountController {
     }
   };
 
-  public getDiscountByName = async (req: Request, res: Response, next: Function) => {
+  public getDiscountByName = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const user = req.user
 
