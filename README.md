@@ -55,7 +55,7 @@ Follow these steps to set up and run the server locally:
    npm install
    ```
 3. Configure Environment:
-  After installing the dependencies, create a .env file in the src folder of the project and add the following environment variables:
+  After installing the dependencies, create a .env file in the root folder of the project and add the following environment variables:
   
    .env
    ```bash
