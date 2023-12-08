@@ -8,13 +8,72 @@ import { Constant } from '@src/utils/constant';
 const router = express.Router();
 const cartController = new CartController();
 
+/**
+ * @openapi
+ * /api/cart/{id}:
+ *   post:
+ *     tags:
+ *       - Cart Routes
+ *     summary: Add item to cart
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The product ID
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cart'
+ */
 // Add item to cart
-router.post("/:id", validateToken(), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), cartController.addToCart);
+router.post("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), cartController.addToCart);
 
+/**
+ * @openapi
+ * /api/cart/:
+ *   get:
+ *     tags:
+ *       - Cart Routes
+ *     summary: Get cart items
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cart'
+ */
 // Get cart items
-router.get("/", validateToken(), cartController.getCartItems);
+router.get("/", validateToken(true), cartController.getCartItems);
 
+
+/**
+ * @openapi
+ * /api/cart/:
+ *   put:
+ *     tags:
+ *       - Cart Routes
+ *     summary: Update cart items
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json: 
+ *           schema:
+ *              $ref: '#/components/schemas/Cart'
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cart'
+ */
 // Update cart items
-router.put("/", validateToken(), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), cartController.updateCart);
+router.put("/", validateToken(true), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), cartController.updateCart);
 
 export default router;

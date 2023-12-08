@@ -10,106 +10,6 @@ import { Product } from '@src/models/productModel';
 const router = express.Router();
 const userController = new UserController();
 
-/**
- * @swagger
- * components:
- *  schemas:
- *   User:
- *    type: object
- *    required:
- *      - name
- *      - email
- *      - password
- *    properties:
- *      name:
- *        type: string
- *      email:
- *        type: string
- *      password:
- *        type: string
- *      role:
- *        type: string
- *      picture:
- *        type: string
- *      age:
- *        type: number
- *      address:
- *        type: string
- *      country:
- *        type: string
- * 
- *   LoginUser:
- *     type: object
- *     required:
- *      - email
- *      - password
- *     properties:
- *      email:
- *        type: string
- *      password:
- *        type: string
- * 
- *   LoginUserResponse:
- *     type: object
- *     properties:
- *      accessToken:
- *        type: object
- *        properties:
- *          auth:
- *            type: boolean 
- *          token:
- *            type: string 
- * 
- *   ForgetPassword:
- *     type: object
- *     properties:
- *       email:
- *         type: string  
- * 
- *   ForgetPasswordResponse:
- *     type: object
- *     properties:
- *       message:
- *         type: string 
- *       email:
- *         type: string 
- *       token:
- *         type: string 
- * 
- *   ResetPassword:
- *     type: object
- *     properties:
- *       newPassword:
- *         type: string  
- *       confirmPassword:
- *         type: string 
- * 
- *   SingleMessageResponse:
- *     type: object
- *     properties:
- *       message:
- *         type: string 
- * 
- *   Me:
- *     type: object
- *     properties:
- *       newPassword:
- *         type: string  
- *       confirmPassword:
- *         type: string 
- * 
- *   ChangeView:
- *     type: object
- *     properties:
- *       message:
- *         type: string  
- *       view:
- *         type: string  
- *       accessToken:
- *         type: string
- * 
- */
-
 ///  -- USER ROUTES --
 /**
  * @openapi
@@ -266,7 +166,6 @@ router.put('/resetpassword', Validator.validateFields({ required: ['newPassword'
 // My information
 router.get('/me', validateToken(), userController.me);
 
-// TODO:
 /**
  * @openapi
  * /api/user/me:
@@ -451,7 +350,7 @@ router.put('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validato
  *        description: Success
  *        content:
  *          application/json:
- *            schema: 
+ *            schema:
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Delete user by id
