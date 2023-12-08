@@ -114,7 +114,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.OK).send({ message: 'Subcategory deleted successfully' })
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Error'))
+      Error(error, next)
     }
   }
 
