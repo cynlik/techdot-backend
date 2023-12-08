@@ -95,7 +95,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.OK).send(updateSubcategory);
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Error'))
+      Error(error, next)
     }
   }
 
