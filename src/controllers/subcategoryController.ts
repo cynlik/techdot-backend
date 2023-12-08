@@ -67,7 +67,7 @@ export class SubcategoryController {
 
   // =================|ADMIN|=================
 
-  public createSubcategory = async (req: Request, res: Response, next: Function): Promise<Response> => {
+  public createSubcategory = async (req: Request, res: Response, next: Function) => {
     const { name, categoryId } = req.body;
 
     try {
@@ -82,7 +82,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.CREATED).send(savedSubcategory);
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+      Error(error, next)
     }
   }
 
