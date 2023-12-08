@@ -17,7 +17,9 @@ const discountController = new DiscountController();
 
 router.post('/', validateToken(), Validator.validateFields({ required: ['description', 'discountType', 'applicableProducts'], optional: ['isActive', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'] }), discountController.createDiscount)
 
-router.put('/update/:id', validateToken(), Validator.validateFields({ optional: ['description', 'discountType', 'isActive', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'] }), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.updateDiscount)
+router.put('/update/:id', validateToken(), Validator.validateFields({ optional: ['description', 'discountType', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'] }), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.updateDiscount);
+
+router.put('/stateOfIsActive/:id', validateToken(), Validator.validateFields({ required: ['isActive']}), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.stateOfIsActive);
 
 router.put('/add/:id', validateToken(), Validator.validateFields({ required: ['productId']}), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount}]) , discountController.addProductToDiscount)
 
