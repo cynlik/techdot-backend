@@ -16,8 +16,21 @@ const cartItemSchema = new Schema<CartItem>({
   quantity: {
     type: Number,
     default: 0,
+    validate: {
+      validator: Number.isInteger,
+      message: 'A quantidade deve ser um número inteiro.',
+    },
   },
-  totalPrice: { type: String, default: null },
+  totalPrice: {
+    type: String,
+    default: null,
+    validate: {
+      validator: function (v: string) {
+        return /^(\d+|\d+\.\d+)$/.test(v);
+      },
+      message: 'O preço total deve ser uma string numérica válida.',
+    },
+  },
 });
 
 export interface ShoppingCart extends Document {
