@@ -33,8 +33,17 @@ export interface IUser extends Document {
 export const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      match: /^\S+@\S+\.\S+$/,
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 8,
+    },
     role: {
       type: String,
       required: true,
@@ -48,7 +57,10 @@ export const UserSchema = new Schema<IUser>(
       enum: Object.values(UserStatus),
     },
     picture: { type: String, default: null },
-    age: { type: Number, default: null },
+    age: {
+      type: Number,
+      min: 0,
+    },
     address: { type: String, default: null },
     country: { type: String, default: null },
     verifyAccountToken: { type: String, default: null as string | null },
