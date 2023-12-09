@@ -4,7 +4,7 @@ import { CustomError } from "@src/utils/customError";
 import { HttpStatus } from "@src/utils/constant";
 import { Discount, IDiscount } from "@src/models/dicountModel";
 import { IUser, UserStatus } from "@src/models/userModel";
-import { Error } from "@src/utils/errorCatch";
+  import { Error } from "@src/utils/errorCatch";
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -87,7 +87,7 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.BAD_REQUEST, 'Discount needs to be disabled to update'))
       }
 
-      discount.applicableProducts.push(productId); // Add the productId to the array
+      discount.applicableProducts.push(productId); 
 
       const updatedDiscount = await discount.save();
 
@@ -115,7 +115,7 @@ export class DiscountController {
       const index = discount.applicableProducts.indexOf(productId);
 
       if (index !== -1) {
-        discount.applicableProducts.splice(index, 1); // Remove the productId from the array
+        discount.applicableProducts.splice(index, 1);
         const updatedDiscount = await discount.save();
         return res.status(HttpStatus.OK).json(updatedDiscount);
       } else {
