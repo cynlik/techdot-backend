@@ -12,7 +12,7 @@ const saleController = new SaleController();
 
 
 // Create Sale
- router.post("/create", Validator.validateFields({ required: ["userName", "userEmail", "userAdress", "userPhone", "paymentMethod", "shoppingCart"]}), saleController.create);
+ router.post("/create", Validator.validateFields({ required: ["userName", "userEmail", "userAdress", "userPhone", "paymentMethod"]}), saleController.create);
 
 /**
  * @openapi

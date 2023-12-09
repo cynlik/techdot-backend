@@ -31,7 +31,7 @@ export const saleSchema = new Schema<ISale>({
         userAdress: {type: String, required: true},
         userPhone: {type: String, required: true},
         paymentMethod: {type: String, required: true},
-        shoppingCart: { type: shoppingCartSchema, required: true },
+        shoppingCart: { type: Schema.Types.ObjectId, ref: 'ShoppingCart', required: true },
         date: {type: Date, default: Date.now()},
         // status: { type: String, enum: Object.values(SaleStatus), default: SaleStatus.Pending },
 });
