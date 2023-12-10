@@ -27,7 +27,7 @@ Welcome to TechDot's open-source E-Commerce API project developed by our dedicat
 
 ## Project Overview
 
-TechDot's E-Commerce API is meticulously designed to empower sophisticated online shopping experiences, offering an array of robust features to efficiently manage computer components. Whether building a boutique platform or a comprehensive marketplace, this API serves as the backbone for seamless e-commerce functionality.
+TechDot's E-Commerce API is meticulously crafted to facilitate seamless online shopping experiences, providing a comprehensive set of robust features to efficiently manage a wide array of electronic devices. From computer components to diverse electronic gadgets, this API serves as the foundation for empowering sophisticated e-commerce platforms. Whether you're establishing a specialized platform or a broad marketplace, TechDot's API offers unparalleled versatility and functionality for various electronic devices, ensuring a smooth and user-friendly shopping experience.
 
 ## Technologies Used
 
@@ -81,13 +81,13 @@ The API will be accessible at http://localhost:3000.
 
 ## API Features
 ### Categories
-Categories segment computer components into distinct sections, simplifying user exploration for specific parts like motherboards, CPUs, RAM, graphics cards, and more.
+The categories segment electronic products into distinct sections, simplifying the user's exploration of computer peripherals, household appliances, etc.
 
 ### Subcategories
-Subcategories offer a more detailed classification within each main category. For instance, within the graphics cards category, subcategories might include gaming GPUs, professional GPUs, budget GPUs, etc.
+Subcategories provide more detailed classification within each main category. For example, in the computer components category, we have motherboard, graphics card, processor, etc.
 
 ### Products
-This feature represents individual computer components available for purchase. Each product contains comprehensive information such as name, description, compatibility details, specifications, images, and prices.
+This feature represents individual product available for purchase. Each product contains comprehensive information such as name, description, compatibility details, specifications, images, and prices.
 
 ### Users
 The user feature manages customer accounts, enabling profile creation and management, purchase history viewing, payment information management, and delivery address storage.
@@ -96,7 +96,7 @@ The user feature manages customer accounts, enabling profile creation and manage
 Shopping carts enable customers to collect and temporarily store their chosen computer components for purchase. They can add, remove, or modify items in their cart before finalizing their order.
 
 ### Wish Lists
-Wish lists enable users to save desired computer components for future consideration. It's a convenient way to track favorite items without immediately adding them to the cart
+Wish lists allow registered users to save desired products for future consideration, providing a convenient way to track favorite items without immediately adding them to the cart.
 
 ### Guests
 Functionality for visitors without registered accounts, allowing them to browse computer components, add items to their cart, and create temporary wish lists without needing an account.
