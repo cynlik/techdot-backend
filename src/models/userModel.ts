@@ -18,7 +18,11 @@ export interface IUser extends Document {
   view: UserStatus;
   picture: string;
   age: number;
-  address: string;
+  address: {
+    street: string;
+    postalCode: string;
+    district: string;
+  };
   country: string;
   verifyAccountToken: string | null;
   verifyAccountTokenExpires: Date | null;
@@ -61,7 +65,11 @@ export const UserSchema = new Schema<IUser>(
       type: Number,
       min: 0,
     },
-    address: { type: String, default: null },
+    address: {
+      street: { type: String, default: null },
+      postalCode: { type: String, default: null },
+      district: { type: String, default: null },
+    },
     country: { type: String, default: null },
     verifyAccountToken: { type: String, default: null as string | null },
     verifyAccountTokenExpires: { type: Date, default: null },

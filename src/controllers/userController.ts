@@ -20,7 +20,7 @@ interface CustomRequest extends Request {
 export default class UserController {
   public registerUser = async (req: Request, res: Response, next: Function) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, address } = req.body;
 
       const userExists = await User.findOne({ email });
       if (userExists) {
@@ -34,6 +34,7 @@ export default class UserController {
         name,
         email,
         password: hashedPassword,
+        address: address || {},
       });
 
       const token = UserController.createToken(user, config.expiresIn);

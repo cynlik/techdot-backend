@@ -19,160 +19,166 @@ export default class CartController {
 		req: CustomRequest,
 		res: Response,
 		next: Function
-	) => {
+	  ) => {
 		try {
-			const { quantity } = req.body;
-			const parsedQuantity = parseInt(quantity, 10);
-			const product = await Product.findById(req.params.id);
-
-			if (quantity <= 0) {
-				return next(
-					new CustomError(
-						HttpStatus.BAD_REQUEST,
-						ERROR_MESSAGES.INVALID_QUANTITY
-					)
-				);
-			}
-
-			if (!product) {
-				return next(
-					new CustomError(
-						HttpStatus.NOT_FOUND,
-						ERROR_MESSAGES.PRODUCT_NOT_FOUND
-					)
-				);
-			}
-
-			if (product.stockQuantity === 0) {
-				return next(
-					new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.OUT_OF_STOCK)
-				);
-			}
-
-			if (!req.session) {
-				return next(
-					new CustomError(
-						HttpStatus.BAD_REQUEST,
-						ERROR_MESSAGES.UNEXPECTED_ERROR
-					)
-				);
-			}
-
-			if (!req.user) {
-				if (!req.session.cart) {
-					req.session.cart = { items: [], total: 0 };
-				}
-
-				const guest = req.session.cart;
-
-				const existingCartItemIndex = guest.items.findIndex(
-					(item: { product: any }) => item.product === product.id
-				);
-
-				if (existingCartItemIndex !== -1) {
-					guest.items[existingCartItemIndex].quantity += parsedQuantity || 1;
-					guest.items[existingCartItemIndex].totalPrice = (
-						product.price * guest.items[existingCartItemIndex].quantity
-					).toFixed(2);
-				} else {
-					const newItem: CartItem = {
-						product: product.id,
-						quantity: parsedQuantity || 1,
-						totalPrice: (product.price * parsedQuantity).toFixed(2),
-					} as CartItem;
-
-					guest.items.push(newItem);
-				}
-
-				const newCartTotal = guest.items
-					.reduce(
-						(total: number, cartItem: { totalPrice: string }) =>
-							total + parseFloat(cartItem.totalPrice),
-						0
-					)
-					.toFixed(2);
-
-				guest.total = parseFloat(newCartTotal);
-
-				res.status(HttpStatus.OK).json({
-					message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
-					cart: guest.items || [],
-					cartTotal: guest.total || 0,
-				});
-
-				req.session.cart = guest;
-			} else {
-				const user = await User.findById(req.user.id).populate(
-					"cart.items.product"
-				);
-
-				if (!user) {
-					return next(
-						new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND)
-					);
-				}
-
-				const userCart: ShoppingCart | null = user.cart || {
-					items: [],
-					total: 0,
-				};
-
-				const existingCartItemIndex = userCart.items.findIndex((item) =>
-					item.product.equals(product.id)
-				);
-
-				if (existingCartItemIndex !== -1) {
-					userCart.items[existingCartItemIndex].quantity += parsedQuantity || 1;
-					userCart.items[existingCartItemIndex].totalPrice = (
-						product.price * userCart.items[existingCartItemIndex].quantity
-					).toFixed(2);
-				} else {
-					const newItem: CartItem = {
-						product: product.id,
-						quantity: parsedQuantity || 1,
-						totalPrice: (product.price * parsedQuantity).toFixed(2),
-					} as CartItem;
-
-					userCart.items.push(newItem);
-				}
-
-				const newCartTotal = userCart.items
-					.reduce(
-						(total, cartItem) => total + parseFloat(cartItem.totalPrice),
-						0
-					)
-					.toFixed(2);
-
-				userCart.total = parseFloat(newCartTotal);
-
-				await User.findByIdAndUpdate(user.id, {
-					$set: { cart: { items: userCart.items, total: userCart.total } },
-				});
-
-				const updatedUser = await User.findById(user.id).populate("cart.items");
-
-				if (!updatedUser) {
-					return next(
-						new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND)
-					);
-				}
-
-				res.status(HttpStatus.OK).json({
-					message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
-					cart: updatedUser.cart.items,
-					cartTotal: updatedUser.cart.total,
-				});
-			}
-		} catch (error) {
-			console.error(error);
+		  const { quantity } = req.body;
+		  const parsedQuantity = parseInt(quantity, 10);
+		  const product = await Product.findById(req.params.id);
+	  
+		  if (quantity <= 0) {
 			return next(
-				new CustomError(
-					HttpStatus.INTERNAL_SERVER_ERROR,
-					ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-				)
+			  new CustomError(
+				HttpStatus.BAD_REQUEST,
+				ERROR_MESSAGES.INVALID_QUANTITY
+			  )
 			);
+		  }
+	  
+		  if (!product) {
+			return next(
+			  new CustomError(
+				HttpStatus.NOT_FOUND,
+				ERROR_MESSAGES.PRODUCT_NOT_FOUND
+			  )
+			);
+		  }
+	  
+		  if (product.stockQuantity === 0) {
+			return next(
+			  new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.OUT_OF_STOCK)
+			);
+		  }
+	  
+		  if (!req.session) {
+			return next(
+			  new CustomError(
+				HttpStatus.BAD_REQUEST,
+				ERROR_MESSAGES.UNEXPECTED_ERROR
+			  )
+			);
+		  }
+	  
+		  if (!req.user) {
+			if (!req.session.cart) {
+			  req.session.cart = { items: [], total: 0 };
+			}
+	  
+			const guest = req.session.cart;
+	  
+			const existingCartItemIndex = guest.items.findIndex(
+			  (item: { product: any }) => item.product === product.id
+			);
+	  
+			if (existingCartItemIndex !== -1) {
+			  guest.items[existingCartItemIndex].quantity += parsedQuantity || 1;
+			  guest.items[existingCartItemIndex].totalPrice = (
+				product.price * guest.items[existingCartItemIndex].quantity
+			  ).toFixed(2);
+			} else {
+			  const newItem: CartItem = {
+				product: product.id,
+				quantity: parsedQuantity || 1,
+				totalPrice: (product.price * parsedQuantity).toFixed(2),
+			  } as CartItem;
+	  
+			  guest.items.push(newItem);
+			}
+	  
+			const newCartTotal = guest.items
+			  .reduce(
+				(total: number, cartItem: { totalPrice: string }) =>
+				  total + parseFloat(cartItem.totalPrice),
+				0
+			  )
+			  .toFixed(2);
+	  
+			guest.total = parseFloat(newCartTotal);
+	  
+			res.status(HttpStatus.OK).json({
+			  message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
+			  cart: guest.items || [],
+			  cartTotal: guest.total || 0,
+			});
+	  
+			req.session.cart = guest;
+		  } else {
+			const user = await User.findById(req.user.id).populate(
+			  "cart.items.product"
+			);
+	  
+			if (!user) {
+			  return next(
+				new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND)
+			  );
+			}
+	  
+			const userCart: ShoppingCart | null = user.cart || {
+			  items: [],
+			  total: 0,
+			};
+	  
+			const existingCartItemIndex = userCart.items.findIndex((item) =>
+			  item.product.equals(product.id)
+			);
+	  
+			if (existingCartItemIndex !== -1) {
+			  userCart.items[existingCartItemIndex].quantity += parsedQuantity || 1;
+			  userCart.items[existingCartItemIndex].totalPrice = (
+				product.price * userCart.items[existingCartItemIndex].quantity
+			  ).toFixed(2);
+			} else {
+			  const newItem: CartItem = {
+				product: product.id,
+				quantity: parsedQuantity || 1,
+				totalPrice: (product.price * parsedQuantity).toFixed(2),
+			  } as CartItem;
+	  
+			  userCart.items.push(newItem);
+			}
+	  
+			const newCartTotal = userCart.items
+			  .reduce(
+				(total, cartItem) => total + parseFloat(cartItem.totalPrice),
+				0
+			  )
+			  .toFixed(2);
+	  
+			userCart.total = parseFloat(newCartTotal);
+
+			res.cookie('cart', JSON.stringify(userCart), { 
+				maxAge: 3600000, // 1 hora
+				httpOnly: true,
+				secure: true 
+			  });
+	  
+			await User.findByIdAndUpdate(user.id, {
+			  $set: { cart: { items: userCart.items, total: userCart.total } },
+			});
+	  
+			const updatedUser = await User.findById(user.id).populate("cart.items");
+	  
+			if (!updatedUser) {
+			  return next(
+				new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND)
+			  );
+			}
+	  
+			res.status(HttpStatus.OK).json({
+			  message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
+			  cart: updatedUser.cart.items,
+			  cartTotal: updatedUser.cart.total,
+			});
+		  }
+		} catch (error) {
+		  console.error(error);
+		  return next(
+			new CustomError(
+			  HttpStatus.INTERNAL_SERVER_ERROR,
+			  ERROR_MESSAGES.INTERNAL_SERVER_ERROR
+			)
+		  );
 		}
-	};
+	  };	  
 
 	public getCartItems = async (
 		req: CustomRequest,
