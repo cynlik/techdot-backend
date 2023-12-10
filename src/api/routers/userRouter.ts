@@ -33,7 +33,7 @@ const userController = new UserController();
  *              $ref: '#/components/schemas/RegisterResponse'
  */
 // Register user
-router.post('/register', Validator.validateFields({ required: ['name', 'email', 'password'] }), userController.registerUser);
+router.post('/register', Validator.validateFields({ required: ['name', 'email', 'password'], optional: ['address'] }), userController.registerUser);
 
 /**
  * @openapi

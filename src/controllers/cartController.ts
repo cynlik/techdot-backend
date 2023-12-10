@@ -17,8 +17,7 @@ interface CustomRequest extends Request {
 export default class CartController {
 	private calculateCartTotal(items: CartItem[]): number {
 		return items.reduce(
-			(total: number, cartItem: CartItem) =>
-				total + parseFloat(cartItem.totalPrice),
+			(total: number, cartItem: CartItem) => total + cartItem.totalPrice,
 			0
 		);
 	}
@@ -39,15 +38,14 @@ export default class CartController {
 
 		if (existingCartItemIndex !== -1) {
 			items[existingCartItemIndex].quantity += parsedQuantity || 1;
-			items[existingCartItemIndex].totalPrice = (
-				productPrice * items[existingCartItemIndex].quantity
-			).toFixed(2);
+			items[existingCartItemIndex].totalPrice =
+				productPrice * items[existingCartItemIndex].quantity;
 		} else {
 			const newItem: CartItem = {
 				product: productId,
 				quantity: parsedQuantity || 1,
-				totalPrice: (productPrice * (parsedQuantity || 1)).toFixed(2),
-			} as CartItem;
+				totalPrice: productPrice * (parsedQuantity || 1),
+			} as unknown as CartItem;
 
 			items.push(newItem);
 		}
@@ -59,8 +57,8 @@ export default class CartController {
 		cartTotal: number
 	): Promise<IUser | null> {
 		return User.findByIdAndUpdate(userId, {
-			$set: { cart: { items: cartItems, total: cartTotal } },
-		}).populate("cart.items");
+			$set: { "cart.items": cartItems, "cart.total": cartTotal },
+		});
 	}
 
 	private async handleGuestCart(
@@ -89,9 +87,8 @@ export default class CartController {
 			product.price
 		);
 
-		const newCartTotal = this.calculateCartTotal(guestCart.items).toFixed(2);
-
-		guestCart.total = parseFloat(newCartTotal);
+		const newCartTotal = this.calculateCartTotal(guestCart.items);
+		guestCart.total = newCartTotal;
 
 		res.status(HttpStatus.OK).json({
 			message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
@@ -129,9 +126,9 @@ export default class CartController {
 			product.price
 		);
 
-		const newCartTotal = this.calculateCartTotal(userCart.items).toFixed(2);
+		const newCartTotal = this.calculateCartTotal(userCart.items);
 
-		userCart.total = parseFloat(newCartTotal);
+		userCart.total = newCartTotal;
 
 		res.cookie("cart", JSON.stringify(userCart), {
 			maxAge: 3600000, // 1 hora
@@ -229,34 +226,82 @@ export default class CartController {
 						.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
 				}
 
+				const updatedCartItems = await Promise.all(
+					savedCart.cart.items.map(async (cartItem: CartItem) => {
+						const updatedProduct = await Product.findById(cartItem.product);
+						if (updatedProduct) {
+							const newProductDetails = await Product.findById(
+								cartItem.product
+							);
+							if (newProductDetails) {
+								const newTotalPrice =
+									newProductDetails.price * cartItem.quantity;
+								cartItem.totalPrice = newTotalPrice;
+							}
+
+							const newCartTotal = this.calculateCartTotal(
+								savedCart.cart.items
+							);
+							savedCart.cart.total = newCartTotal;
+							return {
+								product: updatedProduct,
+								quantity: cartItem.quantity,
+								total: cartItem.totalPrice,
+							} as unknown as CartItem;
+						}
+						return null;
+					})
+				);
+
+				const filteredCartItems = updatedCartItems.filter(
+					(item) => item !== null
+				) as CartItem[];
+
 				return res.status(HttpStatus.OK).json({
-					cart: savedCart.cart.items.map(
-						(cartItem: { product: any; quantity: any; totalPrice: any }) => ({
-							product: cartItem.product,
-							quantity: cartItem.quantity,
-							total: cartItem.totalPrice,
-						})
-					),
+					cart: filteredCartItems,
 					cartTotal: savedCart.cart.total,
 				});
 			}
 
-			const user = await User.findById(req.user.id).populate("cart.items");
+			const user = await User.findById(req.user.id);
 
-			if (!user || !user.cart || !user.cart.items) {
+			if (!user || !user.cart) {
 				return res
 					.status(HttpStatus.OK)
 					.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
 			}
 
+			const updatedCartItems = await Promise.all(
+				user.cart.items.map(async (cartItem: CartItem) => {
+					const updatedProduct = await Product.findById(cartItem.product);
+					if (updatedProduct) {
+						const newProductDetails = await Product.findById(
+							cartItem.product
+						);
+						if (newProductDetails) {
+							const newTotalPrice =
+								newProductDetails.price * cartItem.quantity;
+							cartItem.totalPrice = newTotalPrice;
+						}
+						
+						const newCartTotal = this.calculateCartTotal(user.cart.items);
+						user.cart.total = newCartTotal;
+						return {
+							product: updatedProduct,
+							quantity: cartItem.quantity,
+							total: cartItem.totalPrice,
+						} as unknown as CartItem;
+					}
+					return null;
+				})
+			);
+
+			const filteredCartItems = updatedCartItems.filter(
+				(item) => item !== null
+			) as CartItem[];
+
 			return res.status(HttpStatus.OK).json({
-				cart: user.cart.items.map(
-					(cartItem: { product: any; quantity: any; totalPrice: any }) => ({
-						product: cartItem.product,
-						quantity: cartItem.quantity,
-						total: cartItem.totalPrice,
-					})
-				),
+				cart: filteredCartItems,
 				cartTotal: user.cart.total,
 			});
 		} catch (error) {
@@ -361,11 +406,9 @@ export default class CartController {
 					}
 				}
 
-				const newCartTotal = this.calculateCartTotal(guestCart.items).toFixed(
-					2
-				);
+				const newCartTotal = this.calculateCartTotal(guestCart.items);
 
-				guestCart.total = parseFloat(newCartTotal);
+				guestCart.total = newCartTotal;
 
 				req.session.cart = guestCart;
 
@@ -411,15 +454,15 @@ export default class CartController {
 
 						if (action === "add") {
 							existingCartItem.quantity += parsedQuantity || 1;
-							existingCartItem.totalPrice = (
-								product.price * existingCartItem.quantity
-							).toFixed(2);
+							existingCartItem.totalPrice = parseFloat(
+								(product.price * existingCartItem.quantity).toFixed(2)
+							);
 						} else if (action === "remove") {
 							if (existingCartItem.quantity >= quantity) {
 								existingCartItem.quantity -= quantity;
-								existingCartItem.totalPrice = (
-									product.price * existingCartItem.quantity
-								).toFixed(2);
+								existingCartItem.totalPrice = parseFloat(
+									(product.price * existingCartItem.quantity).toFixed(2)
+								);
 							} else {
 								userCart.items.splice(existingCartItemIndex, 1);
 							}
@@ -445,9 +488,9 @@ export default class CartController {
 					}
 				}
 
-				const newCartTotal = this.calculateCartTotal(userCart.items).toFixed(2);
+				const newCartTotal = this.calculateCartTotal(userCart.items);
 
-				userCart.total = parseFloat(newCartTotal);
+				userCart.total = newCartTotal;
 
 				await this.updateCartInDatabase(
 					req.user.id,
