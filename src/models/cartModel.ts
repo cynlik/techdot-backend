@@ -4,7 +4,7 @@ import { IProduct, Product } from './productModel';
 export interface CartItem extends Document {
   product: IProduct;
   quantity: number;
-  totalPrice: string;
+  totalPrice: number;
 }
 
 const cartItemSchema = new Schema<CartItem>({
@@ -22,13 +22,13 @@ const cartItemSchema = new Schema<CartItem>({
     },
   },
   totalPrice: {
-    type: String,
-    default: null,
+    type: Number,
+    default: 0,
     validate: {
-      validator: function (v: string) {
-        return /^(\d+|\d+\.\d+)$/.test(v);
+      validator: function (v: number) {
+        return v >= 0;
       },
-      message: 'O preço total deve ser uma string numérica válida.',
+      message: 'O preço total deve ser um número não negativo.',
     },
   },
 });
