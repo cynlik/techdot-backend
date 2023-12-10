@@ -123,3 +123,4 @@ export const SUCCESS_MESSAGES = {
     LOGOUT_SUCCESSFUL: "Logout successful",
     EMAIL_SENT_SUCCESSFULLY: "Email sent successfully",
 };
+
