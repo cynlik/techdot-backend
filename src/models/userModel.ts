@@ -18,7 +18,11 @@ export interface IUser extends Document {
   view: UserStatus;
   picture: string;
   age: number;
-  address: string;
+  address: {
+    street: string;
+    postalCode: string;
+    district: string;
+  };
   country: string;
   verifyAccountToken: string | null;
   verifyAccountTokenExpires: Date | null;
@@ -33,8 +37,17 @@ export interface IUser extends Document {
 export const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      match: /^\S+@\S+\.\S+$/,
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 8,
+    },
     role: {
       type: String,
       required: true,
@@ -48,8 +61,15 @@ export const UserSchema = new Schema<IUser>(
       enum: Object.values(UserStatus),
     },
     picture: { type: String, default: null },
-    age: { type: Number, default: null },
-    address: { type: String, default: null },
+    age: {
+      type: Number,
+      min: 0,
+    },
+    address: {
+      street: { type: String, default: null },
+      postalCode: { type: String, default: null },
+      district: { type: String, default: null },
+    },
     country: { type: String, default: null },
     verifyAccountToken: { type: String, default: null as string | null },
     verifyAccountTokenExpires: { type: Date, default: null },

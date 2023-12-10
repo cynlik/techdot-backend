@@ -12,6 +12,7 @@ import { CustomError } from "@src/utils/customError";
 import { HttpStatus, ERROR_MESSAGES, SUCCESS_MESSAGES } from "@src/utils/constant";
 import { Product } from "@src/models/productModel";
 import { WishListItem, WishListItemModel } from "@src/models/wishListModel";
+import { Error } from "@src/utils/errorCatch";
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -20,7 +21,7 @@ interface CustomRequest extends Request {
 export default class UserController {
   public registerUser = async (req: Request, res: Response, next: Function) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, address } = req.body;
 
       const userExists = await User.findOne({ email });
       if (userExists) {
@@ -34,6 +35,7 @@ export default class UserController {
         name,
         email,
         password: hashedPassword,
+        address: address || {},
       });
 
       const token = UserController.createToken(user, config.expiresIn);
@@ -52,12 +54,7 @@ export default class UserController {
         email: user.email,
     });
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -114,12 +111,7 @@ export default class UserController {
         );
       }
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -136,12 +128,7 @@ export default class UserController {
 
       return res.status(HttpStatus.OK).json(SUCCESS_MESSAGES.ACCOUNT_VERIFIED_SUCCESSFULLY);
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -166,12 +153,7 @@ export default class UserController {
 
       sendMail(EmailType.ForgetPassword, user.email, res, token.token);
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -224,12 +206,7 @@ export default class UserController {
         );
       }
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -239,10 +216,7 @@ export default class UserController {
       res.status(HttpStatus.OK).json({ message: user });
     } catch (error) {
       return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
+        Error(error, next)
       );
     }
   };
@@ -294,12 +268,7 @@ export default class UserController {
         .status(HttpStatus.OK)
         .json({ message: SUCCESS_MESSAGES.INFO_UPDATED_SUCCESSFULLY, user: updatedUser });
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -365,12 +334,7 @@ export default class UserController {
       });
     } catch (error) {
       console.error(error);
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -401,12 +365,7 @@ export default class UserController {
       }
     } catch (error) {
       console.log(error);
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -463,12 +422,7 @@ export default class UserController {
       });
     } catch (error) {
       console.error(error);
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -488,12 +442,7 @@ export default class UserController {
 
       res.status(HttpStatus.OK).send(users);
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -593,12 +542,7 @@ export default class UserController {
 
       res.status(HttpStatus.OK).send(updatedUser);
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -614,12 +558,7 @@ export default class UserController {
 
       res.status(HttpStatus.OK).send(user);
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -667,12 +606,7 @@ export default class UserController {
         accessToken: accessToken,
       });
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          ERROR_MESSAGES.INTERNAL_SERVER_ERROR
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -689,12 +623,7 @@ export default class UserController {
 
       res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.LOGOUT_SUCCESSFUL });
     } catch (error) {
-      return next(
-        new CustomError(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Internal Server Error"
-        )
-      );
+      Error(error, next)
     }
   };
 
@@ -718,12 +647,26 @@ export default class UserController {
     return (await User.find({ email }).exec()).length <= 0;
   };
 
+  private static encryptEmail(email: string) {
+    const saltRounds = config.saltRounds;
+    const hashedEmail = bcrypt.hashSync(email, saltRounds);
+  
+    return hashedEmail;
+  }
+
+  private static decryptEmail(userProvidedEmail: string, hashedEmail: string) {
+    const isEmailMatch = bcrypt.compareSync(userProvidedEmail, hashedEmail);
+    return isEmailMatch;
+  }
+
   private static createToken(user: IUser, expiresIn = config.expiresIn) {
+    const hashedEmail = this.encryptEmail(user.email);
+
     let token = jwt.sign(
       {
         id: user._id,
         name: user.name,
-        email: user.email,
+        hashedEmail,
         country: user.country,
         role: user.role,
         view: user.view,
