@@ -23,6 +23,7 @@ Welcome to TechDot's open-source E-Commerce API project developed by our dedicat
 - [Contribution](#contribution)
   - [Contributing Guidelines](./CONTRIBUTING.md)
 - [License](#license)
+- [Authors](#authors)
 
 ## Project Overview
 
@@ -111,3 +112,15 @@ We welcome contributions to enhance and refine the functionality of this API. If
 
 ### License
 This project is licensed under the [GPL-3.0 License](./LICENSE).
+
+### Authors
+
+[@samusafe](https://github.com/samusafe)
+
+[@ZeB4la](https://github.com/ZeB4la)
+
+[@GuilhermeCanha](https://github.com/GuilhermeCanha)
+
+[@duartezao](https://github.com/duartezao)
+
+[@cynlik](https://github.com/cynlik)
