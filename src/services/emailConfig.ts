@@ -1,12 +1,12 @@
-import nodemailer from 'nodemailer'
-import { Response } from 'express'
-import { emailContent, EmailType } from '@src/utils/emailType'
-import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant'
+import nodemailer from 'nodemailer';
+import { Response } from 'express';
+import { emailContent, EmailType } from '@src/utils/emailType';
+import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant';
 
 interface MailOptions {
-  to: string
-  subject: string
-  html?: string
+  to: string;
+  subject: string;
+  html?: string;
 }
 
 const transporter = nodemailer.createTransport({
@@ -15,31 +15,31 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL as string,
     pass: process.env.PASSWORD as string,
   },
-})
+});
 
 export function sendMail(emailType: EmailType, to: string, res: Response, token?: string) {
-  const emailInfo = emailContent[emailType]
-  let html: string
+  const emailInfo = emailContent[emailType];
+  let html: string;
 
   if (typeof emailInfo.html === 'function') {
-    html = emailInfo.html(token || '')
+    html = emailInfo.html(token || '');
   } else {
-    html = emailInfo.html || ''
+    html = emailInfo.html || '';
   }
 
   const mailOptions: MailOptions = {
     to,
     subject: emailInfo.subject,
     html,
-  }
+  };
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json({ message: ERROR_MESSAGES.SENDING_EMAIL, error: error.message })
+      return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json({ message: ERROR_MESSAGES.SENDING_EMAIL, error: error.message });
     } else {
-      return res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMAIL_SENT_SUCCESSFULLY })
+      return res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMAIL_SENT_SUCCESSFULLY });
     }
-  })
+  });
 }
 
 // Exemplo de uso:

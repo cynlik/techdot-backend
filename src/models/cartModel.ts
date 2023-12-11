@@ -1,10 +1,10 @@
-import mongoose, { Schema, Document } from 'mongoose'
-import { IProduct, Product } from './productModel'
+import mongoose, { Schema, Document } from 'mongoose';
+import { IProduct, Product } from './productModel';
 
 export interface CartItem extends Document {
-  product: IProduct
-  quantity: number
-  totalPrice: number
+  product: IProduct;
+  quantity: number;
+  totalPrice: number;
 }
 
 const cartItemSchema = new Schema<CartItem>({
@@ -26,16 +26,16 @@ const cartItemSchema = new Schema<CartItem>({
     default: 0,
     validate: {
       validator: function (v: number) {
-        return v >= 0
+        return v >= 0;
       },
       message: 'O preço total deve ser um número não negativo.',
     },
   },
-})
+});
 
 export interface ShoppingCart extends Document {
-  items: CartItem[]
-  total: number
+  items: CartItem[];
+  total: number;
 }
 
 export const shoppingCartSchema = new Schema<ShoppingCart>({
@@ -44,6 +44,6 @@ export const shoppingCartSchema = new Schema<ShoppingCart>({
     type: Number,
     default: 0,
   },
-})
+});
 
-export const ShoppingCartModel = mongoose.model<ShoppingCart>('ShoppingCart', shoppingCartSchema, 'users')
+export const ShoppingCartModel = mongoose.model<ShoppingCart>('ShoppingCart', shoppingCartSchema, 'users');

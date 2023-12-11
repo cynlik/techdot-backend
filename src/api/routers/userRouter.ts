@@ -1,14 +1,14 @@
-import express from 'express'
-import UserController from '@src/controllers/userController'
-import { roleMiddleware } from '@src/middlewares/roleMiddleware'
-import validateToken from '@src/middlewares/validateToken'
-import Validator from '@src/middlewares/validator'
-import { Constant } from '@src/utils/constant'
-import { User, UserStatus } from '@src/models/userModel'
-import { Product } from '@src/models/productModel'
+import express from 'express';
+import UserController from '@src/controllers/userController';
+import { roleMiddleware } from '@src/middlewares/roleMiddleware';
+import validateToken from '@src/middlewares/validateToken';
+import Validator from '@src/middlewares/validator';
+import { Constant } from '@src/utils/constant';
+import { User, UserStatus } from '@src/models/userModel';
+import { Product } from '@src/models/productModel';
 
-const router = express.Router()
-const userController = new UserController()
+const router = express.Router();
+const userController = new UserController();
 
 ///  -- USER ROUTES --
 /**
@@ -40,7 +40,7 @@ router.post(
     optional: ['address'],
   }),
   userController.registerUser,
-)
+);
 
 /**
  * @openapi
@@ -64,7 +64,7 @@ router.post(
  *                  type: string
  */
 // Verify user
-router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'), userController.verifyAccount)
+router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'), userController.verifyAccount);
 
 /**
  * @openapi
@@ -88,7 +88,7 @@ router.put('/verify', Validator.validateTokenMatch('token', 'verifyAccountToken'
  *              $ref: '#/components/schemas/LoginUserResponse'
  */
 // Login
-router.post('/login', Validator.validateFields({ required: ['email', 'password'] }), userController.loginUser)
+router.post('/login', Validator.validateFields({ required: ['email', 'password'] }), userController.loginUser);
 
 /**
  * @openapi
@@ -112,7 +112,7 @@ router.post('/login', Validator.validateFields({ required: ['email', 'password']
  *              $ref: '#/components/schemas/ForgetPasswordResponse'
  */
 // Forget
-router.post('/forgetpassword', Validator.validateFields({ required: ['email'] }), userController.forgetPassword)
+router.post('/forgetpassword', Validator.validateFields({ required: ['email'] }), userController.forgetPassword);
 
 /**
  * @openapi
@@ -142,7 +142,7 @@ router.post('/forgetpassword', Validator.validateFields({ required: ['email'] })
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Reset
-router.put('/resetpassword', Validator.validateFields({ required: ['newPassword', 'confirmPassword'] }), Validator.validateTokenMatch('token', 'resetPasswordToken'), userController.resetPassword)
+router.put('/resetpassword', Validator.validateFields({ required: ['newPassword', 'confirmPassword'] }), Validator.validateTokenMatch('token', 'resetPasswordToken'), userController.resetPassword);
 
 /**
  * @openapi
@@ -171,7 +171,7 @@ router.put('/resetpassword', Validator.validateFields({ required: ['newPassword'
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // My information
-router.get('/me', validateToken(), userController.me)
+router.get('/me', validateToken(), userController.me);
 
 /**
  * @openapi
@@ -207,16 +207,16 @@ router.put(
     optional: ['name', 'password', 'picture', 'address', 'country'],
   }),
   userController.meUpdate,
-)
+);
 
 // Add item to wish list
-router.post('/wishlist/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), userController.addToWishList)
+router.post('/wishlist/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), userController.addToWishList);
 
 // Get wish list
-router.get('/wishlist', validateToken(), userController.getWishList)
+router.get('/wishlist', validateToken(), userController.getWishList);
 
 // Remove item from wish list
-router.delete('/wishlist/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), userController.removeFromWishList)
+router.delete('/wishlist/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), userController.removeFromWishList);
 
 /**
  * @openapi
@@ -239,7 +239,7 @@ router.delete('/wishlist/:id', validateToken(), Validator.validateIds([{ paramNa
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Logout
-router.post('/logout', validateToken(), userController.logout)
+router.post('/logout', validateToken(), userController.logout);
 
 ///  -- ADMIN ROUTES --
 /**
@@ -263,7 +263,7 @@ router.post('/logout', validateToken(), userController.logout)
  *              $ref: '#/components/schemas/ChangeView'
  */
 // Change view
-router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), userController.changeView)
+router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), userController.changeView);
 
 /**
  * @openapi
@@ -296,7 +296,7 @@ router.put('/change-view', validateToken(), roleMiddleware(UserStatus.Manager), 
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Get user by id
-router.get('/:id?', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User, isOptional: true }]), userController.getUserById)
+router.get('/:id?', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User, isOptional: true }]), userController.getUserById);
 
 /**
  * @openapi
@@ -344,7 +344,7 @@ router.put(
     optional: ['name', 'email', 'role', 'picture', 'address', 'country', 'isVerified', 'cart'],
   }),
   userController.updateUserById,
-)
+);
 
 /**
  * @openapi
@@ -377,6 +377,6 @@ router.put(
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Delete user by id
-router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User }]), userController.deleteUserById)
+router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: User, type: Constant.User }]), userController.deleteUserById);
 
-export default router
+export default router;

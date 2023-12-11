@@ -1,16 +1,16 @@
-import mongoose, { Document, Schema, model } from 'mongoose'
+import mongoose, { Document, Schema, model } from 'mongoose';
 
 export interface IDiscount extends Document {
-  description: string
-  discountType: number
-  startDate: Date
+  description: string;
+  discountType: number;
+  startDate: Date;
   //endDate: Date;
-  isActive: boolean
-  promoCode: string
-  isPromoCode: boolean
-  applicableProducts: mongoose.Types.ObjectId[]
-  usageLimit: number
-  minimumPurchaseValue: number
+  isActive: boolean;
+  promoCode: string;
+  isPromoCode: boolean;
+  applicableProducts: mongoose.Types.ObjectId[];
+  usageLimit: number;
+  minimumPurchaseValue: number;
 }
 
 const discountSchema = new Schema({
@@ -29,6 +29,6 @@ const discountSchema = new Schema({
   applicableProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }], // Produtos aplicáveis
   usageLimit: { type: Number, default: null }, // Limite de uso do código promocional
   minimumPurchaseValue: { type: Number, default: 0 }, // Valor mínimo de compra para aplicação do desconto
-})
+});
 
-export const Discount = model<IDiscount>('Discount', discountSchema)
+export const Discount = model<IDiscount>('Discount', discountSchema);

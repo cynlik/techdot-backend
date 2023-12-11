@@ -1,35 +1,35 @@
-import mongoose, { Document, Schema, model } from 'mongoose'
+import mongoose, { Document, Schema, model } from 'mongoose';
 
 const cpuSpecificationsSchema = new Schema({
   brand: String,
   speed: Number,
   cores: Number,
-})
+});
 
 const gpuSpecificationSchema = new Schema({
   name: String,
   memory: Number,
   type: String,
-})
+});
 
 const motherboardSpecificationSchema = new Schema({
   manufacturer: String,
   chipset: String,
   formFactor: String,
-})
+});
 
 const ramSpecificationSchema = new Schema({
   size: Number,
   frequency: Number,
   type: String,
-})
+});
 
 const caseSpecificationSchema = new Schema({
   length: Number,
   width: Number,
   height: Number,
   material: String,
-})
+});
 
 export enum ProductType {
   CPU = 'CPU',
@@ -40,26 +40,26 @@ export enum ProductType {
 }
 
 export interface IProduct extends Document {
-  name: string
-  description: string
-  imageUrl: string
-  manufacturer: string
-  stockQuantity: number
-  price: number
-  originalPrice: number
-  visible: boolean
-  subcategoryId: mongoose.Types.ObjectId
-  productType: string
-  discountType: number
-  onDiscount: boolean
+  name: string;
+  description: string;
+  imageUrl: string;
+  manufacturer: string;
+  stockQuantity: number;
+  price: number;
+  originalPrice: number;
+  visible: boolean;
+  subcategoryId: mongoose.Types.ObjectId;
+  productType: string;
+  discountType: number;
+  onDiscount: boolean;
   specifications: {
-    cpu?: typeof cpuSpecificationsSchema
-    gpu?: typeof gpuSpecificationSchema
-    motherboard?: typeof motherboardSpecificationSchema
-    ram?: typeof ramSpecificationSchema
-    case?: typeof caseSpecificationSchema
-  }
-  warranty: Date
+    cpu?: typeof cpuSpecificationsSchema;
+    gpu?: typeof gpuSpecificationSchema;
+    motherboard?: typeof motherboardSpecificationSchema;
+    ram?: typeof ramSpecificationSchema;
+    case?: typeof caseSpecificationSchema;
+  };
+  warranty: Date;
 }
 
 const productSchema = new Schema<IProduct>({
@@ -98,10 +98,10 @@ const productSchema = new Schema<IProduct>({
     required: true,
   },
   warranty: { type: Date, default: null },
-})
+});
 
 productSchema.path('specifications').validate(function (specs) {
-  return specs.cpu || specs.gpu || specs.motherboard || specs.ram || specs.case
-}, 'Pelo menos um conjunto de especificações deve ser fornecido.')
+  return specs.cpu || specs.gpu || specs.motherboard || specs.ram || specs.case;
+}, 'Pelo menos um conjunto de especificações deve ser fornecido.');
 
-export const Product = model<IProduct>('Product', productSchema)
+export const Product = model<IProduct>('Product', productSchema);

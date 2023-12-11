@@ -1,15 +1,15 @@
-import express from 'express'
-import { ProductController } from '../../controllers/productController'
-import validateToken from '@src/middlewares/validateToken'
-import { roleMiddleware } from '@src/middlewares/roleMiddleware'
-import { UserStatus } from '@src/models/userModel'
-import Validator from '@src/middlewares/validator'
-import { Constant } from '@src/utils/constant'
-import { Subcategory } from '@src/models/subcategoryModel'
-import { Product, ProductType } from '@src/models/productModel'
+import express from 'express';
+import { ProductController } from '../../controllers/productController';
+import validateToken from '@src/middlewares/validateToken';
+import { roleMiddleware } from '@src/middlewares/roleMiddleware';
+import { UserStatus } from '@src/models/userModel';
+import Validator from '@src/middlewares/validator';
+import { Constant } from '@src/utils/constant';
+import { Subcategory } from '@src/models/subcategoryModel';
+import { Product, ProductType } from '@src/models/productModel';
 
-const router = express.Router()
-const productController = new ProductController()
+const router = express.Router();
+const productController = new ProductController();
 // =================|USER|=================
 
 /**
@@ -33,7 +33,7 @@ const productController = new ProductController()
  *              $ref: '#/components/schemas/Product'
  */
 // Rota para devolver um produto pelo ID | devolver produtos todos
-router.get('/', validateToken(true), productController.getProductsByName)
+router.get('/', validateToken(true), productController.getProductsByName);
 
 /**
  * @openapi
@@ -60,7 +60,7 @@ router.get('/', validateToken(true), productController.getProductsByName)
  *              $ref: '#/components/schemas/Product'
  */
 // Rota para devolver um produto pelo ID
-router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), productController.getProductById)
+router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), productController.getProductById);
 
 // =================|ADMIN|=================
 /**
@@ -107,7 +107,7 @@ router.post(
     },
   ]),
   productController.createProduct,
-)
+);
 
 /**
  * @openapi
@@ -157,7 +157,7 @@ router.put(
     },
   ]),
   productController.updateProduct,
-)
+);
 
 /**
  * @openapi
@@ -190,6 +190,6 @@ router.put(
  *              $ref: '#/components/schemas/SingleMessageResponse'
  */
 // Rota para eliminar um produto pelo ID
-router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), productController.deleteProduct)
+router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Product, type: Constant.Product }]), productController.deleteProduct);
 
-export default router
+export default router;
