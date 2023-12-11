@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
 import { SaleModel, ISale } from "@src/models/saleModel";
 import { IUser, User, UserStatus } from "@src/models/userModel";
-import { ERROR_MESSAGES, HttpStatus } from "@src/utils/constant";
+import {
+  ERROR_MESSAGES,
+  HttpStatus,
+  SUCCESS_MESSAGES,
+} from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
-import { ShoppingCart } from "@src/models/cartModel";
+import { CartItem, ShoppingCart } from "@src/models/cartModel";
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -15,44 +19,56 @@ export class SaleController {
     try {
       const { userName, userEmail, userAdress, userPhone, paymentMethod } =
         req.body;
-      const user = req.user;
-      const guest = req.session;
 
-      let shoppingCart: ShoppingCart;
+      const user = await User.findOne({ userEmail });
 
-      console.log("User:", user);
-      console.log("Guest:", guest);
+      if (!user) {
+        const guest = req.session;
 
-      if (user && user.cart && user.cart.items.length > 0) {
-        console.log('User Cart Found');
-        shoppingCart = user.cart;
-      } else if (guest && guest.cart && guest.cart.items.length > 0) {
-        console.log('Guest Cart Found');
-        shoppingCart = guest.cart;
-      } else {
-        console.log('Cart Not Found');
-        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Cart Not Found'));
+        if (!guest || !guest.cart || !guest.cart.items) {
+          return res
+            .status(HttpStatus.OK)
+            .json({ message: SUCCESS_MESSAGES.EMPTY_CART });
+        }
+
+        // mudar a logica e meter isto por cima para verificar se é guest ou user(verificar se é guest ja esta basicamente)
+        const guestCart: ShoppingCart | null = guest.cart || {
+          items: [],
+          total: 0,
+        };
+
+        if (!guestCart) {
+          return res
+						.status(HttpStatus.OK)
+						.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
+        };
+
+        return res.status(HttpStatus.OK).json({
+          cart: guestCart,
+          cartTotal: guest.cart.total,
+        });
       }
 
+      //retirar o res.status de cima porque tem de criar a sale e nao dar so aquele 
       const newSale = new SaleModel({
         userName,
         userEmail,
         userAdress,
         userPhone,
         paymentMethod,
-        shoppingCart,
+        // shoppingCart,
       } as ISale);
 
       // Subtrair a quantidade vendida do stock de cada produto
-      for (const productItem of shoppingCart.items) {
-        const product = await Product.findOne({
-          name: productItem.product.name,
-        });
-        if (product) {
-          product.stockQuantity -= productItem.quantity;
-          await product.save();
-        }
-      }
+      // for (const productItem of shoppingCart.items) {
+      //   const product = await Product.findOne({
+      //     name: productItem.product.name,
+      //   });
+      //   if (product) {
+      //     product.stockQuantity -= productItem.quantity;
+      //     await product.save();
+      //   }
+      // }
 
       // // Limpar o carrinho, dependendo se o user está autenticado ou não
       // if (!user) {
@@ -88,7 +104,7 @@ export class SaleController {
   };
 
   public getSalesByName = async (
-    req: Request,
+    req: CustomRequest,
     res: Response,
     next: Function
   ) => {
@@ -183,7 +199,11 @@ export class SaleController {
     }
   };
 
-  public deleteById = async (req: Request, res: Response, next: Function) => {
+  public deleteById = async (
+    req: CustomRequest,
+    res: Response,
+    next: Function
+  ) => {
     try {
       const saleId = req.params.id;
       const deletedSale = await SaleModel.findByIdAndDelete(saleId);
