@@ -3,6 +3,7 @@
 Welcome to TechDot's open-source E-Commerce API project developed by our dedicated team. This TypeScript-based Node.js API leverages the Express framework alongside cutting-edge technologies to offer a robust foundation for crafting seamless online shopping experiences. Below, you'll find detailed information on obtaining the release and initiating the server.
 
 ## Table of Contents
+
 - [Project Overview](#project-overview)
 - [Technologies Used](#technologies-used)
 - [Getting Started](#getting-started)
@@ -52,14 +53,17 @@ To set up and run the server locally, follow these steps:
    ```bash
    git clone https://github.com/cynlik/techdot-backend.git
    cd techdot-backend
+   ```
+
 2. Install dependecies:
    ```bash
    npm install
    ```
 3. Configure Environment:
-  After installing the dependencies, create a .env file in the root folder of the project and add the following environment variables:
-  
+   After installing the dependencies, create a .env file in the root folder of the project and add the following environment variables:
+
    .env
+
    ```bash
    HOST=127.0.0.1
    FRONTEND_HOST=
@@ -71,24 +75,30 @@ To set up and run the server locally, follow these steps:
    IPGEOAPI=
    EMAIL=
    PASSWORD=
+   ```
 
-  Replace the placeholders with your actual configuration.
+Replace the placeholders with your actual configuration.
 
 4. Start your project
 
    ```bash
    npm start
+   ```
 
 The API will be accessible at http://localhost:3000.
 
 ## API Features
+
 ### Categories
+
 The categories segment electronic products into distinct sections, simplifying the user's exploration of computer peripherals, household appliances, etc.
 
 ### Subcategories
+
 Subcategories provide more detailed classification within each main category. For example, in the computer components category, we have motherboard, graphics card, processor, etc.
 
 ### Products
+
 This feature represents individual product available for purchase. Each product contains comprehensive information such as name, description, compatibility details, specifications, images, and prices.
 
 ### Users
@@ -105,6 +115,7 @@ The user feature manages customer accounts, enabling profile creation and manage
 Managers/admins possess elevated privileges within the system, enabling them to perform the following tasks:
 
 - **Category Management**:
+
   - Creation, modification, and deletion of categories.
   - Ability to modify category names.
   - Access to a dedicated dashboard for efficient category management.
@@ -120,21 +131,27 @@ Non-users have limited access within the system, allowing them to:
 - View products, categories, and subcategories.
 
 ### Shopping Carts
+
 Shopping carts enable customers to collect and temporarily store their chosen computer components for purchase. They can add, remove, or modify items in their cart before finalizing their order.
 
 ### Wish Lists
+
 Wish lists allow registered users to save desired products for future consideration, providing a convenient way to track favorite items without immediately adding them to the cart.
 
 ### Discount Codes
+
 Discount codes offer customers the opportunity to receive special discounts on their purchases, whether through percentage-based discounts or fixed monetary discounts.
 
 ### Promotions
+
 Promotions encompass special offers or marketing campaigns that may include seasonal discounts, limited-time sales, bundled deals, or offers tied to specific computer component categories or periods.
 
 ### Contribution
+
 We welcome contributions to enhance and refine the functionality of this API. If you have ideas, bug reports, or feature requests, please feel free to open an issue or submit a pull request.
 
 ## Web Service
+
 The getUserCountry function within this project utilizes the IP Geolocation API to retrieve the country name based on the provided IP address. This functionality is particularly useful for determining the user's location for language customization within the application.
 
 Setting Up API Access
@@ -157,6 +174,7 @@ Example: IPGEOAPI=YOUR_API_KEY
 The API functionality is contained within the `src/api/services/geolocation.ts` file. Here, you'll find the getUserCountry function utilizing Axios to interact with the IP Geolocation API, fetching the country name based on the provided IP.
 
 ## License
+
 This project is licensed under the [GPL-3.0 License](./LICENSE).
 
 ## Authors

@@ -1,14 +1,14 @@
 export enum EmailType {
-	Welcome = "welcome",
-	ForgetPassword = "forgetPassword",
-	VerifyAccount = "verifyAccount",
-	NewLocation = "newLocation",
+  Welcome = 'welcome',
+  ForgetPassword = 'forgetPassword',
+  VerifyAccount = 'verifyAccount',
+  NewLocation = 'newLocation',
 }
 
 export const emailContent = {
-	[EmailType.Welcome]: {
-		subject: "Bem-vindo ao TechDot",
-		html: `
+  [EmailType.Welcome]: {
+    subject: 'Bem-vindo ao TechDot',
+    html: `
 		  <html>
 			<body style="font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0;">
 			  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f2f2f2; margin: 0; padding: 0;">
@@ -35,10 +35,10 @@ export const emailContent = {
 			</body>
 		  </html>
 		`,
-	},
-	[EmailType.ForgetPassword]: {
-		subject: "Esqueceu Senha",
-		html: (token: string) => `
+  },
+  [EmailType.ForgetPassword]: {
+    subject: 'Esqueceu Senha',
+    html: (token: string) => `
 		  <html>
 			<body style="font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0;">
 			  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f2f2f2; margin: 0; padding: 0;">
@@ -65,10 +65,10 @@ export const emailContent = {
 			</body>
 		  </html>
 		`,
-	},
-	[EmailType.VerifyAccount]: {
-		subject: "Verificar Conta",
-		html: (token: string) => `
+  },
+  [EmailType.VerifyAccount]: {
+    subject: 'Verificar Conta',
+    html: (token: string) => `
 		  <html>
 			<body style="font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0;">
 			  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f2f2f2; margin: 0; padding: 0;">
@@ -95,10 +95,10 @@ export const emailContent = {
 			</body>
 		  </html>
 		`,
-	},
-	[EmailType.NewLocation]: {
-		subject: "Novo início de sessão",
-		html: (ip: string) => `
+  },
+  [EmailType.NewLocation]: {
+    subject: 'Novo início de sessão',
+    html: (ip: string) => `
 		  <html>
 			<body style="font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0;">
 			  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f2f2f2; margin: 0; padding: 0;">
@@ -122,5 +122,5 @@ export const emailContent = {
 			</body>
 		  </html>
 		`,
-	},
+  },
 };
