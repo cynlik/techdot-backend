@@ -7,11 +7,7 @@ import mongoose, { Document, Schema, model } from "mongoose";
 
 
 
-interface IRamSpecifications {
-  size?: number;
-  frequency?: number;
-  type?: string;
-}
+
 
 interface ICaseSpecifications {
   length?: number;
