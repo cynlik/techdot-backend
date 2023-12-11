@@ -1,6 +1,6 @@
 import { Schema } from "mongoose";
 
-interface IGpuSpecifications {
+export interface IGpuSpecifications {
     name?: string;
     memory?: number;
     type?: string;

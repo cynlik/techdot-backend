@@ -1,6 +1,6 @@
 import { Schema } from "mongoose";
 
-interface ICpuSpecifications {
+export interface ICpuSpecifications {
     brand?: string;
     speed?: number;
     cores?: number;
