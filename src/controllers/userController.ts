@@ -61,7 +61,7 @@ export default class UserController {
 				email: user.email,
 			});
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -123,7 +123,7 @@ export default class UserController {
 				);
 			}
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -142,7 +142,7 @@ export default class UserController {
 				.status(HttpStatus.OK)
 				.json(SUCCESS_MESSAGES.ACCOUNT_VERIFIED_SUCCESSFULLY);
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -169,7 +169,7 @@ export default class UserController {
 
 			sendMail(EmailType.ForgetPassword, user.email, res, token.token);
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -222,7 +222,7 @@ export default class UserController {
 				);
 			}
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -231,7 +231,7 @@ export default class UserController {
 			const user = req.user;
 			res.status(HttpStatus.OK).json({ message: user });
 		} catch (error) {
-			return next(Error(error, next));
+			next(Error(error));
 		}
 	};
 
@@ -262,32 +262,32 @@ export default class UserController {
 				);
 			}
 
-      if (newUser.picture === user.picture) {
-        return next(
+			if (newUser.picture === user.picture) {
+				return next(
 					new CustomError(
 						HttpStatus.BAD_REQUEST,
 						ERROR_MESSAGES.PICTURE_SAME_AS_CURRENT
 					)
 				);
-      }
+			}
 
-      if (newUser.address === user.address) {
-        return next(
+			if (newUser.address === user.address) {
+				return next(
 					new CustomError(
 						HttpStatus.BAD_REQUEST,
 						ERROR_MESSAGES.ADDRESS_SAME_AS_CURRENT
 					)
 				);
-      }
+			}
 
-      if (newUser.country === user.country) {
-        return next(
+			if (newUser.country === user.country) {
+				return next(
 					new CustomError(
 						HttpStatus.BAD_REQUEST,
 						ERROR_MESSAGES.COUNTRY_SAME_AS_CURRENT
 					)
 				);
-      }
+			}
 
 			const updateFields: { [key: string]: any } = {};
 			if (newUser.name) updateFields.name = newUser.name;
@@ -312,7 +312,7 @@ export default class UserController {
 					user: updatedUser,
 				});
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -383,7 +383,7 @@ export default class UserController {
 			});
 		} catch (error) {
 			console.error(error);
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -418,7 +418,7 @@ export default class UserController {
 			}
 		} catch (error) {
 			console.log(error);
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -480,7 +480,7 @@ export default class UserController {
 			});
 		} catch (error) {
 			console.error(error);
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -500,7 +500,7 @@ export default class UserController {
 
 			res.status(HttpStatus.OK).send(users);
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -616,7 +616,7 @@ export default class UserController {
 
 			res.status(HttpStatus.OK).send(updatedUser);
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -632,7 +632,7 @@ export default class UserController {
 
 			res.status(HttpStatus.OK).send(user);
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -687,7 +687,7 @@ export default class UserController {
 				accessToken: accessToken,
 			});
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
@@ -709,7 +709,7 @@ export default class UserController {
 				.status(HttpStatus.OK)
 				.json({ message: SUCCESS_MESSAGES.LOGOUT_SUCCESSFUL });
 		} catch (error) {
-			Error(error, next);
+			next(Error(error));
 		}
 	};
 
