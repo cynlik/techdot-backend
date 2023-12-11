@@ -22,13 +22,19 @@ const cartController = new CartController();
  *         schema:
  *           type: string
  *         description: The product ID
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/CartRequest'
  *     responses:
  *       200:
  *         description: Success
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Cart'
+ *               $ref: '#/components/schemas/CartResponse'
  */
 // Add item to cart
 router.post("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), cartController.addToCart);
@@ -46,7 +52,7 @@ router.post("/:id", validateToken(true), Validator.validateIds([{ paramName: "id
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Cart'
+ *               $ref: '#/components/schemas/CartResponse'
  */
 // Get cart items
 router.get("/", validateToken(true), cartController.getCartItems);
@@ -64,14 +70,14 @@ router.get("/", validateToken(true), cartController.getCartItems);
  *      content:
  *        application/json: 
  *           schema:
- *              $ref: '#/components/schemas/Cart'
+ *              $ref: '#/components/schemas/CartPutRequest'
  *     responses:
  *       200:
  *         description: Success
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Cart'
+ *               $ref: '#/components/schemas/CartResponse'
  */
 // Update cart items
 router.put("/", validateToken(true), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), cartController.updateCart);

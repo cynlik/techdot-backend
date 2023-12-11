@@ -13,7 +13,32 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
-        Cart: {
+        CartPutRequest: {
+          type: 'object',
+          properties: {
+            productId: {
+              type: 'string',
+            },
+            quantity: {
+              type: 'number',
+              default: 1,
+            },
+            action: {
+              type: 'enum',
+              enum: ['add', 'remove', 'removeAll', 'removeProduct'],
+            }
+          },
+        },
+        CartRequest: {
+          type: 'object',
+          properties: {
+            quantity: {
+              type: 'number',
+              default: 1,
+            },
+          },
+        },
+        CartResponse: {
           type: 'object',
           properties: {
             message: {
@@ -38,6 +63,15 @@ const options: swaggerJsdoc.Options = {
             },
             cartTotal: {
               type: 'number',
+            },
+          },
+        },
+        CartQuantity: {
+          type: 'object',
+          properties: {
+            quantity: {
+              type: 'number',
+              default: 1,
             },
           },
         },
