@@ -13,15 +13,17 @@ Welcome to TechDot's open-source E-Commerce API project developed by our dedicat
   - [Subcategories](#subcategories)
   - [Products](#products)
   - [Users](#users)
+  - [Managers/Admins](#managers/admins)
+  - [Non-Users](#non-users)
   - [Shopping Carts](#shopping-carts)
   - [Wish Lists](#wish-lists)
-  - [Guests](#guests)
   - [Discount Codes](#discount-codes)
   - [Promotions](#promotions)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Security Policy](./SECURITY.md)
 - [Contribution](#contribution)
   - [Contributing Guidelines](./CONTRIBUTING.md)
+- [Web Service](#web-service)
 - [License](#license)
 - [Authors](#authors)
 
@@ -79,7 +81,60 @@ To set up and run the server locally, follow these steps:
 
 The API will be accessible at http://localhost:3000.
 
-## Web Services
+## API Features
+### Categories
+The categories segment electronic products into distinct sections, simplifying the user's exploration of computer peripherals, household appliances, etc.
+
+### Subcategories
+Subcategories provide more detailed classification within each main category. For example, in the computer components category, we have motherboard, graphics card, processor, etc.
+
+### Products
+This feature represents individual product available for purchase. Each product contains comprehensive information such as name, description, compatibility details, specifications, images, and prices.
+
+### Users
+
+The user feature manages customer accounts, enabling profile creation and management, purchase history viewing, payment information management, and delivery address storage. Additionally, users can:
+
+- Add items to their wishlists for future consideration.
+- View all categories available.
+- Access all subcategories within each category.
+- Browse products listed under each subcategory and category.
+
+### Managers/Admins
+
+Managers/admins possess elevated privileges within the system, enabling them to perform the following tasks:
+
+- **Category Management**:
+  - Creation, modification, and deletion of categories.
+  - Ability to modify category names.
+  - Access to a dedicated dashboard for efficient category management.
+
+- **Product Management**:
+  - Creation, modification, and deletion of products.
+  - Creation, modification, and deletion of subcategories.
+
+### Non-Users
+
+Non-users have limited access within the system, allowing them to:
+
+- View products, categories, and subcategories.
+
+### Shopping Carts
+Shopping carts enable customers to collect and temporarily store their chosen computer components for purchase. They can add, remove, or modify items in their cart before finalizing their order.
+
+### Wish Lists
+Wish lists allow registered users to save desired products for future consideration, providing a convenient way to track favorite items without immediately adding them to the cart.
+
+### Discount Codes
+Discount codes offer customers the opportunity to receive special discounts on their purchases, whether through percentage-based discounts or fixed monetary discounts.
+
+### Promotions
+Promotions encompass special offers or marketing campaigns that may include seasonal discounts, limited-time sales, bundled deals, or offers tied to specific computer component categories or periods.
+
+### Contribution
+We welcome contributions to enhance and refine the functionality of this API. If you have ideas, bug reports, or feature requests, please feel free to open an issue or submit a pull request.
+
+## Web Service
 The getUserCountry function within this project utilizes the IP Geolocation API to retrieve the country name based on the provided IP address. This functionality is particularly useful for determining the user's location for language customization within the application.
 
 Setting Up API Access
@@ -97,40 +152,9 @@ In the project's environment variables or configuration file (src/config or .env
 
 Example: IPGEOAPI=YOUR_API_KEY
 
-API Location in the Project
-The API functionality is contained within the src/api/services/geolocation.ts file. Here, you'll find the getUserCountry function utilizing Axios to interact with the IP Geolocation API, fetching the country name based on the provided IP.
+#### API Location in the Project
 
-
-## API Features
-### Categories
-The categories segment electronic products into distinct sections, simplifying the user's exploration of computer peripherals, household appliances, etc.
-
-### Subcategories
-Subcategories provide more detailed classification within each main category. For example, in the computer components category, we have motherboard, graphics card, processor, etc.
-
-### Products
-This feature represents individual product available for purchase. Each product contains comprehensive information such as name, description, compatibility details, specifications, images, and prices.
-
-### Users
-The user feature manages customer accounts, enabling profile creation and management, purchase history viewing, payment information management, and delivery address storage.
-
-### Shopping Carts
-Shopping carts enable customers to collect and temporarily store their chosen computer components for purchase. They can add, remove, or modify items in their cart before finalizing their order.
-
-### Wish Lists
-Wish lists allow registered users to save desired products for future consideration, providing a convenient way to track favorite items without immediately adding them to the cart.
-
-### Guests
-Functionality for visitors without registered accounts, allowing them to browse computer components, add items to their cart, and create temporary wish lists without needing an account.
-
-### Discount Codes
-Discount codes offer customers the opportunity to receive special discounts on their purchases, whether through percentage-based discounts or fixed monetary discounts.
-
-### Promotions
-Promotions encompass special offers or marketing campaigns that may include seasonal discounts, limited-time sales, bundled deals, or offers tied to specific computer component categories or periods.
-
-### Contribution
-We welcome contributions to enhance and refine the functionality of this API. If you have ideas, bug reports, or feature requests, please feel free to open an issue or submit a pull request.
+The API functionality is contained within the `src/api/services/geolocation.ts` file. Here, you'll find the getUserCountry function utilizing Axios to interact with the IP Geolocation API, fetching the country name based on the provided IP.
 
 ## License
 This project is licensed under the [GPL-3.0 License](./LICENSE).
