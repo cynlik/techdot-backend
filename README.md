@@ -132,7 +132,7 @@ Promotions encompass special offers or marketing campaigns that may include seas
 ### Contribution
 We welcome contributions to enhance and refine the functionality of this API. If you have ideas, bug reports, or feature requests, please feel free to open an issue or submit a pull request.
 
-### License
+## License
 This project is licensed under the [GPL-3.0 License](./LICENSE).
 
 ## Authors
