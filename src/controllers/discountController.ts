@@ -277,17 +277,7 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
       }
 
-      let viewUser = UserStatus.NonMember;
-
-      if (user) {
-        viewUser = user.view;
-      }
-
       const conditions: any = {};
-
-      if (viewUser !== UserStatus.Admin) {
-        conditions.visible = true;
-      }
 
       if (description) {
         conditions.description = new RegExp(description, 'i');
