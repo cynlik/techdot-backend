@@ -19,7 +19,7 @@ export class DiscountController {
     try {
 
     } catch (error) {
-      Er
+      next(Error(error));
     }
   }
 
@@ -329,7 +329,7 @@ export class DiscountController {
         res.status(200).send({ discounts, totalPages });
       }
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   };
 
