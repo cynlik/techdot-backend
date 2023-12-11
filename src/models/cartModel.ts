@@ -2,13 +2,13 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { IProduct, Product } from './productModel';
 
 export interface CartItem extends Document {
-  product: IProduct;
+  productId: IProduct;
   quantity: number;
   totalPrice: number;
 }
 
 const cartItemSchema = new Schema<CartItem>({
-  product: {
+  productId: {
     type: Schema.Types.ObjectId,
     ref: 'Product',
     required: true,
