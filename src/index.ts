@@ -6,6 +6,7 @@ import "./config"
 import { errorHandler } from './middlewares/errorHandler';
 import swaggerDocs from '@src/utils/swagger';
 import cookieSession from 'cookie-session';
+import { slowDown } from 'express-slow-down';
 
 dotenv.config();
 
@@ -15,9 +16,16 @@ const helmet = require('helmet')
 const hostname = String(process.env.HOST ?? "127.0.0.1");
 const port = Number(process.env.PORT ?? 3000);
 
+const limiter = slowDown({
+	delayAfter: 1,
+	delayMs: (hits) => hits * 1000,
+	maxDelayMs: 4000,
+})
+
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
+app.use(limiter);
 app.use(cookieSession({
   name: 'session',
   keys: [
