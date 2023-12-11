@@ -79,6 +79,27 @@ To set up and run the server locally, follow these steps:
 
 The API will be accessible at http://localhost:3000.
 
+## Web Services
+The getUserCountry function within this project utilizes the IP Geolocation API to retrieve the country name based on the provided IP address. This functionality is particularly useful for determining the user's location for language customization within the application.
+
+Setting Up API Access
+To use this functionality, you'll need an API key from [IP Geolocation](https://ipgeolocation.io/). Follow these steps to obtain your API key:
+
+#### 1. Create an Account:
+
+    Sign up for an account on IP Geolocation.
+    After registration, access your dashboard and locate your unique API key.
+
+#### 2. Environment Configuration:
+
+In the project's environment variables or configuration file (src/config or .env), set the IPGEOAPI variable to your API key.
+
+Example: IPGEOAPI=YOUR_API_KEY
+
+API Location in the Project
+The API functionality is contained within the src/api/services/geolocation.ts file. Here, you'll find the getUserCountry function utilizing Axios to interact with the IP Geolocation API, fetching the country name based on the provided IP.
+
+
 ## API Features
 ### Categories
 The categories segment electronic products into distinct sections, simplifying the user's exploration of computer peripherals, household appliances, etc.
