@@ -95,7 +95,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.OK).send(updateSubcategory);
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -114,7 +114,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.OK).send({ message: 'Subcategory deleted successfully' })
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -178,7 +178,7 @@ export class SubcategoryController {
         res.status(200).send({ subcategory, totalPages });
       }
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   };
 
