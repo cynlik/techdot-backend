@@ -9,7 +9,7 @@ import { Error } from "@src/utils/errorCatch";
 export class ProductController {
 
   // =================|USERS|=================
-  
+
   public getProductsByName = async (req: Request, res: Response, next: Function) => {
     try {
       const user = req.user
@@ -25,15 +25,15 @@ export class ProductController {
       const limitNumber = parseInt(limit, 10);
 
       if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST ,'Parâmetros de paginação inválidos.'));
+        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
       }
 
       let viewUser = UserStatus.NonMember
 
-      if(user) {
+      if (user) {
         viewUser = user.view
       }
-      
+
       const conditions: any = {};
 
       if (viewUser !== UserStatus.Admin) {
@@ -69,7 +69,7 @@ export class ProductController {
         res.status(200).send({ products, totalPages });
       }
     } catch (error) {
-      Error(error, next);
+      next(Error(error));
     }
   };
 
@@ -88,12 +88,12 @@ export class ProductController {
       const product = await Product.findOne(conditions);
 
       if (!product) {
-        return next(new CustomError(HttpStatus.NOT_FOUND ,'Product not found'));
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Product not found'));
       }
 
       return res.status(200).send(product);
     } catch (error) {
-      Error(error, next);
+      next(Error(error));
     }
   };
 
@@ -131,7 +131,7 @@ export class ProductController {
 
       return res.status(HttpStatus.CREATED).json(savedProduct)
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   };
 
@@ -144,7 +144,7 @@ export class ProductController {
 
       return res.status(HttpStatus.OK).json(updatedProduct);
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   };
 
@@ -155,9 +155,9 @@ export class ProductController {
 
       await Product.findByIdAndDelete(id);
 
-      return res.status(204).json({message: "Product successfully deleted!"});
+      return res.status(204).json({ message: "Product successfully deleted!" });
     } catch (error) {
-      Error(error, next);
+      next(Error(error));
     }
   };
 
