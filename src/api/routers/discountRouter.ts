@@ -27,10 +27,10 @@ router.put('/add/:id', validateToken(), roleMiddleware(UserStatus.Manager), Vali
 
 router.put('/remove/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateFields({ required: ['productId']}), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.removeProductFromDiscount)
 
-router.delete('/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount)
+router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount)
 
-router.get('/solo/:id', validateToken(), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.getDiscountByID)
+router.get('/solo/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: "id", model: Discount, type: Constant.Discount}]), discountController.getDiscountByID)
 
-router.get('/query/', validateToken(), Validator.validateFields({ optional: ['description', 'sort', 'page', 'limit', 'isActive', 'promoCode']}), discountController.getDiscountByName)
+router.get('/query/', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateFields({ optional: ['description', 'sort', 'page', 'limit', 'isActive', 'promoCode']}), discountController.getDiscountByName)
 
 export default router;
