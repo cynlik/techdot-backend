@@ -62,11 +62,7 @@ export interface IProduct extends Document {
 
 
 
-const motherboardSpecificationSchema = new Schema<IMotherboardSpecifications>({
-  manufacturer: { type: String, required: true },
-  chipset: { type: String, required: true },
-  formFactor: { type: String, required: true }
-});
+
 
 const ramSpecificationSchema = new Schema<IRamSpecifications>({
   size: { type: Number, required: true },
