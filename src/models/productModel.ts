@@ -1,35 +1,37 @@
-import mongoose, { Document, Schema, model } from 'mongoose';
+import mongoose, { Document, Schema, model } from "mongoose";
 
-const cpuSpecificationsSchema = new Schema({
-  brand: String,
-  speed: Number,
-  cores: Number,
-});
+// Definição das interfaces para cada especificação
 
-const gpuSpecificationSchema = new Schema({
-  name: String,
-  memory: Number,
-  type: String,
-});
 
-const motherboardSpecificationSchema = new Schema({
-  manufacturer: String,
-  chipset: String,
-  formFactor: String,
-});
 
-const ramSpecificationSchema = new Schema({
-  size: Number,
-  frequency: Number,
-  type: String,
-});
 
-const caseSpecificationSchema = new Schema({
-  length: Number,
-  width: Number,
-  height: Number,
-  material: String,
-});
+interface IMotherboardSpecifications {
+  manufacturer?: string;
+  chipset?: string;
+  formFactor?: string;
+}
+
+interface IRamSpecifications {
+  size?: number;
+  frequency?: number;
+  type?: string;
+}
+
+interface ICaseSpecifications {
+  length?: number;
+  width?: number;
+  height?: number;
+  material?: string;
+}
+
+// Interface para o campo specifications
+interface ISpecifications {
+  cpu?: ICpuSpecifications;
+  gpu?: IGpuSpecifications;
+  motherboard?: IMotherboardSpecifications;
+  ram?: IRamSpecifications;
+  case?: ICaseSpecifications;
+}
 
 export enum ProductType {
   CPU = 'CPU',
@@ -39,6 +41,7 @@ export enum ProductType {
   Case = 'Case',
 }
 
+// Interface para o documento do produto
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -49,42 +52,52 @@ export interface IProduct extends Document {
   originalPrice: number;
   visible: boolean;
   subcategoryId: mongoose.Types.ObjectId;
-  productType: string;
+  productType: ProductType;
   discountType: number;
   onDiscount: boolean;
-  specifications: {
-    cpu?: typeof cpuSpecificationsSchema;
-    gpu?: typeof gpuSpecificationSchema;
-    motherboard?: typeof motherboardSpecificationSchema;
-    ram?: typeof ramSpecificationSchema;
-    case?: typeof caseSpecificationSchema;
-  };
+  specifications: ISpecifications;
   warranty: Date;
 }
 
+// Esquemas para cada especificação
+// Esquemas para cada especificação
+
+
+
+
+
+const motherboardSpecificationSchema = new Schema<IMotherboardSpecifications>({
+  manufacturer: { type: String, required: true },
+  chipset: { type: String, required: true },
+  formFactor: { type: String, required: true }
+});
+
+const ramSpecificationSchema = new Schema<IRamSpecifications>({
+  size: { type: Number, required: true },
+  frequency: { type: Number, required: true },
+  type: { type: String, required: true }
+});
+
+const caseSpecificationSchema = new Schema<ICaseSpecifications>({
+  length: { type: Number, required: true },
+  width: { type: Number, required: true },
+  height: { type: Number, required: true },
+  material: { type: String, required: true }
+});
+
+
+// Esquema do produto
 const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },
   description: { type: String, required: true },
   imageUrl: { type: String, required: true },
   manufacturer: { type: String, required: true },
-  stockQuantity: {
-    type: Number,
-    required: true,
-    min: [0, 'Invalid operation'],
-  },
+  stockQuantity: { type: Number, required: true, min: [0, 'Invalid operation'] },
   price: { type: Number, required: true, min: [0, 'Invalid operation'] },
   originalPrice: { type: Number, required: true, default: 0 },
   visible: { type: Boolean, required: true, default: false },
-  subcategoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Subcategory',
-    required: true,
-  },
-  productType: {
-    type: String,
-    enum: [...Object.keys(ProductType)],
-    required: true,
-  },
+  subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory', required: true },
+  productType: { type: String, enum: Object.values(ProductType), required: true },
   discountType: { type: Number, required: true, default: 0, min: 0, max: 100 },
   onDiscount: { type: Boolean, required: true, default: false },
   specifications: {
@@ -96,12 +109,21 @@ const productSchema = new Schema<IProduct>({
       case: caseSpecificationSchema,
     },
     required: true,
+    validate: {
+      validator: function (v: ISpecifications) {
+        return v.cpu || v.gpu || v.motherboard || v.ram || v.case;
+      },
+      message: 'Pelo menos uma especificação (CPU, GPU, Motherboard, RAM, Case) é necessária.'
+    }
   },
   warranty: { type: Date, default: null },
 });
 
-productSchema.path('specifications').validate(function (specs) {
-  return specs.cpu || specs.gpu || specs.motherboard || specs.ram || specs.case;
-}, 'Pelo menos um conjunto de especificações deve ser fornecido.');
+productSchema.pre('validate', function (next) {
+  if (!this.specifications || Object.keys(this.specifications).length === 0) {
+    this.invalidate('specifications', 'Pelo menos uma especificação é necessária.');
+  }
+  next();
+});
 
-export const Product = model<IProduct>('Product', productSchema);
+export const Product = model<IProduct>("Product", productSchema);
