@@ -1,3 +1,5 @@
 {
-    "editor.inlineSuggest.showToolbar": "always"
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.inlineSuggest.showToolbar": "always"
 }

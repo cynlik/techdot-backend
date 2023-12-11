@@ -6,180 +6,232 @@ import { Product } from "@src/models/productModel";
 import { UserStatus } from "@src/models/userModel";
 import { Error } from "@src/utils/errorCatch";
 export class SubcategoryController {
+	// =================|USER|=================
 
-  // =================|USER|=================
+	public getAllSubcategory = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const user = req.user;
 
-  public getAllSubcategory = async (req: Request, res: Response, next: Function) => {
-    try {
-      const user = req.user;
+			let viewUser = UserStatus.NonMember;
 
-      let viewUser = UserStatus.NonMember;
+			if (user) {
+				viewUser = user.view;
+			}
 
-      if (user) {
-        viewUser = user.view;
-      }
+			const conditions: any = {};
 
-      const conditions: any = {};
+			if (viewUser !== UserStatus.Admin) {
+				conditions.visible = true;
+			}
 
-      if (viewUser !== UserStatus.Admin) {
-        conditions.visible = true;
-      }
+			const subcategorys = await Subcategory.find(conditions);
 
-      const subcategorys = await Subcategory.find(conditions);
+			if (subcategorys.length < 1) {
+				return next(
+					new CustomError(HttpStatus.NOT_FOUND, "Subcategories not found!")
+				);
+			}
+			return res.status(HttpStatus.OK).send(subcategorys);
+		} catch (error) {
+			next(Error(error));
+		}
+	};
 
-      if (subcategorys.length < 1) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'Subcategories not found!'))
-      }
-      return res.status(HttpStatus.OK).send(subcategorys)
-    } catch (error) {
-      next(Error(error));
-    }
-  }
+	public getAllProductBySubcategory = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
+		const { id } = req.params;
+		const user = req.user;
 
-  public getAllProductBySubcategory = async (req: Request, res: Response, next: Function) => {
-    const { id } = req.params;
-    const user = req.user;
+		try {
+			let viewUser = UserStatus.NonMember;
 
-    try {
-      let viewUser = UserStatus.NonMember;
+			if (user) {
+				viewUser = user.view;
+			}
 
-      if (user) {
-        viewUser = user.view;
-      }
+			const conditions: any = { subcategoryId: id };
 
-      const conditions: any = { subcategoryId: id };
+			if (viewUser !== UserStatus.Admin) {
+				conditions.visible = true;
+			}
 
-      if (viewUser !== UserStatus.Admin) {
-        conditions.visible = true;
-      }
+			const products = await Product.find(conditions);
 
-      const products = await Product.find(conditions);
+			if (products.length < 1) {
+				return next(
+					new CustomError(
+						HttpStatus.NOT_FOUND,
+						"Products Not Found In That Subcategory"
+					)
+				);
+			}
 
-      if (products.length < 1) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, "Products Not Found In That Subcategory"))
-      }
+			return res.status(HttpStatus.OK).send(products);
+		} catch (error) {
+			next(Error(error));
+		}
+	};
 
-      return res.status(HttpStatus.OK).send(products)
-    } catch (error) {
-      next(Error(error));
-    }
-  }
+	// =================|ADMIN|=================
 
-  // =================|ADMIN|=================
+	public createSubcategory = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
+		const { name, categoryId } = req.body;
 
-  public createSubcategory = async (req: Request, res: Response, next: Function) => {
-    const { name, categoryId } = req.body;
+		try {
+			const compare = await Subcategory.find({ name: name });
 
-    try {
-      const compare = await Subcategory.find({ name: name })
+			if (compare.length > 0) {
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Name already exists")
+				);
+			}
 
-      if (compare.length > 0) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST, "Name already exists"))
-      }
+			const newSubcategory = new Subcategory({ name, category: categoryId });
+			const savedSubcategory = await newSubcategory.save();
 
-      const newSubcategory = new Subcategory({ name, category: categoryId });
-      const savedSubcategory = await newSubcategory.save();
+			return res.status(HttpStatus.CREATED).send(savedSubcategory);
+		} catch (error) {
+			next(Error(error));
+		}
+	};
 
-      return res.status(HttpStatus.CREATED).send(savedSubcategory);
-    } catch (error) {
-      next(Error(error));
-    }
-  }
+	public updateSubcategory = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
+		const subcategoryId = req.params.id;
+		const updateFields = req.body;
 
-  public updateSubcategory = async (req: Request, res: Response, next: Function) => {
-    const subcategoryId = req.params.id;
-    const updateFields = req.body;
+		try {
+			const updateSubcategory = await Subcategory.findByIdAndUpdate(
+				subcategoryId,
+				updateFields,
+				{ new: true, runValidators: true }
+			);
 
-    try {
-      const updateSubcategory = await Subcategory.findByIdAndUpdate(subcategoryId, updateFields, { new: true, runValidators: true });
+			return res.status(HttpStatus.OK).send(updateSubcategory);
+		} catch (error) {
+			next(Error(error));
+		}
+	};
 
-      return res.status(HttpStatus.OK).send(updateSubcategory);
-    } catch (error) {
-      next(Error(error));
-    }
-  }
+	public deleteSubcategory = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
+		const { id } = req.params;
 
-  public deleteSubcategory = async (req: Request, res: Response, next: Function) => {
-    const { id } = req.params
+		try {
+			const product = await Product.find({ subcategoryId: id });
 
-    try {
+			if (product.length > 0) {
+				return next(
+					new CustomError(
+						HttpStatus.FORBIDDEN,
+						"Subcategoria precisa de estar vazia"
+					)
+				);
+			}
 
-      const product = await Product.find({ subcategoryId: id })
+			await Subcategory.deleteOne({ _id: id });
 
-      if (product.length > 0) {
-        return next(new CustomError(HttpStatus.FORBIDDEN, 'Subcategoria precisa de estar vazia'))
-      }
+			return res
+				.status(HttpStatus.OK)
+				.send({ message: "Subcategory deleted successfully" });
+		} catch (error) {
+			next(Error(error));
+		}
+	};
 
-      await Subcategory.deleteOne({ _id: id });
+	public getSubcategoryByName = async (
+		req: Request,
+		res: Response,
+		next: Function
+	) => {
+		try {
+			const {
+				name,
+				sort,
+				page = "1",
+				limit = "6",
+			} = req.query as {
+				sort?: string;
+				name?: string;
+				page?: string;
+				limit?: string;
+			};
 
-      return res.status(HttpStatus.OK).send({ message: 'Subcategory deleted successfully' })
-    } catch (error) {
-      next(Error(error));
-    }
-  }
+			const pageNumber = parseInt(page, 10);
+			const limitNumber = parseInt(limit, 10);
 
-  public getSubcategoryByName = async (req: Request, res: Response, next: Function) => {
+			if (
+				isNaN(pageNumber) ||
+				pageNumber <= 0 ||
+				isNaN(limitNumber) ||
+				limitNumber <= 0
+			) {
+				return next(
+					new CustomError(HttpStatus.BAD_REQUEST, "Invalid paging parameters.")
+				);
+			}
 
-    try {
-      const { name, sort, page = '1', limit = '6' } = req.query as {
-        sort?: string;
-        name?: string;
-        page?: string;
-        limit?: string;
-      };
+			const conditions: any = {};
 
-      const pageNumber = parseInt(page, 10);
-      const limitNumber = parseInt(limit, 10);
+			if (name) {
+				const regex = new RegExp(name, "i");
+				conditions.name = regex;
+			}
 
-      if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Invalid paging parameters.'));
-      }
+			const count = await Subcategory.countDocuments(conditions);
+			const totalPages = Math.ceil(count / limitNumber);
 
-      const conditions: any = {};
+			let query = Subcategory.find(conditions);
 
-      if (name) {
-        const regex = new RegExp(name, 'i');
-        conditions.name = regex;
-      }
+			switch (sort) {
+				case "Ordem A-Z":
+					query = query.sort({ name: 1 });
+					break;
+				case "Ordem Z-A":
+					query = query.sort({ name: -1 });
+					break;
+				case "Criado recentemente":
+					query = query.sort({ createdAt: 1 });
+					break;
+				case "Ultimo Criado":
+					query = query.sort({ createdAt: -1 });
+					break;
+				case "Modificado recentemente":
+					query = query.sort({ updatedAt: 1 });
+					break;
+				case "Ultimo Modificado":
+					query = query.sort({ updatedAt: -1 });
+					break;
+			}
 
-      const count = await Subcategory.countDocuments(conditions);
-      const totalPages = Math.ceil(count / limitNumber);
+			const subcategory = await query
+				.limit(limitNumber)
+				.skip((pageNumber - 1) * limitNumber);
 
-      let query = Subcategory.find(conditions);
-
-      switch (sort) {
-        case 'Ordem A-Z':
-          query = query.sort({ name: 1 });
-          break;
-        case 'Ordem Z-A':
-          query = query.sort({ name: -1 });
-          break;
-        case 'Criado recentemente':
-          query = query.sort({ createdAt: 1 });
-          break;
-        case 'Ultimo Criado':
-          query = query.sort({ createdAt: -1 });
-          break;
-        case 'Modificado recentemente':
-          query = query.sort({ updatedAt: 1 });
-          break;
-        case 'Ultimo Modificado':
-          query = query.sort({ updatedAt: -1 });
-          break;
-      }
-
-      const subcategory = await query
-        .limit(limitNumber)
-        .skip((pageNumber - 1) * limitNumber);
-
-      if (subcategory.length === 0) {
-        next(new CustomError(HttpStatus.NOT_FOUND, 'No subcategories found.'))
-      } else {
-        res.status(200).send({ subcategory, totalPages });
-      }
-    } catch (error) {
-      next(Error(error));
-    }
-  };
-
+			if (subcategory.length === 0) {
+				next(new CustomError(HttpStatus.NOT_FOUND, "No subcategories found."));
+			} else {
+				res.status(200).send({ subcategory, totalPages });
+			}
+		} catch (error) {
+			next(Error(error));
+		}
+	};
 }

@@ -220,7 +220,11 @@ export default class CartController {
 			if (!req.user) {
 				const savedCart = req.session;
 
-				if (!savedCart || !savedCart.cart || savedCart.cart.items.length === 0) {
+				if (
+					!savedCart ||
+					!savedCart.cart ||
+					savedCart.cart.items.length === 0
+				) {
 					return res
 						.status(HttpStatus.OK)
 						.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
@@ -275,12 +279,9 @@ export default class CartController {
 				user.cart.items.map(async (cartItem: CartItem) => {
 					const updatedProduct = await Product.findById(cartItem.product);
 					if (updatedProduct) {
-						const newProductDetails = await Product.findById(
-							cartItem.product
-						);
+						const newProductDetails = await Product.findById(cartItem.product);
 						if (newProductDetails) {
-							const newTotalPrice =
-								newProductDetails.price * cartItem.quantity;
+							const newTotalPrice = newProductDetails.price * cartItem.quantity;
 							cartItem.totalPrice = newTotalPrice;
 						}
 
@@ -332,7 +333,7 @@ export default class CartController {
 					new CustomError(
 						HttpStatus.BAD_REQUEST,
 						ERROR_MESSAGES.REMOVE_PRODUCT_ID +
-						ERROR_MESSAGES.REMOVE_PRODUCT_QUANTITY
+							ERROR_MESSAGES.REMOVE_PRODUCT_QUANTITY
 					)
 				);
 			}
