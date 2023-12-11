@@ -1,14 +1,11 @@
 import { Request, Response } from "express";
 import { SaleModel, ISale } from "@src/models/saleModel";
 import { IUser, User, UserStatus } from "@src/models/userModel";
-import {
-  ERROR_MESSAGES,
-  HttpStatus,
-  SUCCESS_MESSAGES,
-} from "@src/utils/constant";
+import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES} from "@src/utils/constant";
 import { CustomError } from "@src/utils/customError";
 import { Product } from "@src/models/productModel";
 import { CartItem, ShoppingCart } from "@src/models/cartModel";
+import { log } from "util";
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -21,62 +18,57 @@ export class SaleController {
         req.body;
 
       const user = await User.findOne({ userEmail });
+      const session = req.session;
 
-      if (!user) {
-        const guest = req.session;
-
-        if (!guest || !guest.cart || !guest.cart.items) {
-          return res
-            .status(HttpStatus.OK)
-            .json({ message: SUCCESS_MESSAGES.EMPTY_CART });
-        }
-
-        // mudar a logica e meter isto por cima para verificar se é guest ou user(verificar se é guest ja esta basicamente)
-        const guestCart: ShoppingCart | null = guest.cart || {
-          items: [],
-          total: 0,
-        };
-
-        if (!guestCart) {
-          return res
-						.status(HttpStatus.OK)
-						.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
-        };
-
-        return res.status(HttpStatus.OK).json({
-          cart: guestCart,
-          cartTotal: guest.cart.total,
-        });
+      if (!session) {
+        throw new CustomError(HttpStatus.BAD_REQUEST, "No session!");
       }
 
-      //retirar o res.status de cima porque tem de criar a sale e nao dar so aquele 
+      const cart: ShoppingCart | null = session.cart || {
+        items: [],
+        total: 0,
+      };
+
+      if (!cart) {
+        return res
+          .status(HttpStatus.OK)
+          .json({ message: SUCCESS_MESSAGES.EMPTY_CART });
+      }
+
       const newSale = new SaleModel({
         userName,
         userEmail,
         userAdress,
         userPhone,
         paymentMethod,
-        // shoppingCart,
+        shoppingCart: session.cart,
       } as ISale);
 
       // Subtrair a quantidade vendida do stock de cada produto
-      // for (const productItem of shoppingCart.items) {
-      //   const product = await Product.findOne({
-      //     name: productItem.product.name,
-      //   });
-      //   if (product) {
-      //     product.stockQuantity -= productItem.quantity;
-      //     await product.save();
-      //   }
-      // }
+      for (let i = 0; i < session.cart.items.length; i++) {
+        const productArray = session.cart.items[i];
 
-      // // Limpar o carrinho, dependendo se o user está autenticado ou não
-      // if (!user) {
-      //   req.session.cart = null;
-      // } else {
-      //   req.user.cart = { items: [], total: 0 };
-      //   await req.user.save();
-      // }
+        let productId = productArray.product;
+        const quantitySale = productArray.quantity;
+
+        const product = await Product.findById(productId);
+
+        if (product) {
+          product.stockQuantity -= quantitySale;
+
+          await product.save();
+        } else {
+          new CustomError(HttpStatus.NOT_FOUND, "Product Id not found!");
+        }
+      }
+
+      
+    // Se o status for "Registered", limpa o carrinho
+    // if (newSale.status === 'Registered') {
+    //    session.cart = null;
+    //}
+
+      //estados da encomenda(fazer com que passado x tempo muda para tal)
 
       await newSale.save();
 

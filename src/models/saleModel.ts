@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema, model } from "mongoose";
-import { ShoppingCart, shoppingCartSchema  } from "./cartModel"
+import { shoppingCartSchema } from "./cartModel"
 
 export enum SaleStatus {
         Pending = 'pending',
@@ -20,9 +20,9 @@ export interface ISale extends Document {
         userAdress: String;
         userPhone: String;
         paymentMethod: String;
-        shoppingCart: ShoppingCart;
+        shoppingCart: typeof shoppingCartSchema;
         date: Date;
-        // status: SaleStatus;
+        status: SaleStatus;
 }
 
 export const saleSchema = new Schema<ISale>({
@@ -31,9 +31,9 @@ export const saleSchema = new Schema<ISale>({
         userAdress: {type: String, required: true},
         userPhone: {type: String, required: true},
         paymentMethod: {type: String, required: true},
-        shoppingCart: { type: Schema.Types.ObjectId, ref: 'ShoppingCart', required: true },
+        shoppingCart: { type: shoppingCartSchema, required: true },
         date: {type: Date, default: Date.now()},
-        // status: { type: String, enum: Object.values(SaleStatus), default: SaleStatus.Pending },
+        status: { type: String, enum: Object.values(SaleStatus), default: SaleStatus.Pending },
 });
 
 export const SaleModel = model<ISale>('Sales', saleSchema)
