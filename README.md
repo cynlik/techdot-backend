@@ -87,8 +87,9 @@ To use this functionality, you'll need an API key from [IP Geolocation](https://
 
 #### 1. Create an Account:
 
-    Sign up for an account on IP Geolocation.
-    After registration, access your dashboard and locate your unique API key.
+Sign up for an account on IP Geolocation.
+
+After registration, access your dashboard and locate your unique API key.
 
 #### 2. Environment Configuration:
 
@@ -134,7 +135,7 @@ We welcome contributions to enhance and refine the functionality of this API. If
 ### License
 This project is licensed under the [GPL-3.0 License](./LICENSE).
 
-### Authors
+## Authors
 
 [@samusafe](https://github.com/samusafe)
 
