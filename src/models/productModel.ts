@@ -1,11 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
-interface ICaseSpecifications {
-  length?: number;
-  width?: number;
-  height?: number;
-  material?: string;
-}
+
 
 interface ISpecifications {
   cpu?: ICpuSpecifications;
