@@ -23,7 +23,6 @@ export class DiscountController {
       const product = await Product.findById(productId);
   
       if (!product) {
-        console.log("Product not found:", productId);
         return updatedPrices;
       }
 
