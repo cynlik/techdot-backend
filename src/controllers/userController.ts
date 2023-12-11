@@ -305,12 +305,10 @@ export default class UserController {
 				new: true,
 			});
 
-			res
-				.status(HttpStatus.OK)
-				.json({
-					message: SUCCESS_MESSAGES.INFO_UPDATED_SUCCESSFULLY,
-					user: updatedUser,
-				});
+			res.status(HttpStatus.OK).json({
+				message: SUCCESS_MESSAGES.INFO_UPDATED_SUCCESSFULLY,
+				user: updatedUser,
+			});
 		} catch (error) {
 			next(Error(error));
 		}

@@ -1,9 +1,9 @@
-import express from 'express';
-import CartController from '@src/controllers/cartController';
-import validateToken from '@src/middlewares/validateToken';
-import Validator from '@src/middlewares/validator';
-import { Product } from '@src/models/productModel';
-import { Constant } from '@src/utils/constant';
+import express from "express";
+import CartController from "@src/controllers/cartController";
+import validateToken from "@src/middlewares/validateToken";
+import Validator from "@src/middlewares/validator";
+import { Product } from "@src/models/productModel";
+import { Constant } from "@src/utils/constant";
 
 const router = express.Router();
 const cartController = new CartController();
@@ -37,7 +37,14 @@ const cartController = new CartController();
  *               $ref: '#/components/schemas/CartResponse'
  */
 // Add item to cart
-router.post("/:id", validateToken(true), Validator.validateIds([{ paramName: "id", model: Product, type: Constant.Product }]), cartController.addToCart);
+router.post(
+	"/:id",
+	validateToken(true),
+	Validator.validateIds([
+		{ paramName: "id", model: Product, type: Constant.Product },
+	]),
+	cartController.addToCart
+);
 
 /**
  * @openapi
@@ -57,7 +64,6 @@ router.post("/:id", validateToken(true), Validator.validateIds([{ paramName: "id
 // Get cart items
 router.get("/", validateToken(true), cartController.getCartItems);
 
-
 /**
  * @openapi
  * /api/cart/:
@@ -68,7 +74,7 @@ router.get("/", validateToken(true), cartController.getCartItems);
  *     requestBody:
  *      required: true
  *      content:
- *        application/json: 
+ *        application/json:
  *           schema:
  *              $ref: '#/components/schemas/CartPutRequest'
  *     responses:
@@ -80,6 +86,14 @@ router.get("/", validateToken(true), cartController.getCartItems);
  *               $ref: '#/components/schemas/CartResponse'
  */
 // Update cart items
-router.put("/", validateToken(true), Validator.validateFields({ required: ["action"], optional: ["id", "quantity"] }), cartController.updateCart);
+router.put(
+	"/",
+	validateToken(true),
+	Validator.validateFields({
+		required: ["action"],
+		optional: ["id", "quantity"],
+	}),
+	cartController.updateCart
+);
 
 export default router;
