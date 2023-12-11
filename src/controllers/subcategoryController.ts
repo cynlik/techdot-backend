@@ -61,7 +61,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.OK).send(products)
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -82,7 +82,7 @@ export class SubcategoryController {
 
       return res.status(HttpStatus.CREATED).send(savedSubcategory);
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
