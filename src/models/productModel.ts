@@ -12,9 +12,9 @@ interface ISpecifications {
 export enum ProductType {
   CPU = 'CPU',
   RAM = 'RAM',
-  Motherboard = 'Motherboard',
+  MOTHERBOARD = 'Motherboard',
   GPU = 'GPU',
-  Case = 'Case',
+  CASE = 'Case',
 }
 
 export interface IProduct extends Document {
@@ -60,6 +60,24 @@ const productSchema = new Schema<IProduct>({
   warranty: { type: Date, default: null },
 });
 
+productSchema.path('specifications').validate(function (specs) {
+  if (this.productType === ProductType.GPU && !specs.gpu) {
+    return false;
+  }
+  if (this.productType === ProductType.RAM && !specs.ram) {
+    return false;
+  }
+  if (this.productType === ProductType.CPU && !specs.cpu) {
+    return false;
+  }
+  if (this.productType === ProductType.MOTHERBOARD && !specs.motherboard) {
+    return false;
+  }
+  if (this.productType === ProductType.CASE && !specs.case) {
+    return false;
+  }
+  return true;
+}, 'Especificações inadequadas para o tipo de produto');
 
 
 export const Product = model<IProduct>("Product", productSchema);
