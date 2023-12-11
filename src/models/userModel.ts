@@ -1,6 +1,6 @@
-import mongoose, { model, Document, Schema } from 'mongoose'
-import { ShoppingCart, shoppingCartSchema } from './cartModel'
-import { WishListItem, wishListItemSchema } from './wishListModel'
+import mongoose, { model, Document, Schema } from 'mongoose';
+import { ShoppingCart, shoppingCartSchema } from './cartModel';
+import { WishListItem, wishListItemSchema } from './wishListModel';
 
 export enum UserStatus {
   Admin = 'admin',
@@ -11,27 +11,27 @@ export enum UserStatus {
 }
 
 export interface IUser extends Document {
-  name: string
-  email: string
-  password: string
-  role: UserStatus
-  view: UserStatus
-  picture: string
-  age: number
+  name: string;
+  email: string;
+  password: string;
+  role: UserStatus;
+  view: UserStatus;
+  picture: string;
+  age: number;
   address: {
-    street: string
-    postalCode: string
-    district: string
-  }
-  country: string
-  verifyAccountToken: string | null
-  verifyAccountTokenExpires: Date | null
-  resetPasswordToken: string | null
-  resetPasswordExpires: Date | null
-  isVerified: boolean | false
-  lastLoginIP: string | null
-  cart: ShoppingCart
-  wishList: WishListItem[]
+    street: string;
+    postalCode: string;
+    district: string;
+  };
+  country: string;
+  verifyAccountToken: string | null;
+  verifyAccountTokenExpires: Date | null;
+  resetPasswordToken: string | null;
+  resetPasswordExpires: Date | null;
+  isVerified: boolean | false;
+  lastLoginIP: string | null;
+  cart: ShoppingCart;
+  wishList: WishListItem[];
 }
 
 export const UserSchema = new Schema<IUser>(
@@ -83,6 +83,6 @@ export const UserSchema = new Schema<IUser>(
   {
     timestamps: true,
   },
-)
+);
 
-export const User = model<IUser>('User', UserSchema)
+export const User = model<IUser>('User', UserSchema);

@@ -109,7 +109,7 @@ export const ERROR_MESSAGES = {
   TOKEN_REVOKED: 'Token revoked. Login again',
   INVALID_EXPIRED_TOKEN: 'Invalid or expired token',
   UNEXPECTED_ERROR: 'An unexpected error occurred',
-}
+};
 
 export const SUCCESS_MESSAGES = {
   ACCOUNT_REGISTERED_SUCCESSFULLY: 'Account registered successfully. Please verify your account through the email sent to your email.',
@@ -125,4 +125,4 @@ export const SUCCESS_MESSAGES = {
   VIEW_CHANGED_SUCCESSFULLY: 'View changed successfully',
   LOGOUT_SUCCESSFUL: 'Logout successful',
   EMAIL_SENT_SUCCESSFULLY: 'Email sent successfully',
-}
+};

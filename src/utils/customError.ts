@@ -1,10 +1,10 @@
-import { HttpStatus } from './constant'
+import { HttpStatus } from './constant';
 
 export class CustomError extends Error {
-  status: HttpStatus
+  status: HttpStatus;
 
   constructor(status: HttpStatus, message: string) {
-    super(message)
-    this.status = status
+    super(message);
+    this.status = status;
   }
 }

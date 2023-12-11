@@ -1,15 +1,15 @@
-import express from 'express'
-import { DiscountController } from '@src/controllers/discountController'
-import validateToken from '@src/middlewares/validateToken'
-import Validator from '@src/middlewares/validator'
-import { Discount } from '@src/models/dicountModel'
-import { Constant } from '@src/utils/constant'
-import { Product } from '@src/models/productModel'
-import { roleMiddleware } from '@src/middlewares/roleMiddleware'
-import { UserStatus } from '@src/models/userModel'
+import express from 'express';
+import { DiscountController } from '@src/controllers/discountController';
+import validateToken from '@src/middlewares/validateToken';
+import Validator from '@src/middlewares/validator';
+import { Discount } from '@src/models/dicountModel';
+import { Constant } from '@src/utils/constant';
+import { Product } from '@src/models/productModel';
+import { roleMiddleware } from '@src/middlewares/roleMiddleware';
+import { UserStatus } from '@src/models/userModel';
 
-const router = express.Router()
-const discountController = new DiscountController()
+const router = express.Router();
+const discountController = new DiscountController();
 
 // =================|USER|=================
 
@@ -24,7 +24,7 @@ router.post(
     optional: ['isActive', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'],
   }),
   discountController.createDiscount,
-)
+);
 
 router.put(
   '/update/:id',
@@ -35,7 +35,7 @@ router.put(
   }),
   Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]),
   discountController.updateDiscount,
-)
+);
 
 router.put(
   '/stateOfIsActive/:id',
@@ -44,7 +44,7 @@ router.put(
   Validator.validateFields({ required: ['isActive'] }),
   Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]),
   discountController.stateOfIsActive,
-)
+);
 
 router.put(
   '/add/:id',
@@ -53,7 +53,7 @@ router.put(
   Validator.validateFields({ required: ['productId'] }),
   Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]),
   discountController.addProductToDiscount,
-)
+);
 
 router.put(
   '/remove/:id',
@@ -62,11 +62,11 @@ router.put(
   Validator.validateFields({ required: ['productId'] }),
   Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]),
   discountController.removeProductFromDiscount,
-)
+);
 
-router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount)
+router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.deleteDiscount);
 
-router.get('/solo/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.getDiscountByID)
+router.get('/solo/:id', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateIds([{ paramName: 'id', model: Discount, type: Constant.Discount }]), discountController.getDiscountByID);
 
 router.get(
   '/query/',
@@ -76,6 +76,6 @@ router.get(
     optional: ['description', 'sort', 'page', 'limit', 'isActive', 'promoCode'],
   }),
   discountController.getDiscountByName,
-)
+);
 
-export default router
+export default router;

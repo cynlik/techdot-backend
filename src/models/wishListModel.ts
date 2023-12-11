@@ -1,8 +1,8 @@
-import mongoose, { Schema, Document, model, Types } from 'mongoose'
-import { IProduct } from './productModel'
+import mongoose, { Schema, Document, model, Types } from 'mongoose';
+import { IProduct } from './productModel';
 
 export interface WishListItem extends Document {
-  product: IProduct
+  product: IProduct;
 }
 
 export const wishListItemSchema = new Schema({
@@ -10,6 +10,6 @@ export const wishListItemSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Product',
   },
-})
+});
 
-export const WishListItemModel = mongoose.model<WishListItem>('WishListItem', wishListItemSchema, 'users')
+export const WishListItemModel = mongoose.model<WishListItem>('WishListItem', wishListItemSchema, 'users');

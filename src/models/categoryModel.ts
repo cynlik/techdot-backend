@@ -1,8 +1,8 @@
-import { Document, Schema, model } from 'mongoose'
+import { Document, Schema, model } from 'mongoose';
 
 export interface ICategory extends Document {
-  name: string
-  visible: boolean
+  name: string;
+  visible: boolean;
 }
 
 const categorySchema = new Schema<ICategory>(
@@ -13,6 +13,6 @@ const categorySchema = new Schema<ICategory>(
   {
     timestamps: true,
   },
-)
+);
 
-export const Category = model<ICategory>('Category', categorySchema)
+export const Category = model<ICategory>('Category', categorySchema);
