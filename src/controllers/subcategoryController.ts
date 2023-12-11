@@ -14,8 +14,8 @@ export class SubcategoryController {
       const user = req.user;
 
       let viewUser = UserStatus.NonMember;
-      
-      if(user) {
+
+      if (user) {
         viewUser = user.view;
       }
 
@@ -32,7 +32,7 @@ export class SubcategoryController {
       }
       return res.status(HttpStatus.OK).send(subcategorys)
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -42,12 +42,12 @@ export class SubcategoryController {
 
     try {
       let viewUser = UserStatus.NonMember;
-      
-      if(user) {
+
+      if (user) {
         viewUser = user.view;
       }
 
-      const conditions: any = { subcategoryId: id};
+      const conditions: any = { subcategoryId: id };
 
       if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
@@ -161,10 +161,10 @@ export class SubcategoryController {
           query = query.sort({ createdAt: -1 });
           break;
         case 'Modificado recentemente':
-          query = query.sort({ updatedAt: 1});
+          query = query.sort({ updatedAt: 1 });
           break;
         case 'Ultimo Modificado':
-          query = query.sort({ updatedAt: -1});
+          query = query.sort({ updatedAt: -1 });
           break;
       }
 
