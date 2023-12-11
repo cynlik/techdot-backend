@@ -11,13 +11,13 @@ export class CategoryController {
   // =================|USERS|=================
 
   public getAllCategory = async (req: Request, res: Response, next: Function) => {
-    
+
     try {
       const user = req.user;
 
       let viewUser = UserStatus.NonMember;
-      
-      if(user) {
+
+      if (user) {
         viewUser = user.view;
       }
 
@@ -35,7 +35,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send(categories)
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -46,12 +46,12 @@ export class CategoryController {
       const user = req.user;
 
       let viewUser = UserStatus.NonMember;
-      
-      if(user) {
+
+      if (user) {
         viewUser = user.view;
       }
 
-      const conditions: any = { category: categoryId};
+      const conditions: any = { category: categoryId };
 
       if (viewUser !== UserStatus.Admin) {
         conditions.visible = true;
@@ -65,7 +65,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send(subcategories)
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -79,10 +79,10 @@ export class CategoryController {
       const subcategories = await Subcategory.find({ category: categoryId })
 
       let conditions: any = { subcategoryId: { $in: subcategories.map(sc => sc._id) } };
-      
+
       let viewUser = UserStatus.NonMember;
-      
-      if(user) {
+
+      if (user) {
         viewUser = user.view;
       }
 
@@ -99,7 +99,7 @@ export class CategoryController {
       return res.status(HttpStatus.OK).send(products)
 
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -121,7 +121,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.CREATED).send(savedCategory);
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -134,7 +134,7 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send(updateCategory);
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
@@ -154,13 +154,13 @@ export class CategoryController {
 
       return res.status(HttpStatus.OK).send({ message: 'Category deleted successfully' })
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   }
 
   public getCategoryByName = async (req: Request, res: Response, next: Function) => {
     try {
-      const { name, sort,page = '1', limit = '6' } = req.query as {
+      const { name, sort, page = '1', limit = '6' } = req.query as {
         sort?: string;
         name?: string;
         page?: string;
@@ -200,10 +200,10 @@ export class CategoryController {
           query = query.sort({ createdAt: -1 });
           break;
         case 'Modificado recentemente':
-          query = query.sort({ updatedAt: 1});
+          query = query.sort({ updatedAt: 1 });
           break;
         case 'Ultimo Modificado':
-          query = query.sort({ updatedAt: -1});
+          query = query.sort({ updatedAt: -1 });
           break;
       }
 
@@ -217,7 +217,7 @@ export class CategoryController {
         res.status(200).send({ category, totalPages });
       }
     } catch (error) {
-      Error(error, next)
+      next(Error(error));
     }
   };
 
