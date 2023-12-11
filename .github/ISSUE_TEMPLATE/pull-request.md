@@ -5,7 +5,6 @@ about: This Pull Request addresses a brief description of the issue or problem b
 title: ''
 labels: ''
 assignees: ''
-
 ---
 
 ## About
