@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, model } from "mongoose";
+import { ICaseSpecifications, ICpuSpecifications, IGpuSpecifications, IMotherboardSpecifications, IRamSpecifications, cpuSpecificationsSchema, gpuSpecificationSchema, caseSpecificationSchema, motherboardSpecificationSchema, ramSpecificationSchema } from "./productSpecifications"
 
 interface ISpecifications {
   cpu?: ICpuSpecifications;
