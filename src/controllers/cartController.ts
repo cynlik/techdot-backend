@@ -220,7 +220,7 @@ export default class CartController {
 			if (!req.user) {
 				const savedCart = req.session;
 
-				if (!savedCart || !savedCart.cart || !savedCart.cart.items) {
+				if (!savedCart || !savedCart.cart || savedCart.cart.items.length === 0) {
 					return res
 						.status(HttpStatus.OK)
 						.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
@@ -265,7 +265,7 @@ export default class CartController {
 
 			const user = await User.findById(req.user.id);
 
-			if (!user || !user.cart) {
+			if (!user || !user.cart || user.cart.items.length === 0) {
 				return res
 					.status(HttpStatus.OK)
 					.json({ message: SUCCESS_MESSAGES.EMPTY_CART });
