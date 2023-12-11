@@ -1,7 +1,5 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
-
-
 interface ISpecifications {
   cpu?: ICpuSpecifications;
   gpu?: IGpuSpecifications;
@@ -18,7 +16,6 @@ export enum ProductType {
   Case = 'Case',
 }
 
-// Interface para o documento do produto
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -36,16 +33,6 @@ export interface IProduct extends Document {
   warranty: Date;
 }
 
-
-const caseSpecificationSchema = new Schema<ICaseSpecifications>({
-  length: { type: Number, required: true },
-  width: { type: Number, required: true },
-  height: { type: Number, required: true },
-  material: { type: String, required: true }
-});
-
-
-// Esquema do produto
 const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -68,21 +55,10 @@ const productSchema = new Schema<IProduct>({
       case: caseSpecificationSchema,
     },
     required: true,
-    validate: {
-      validator: function (v: ISpecifications) {
-        return v.cpu || v.gpu || v.motherboard || v.ram || v.case;
-      },
-      message: 'Pelo menos uma especificação (CPU, GPU, Motherboard, RAM, Case) é necessária.'
-    }
   },
   warranty: { type: Date, default: null },
 });
 
-productSchema.pre('validate', function (next) {
-  if (!this.specifications || Object.keys(this.specifications).length === 0) {
-    this.invalidate('specifications', 'Pelo menos uma especificação é necessária.');
-  }
-  next();
-});
+
 
 export const Product = model<IProduct>("Product", productSchema);
