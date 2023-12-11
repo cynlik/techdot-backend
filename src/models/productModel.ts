@@ -1,14 +1,5 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
-// Definição das interfaces para cada especificação
-
-
-
-
-
-
-
-
 interface ICaseSpecifications {
   length?: number;
   width?: number;
@@ -16,7 +7,6 @@ interface ICaseSpecifications {
   material?: string;
 }
 
-// Interface para o campo specifications
 interface ISpecifications {
   cpu?: ICpuSpecifications;
   gpu?: IGpuSpecifications;
@@ -51,20 +41,6 @@ export interface IProduct extends Document {
   warranty: Date;
 }
 
-// Esquemas para cada especificação
-// Esquemas para cada especificação
-
-
-
-
-
-
-
-const ramSpecificationSchema = new Schema<IRamSpecifications>({
-  size: { type: Number, required: true },
-  frequency: { type: Number, required: true },
-  type: { type: String, required: true }
-});
 
 const caseSpecificationSchema = new Schema<ICaseSpecifications>({
   length: { type: Number, required: true },
