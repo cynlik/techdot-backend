@@ -5,6 +5,9 @@ export interface CartItem extends Document {
   product: IProduct;
   quantity: number;
   totalPrice: number;
+  originalTotalPrice: number;
+  promoCodeActive: boolean;
+  promoCodeType: number;
 }
 
 const cartItemSchema = new Schema<CartItem>({
@@ -24,12 +27,25 @@ const cartItemSchema = new Schema<CartItem>({
   totalPrice: {
     type: Number,
     default: 0,
-    validate: {
-      validator: function (v: number) {
-        return v >= 0;
-      },
-      message: 'O preço total deve ser um número não negativo.',
-    },
+    min: [0, 'Preço deve ser positivo!'],
+  },
+
+  originalTotalPrice: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+
+  promoCodeActive: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+
+  promoCodeType: {
+    type: Number,
+    required: true,
+    default: 0,
   },
 });
 

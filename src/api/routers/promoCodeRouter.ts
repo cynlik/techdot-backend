@@ -10,6 +10,8 @@ const promoCodeController = new PromoCodeController();
 
 // =================|USER|=================
 
+router.post('/use-promo-code', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateFields({ required: ['promoCode'] }), promoCodeController.usePromoCode);
+
 // =================|ADMIN|=================~
 
 router.post(

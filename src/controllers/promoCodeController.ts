@@ -15,10 +15,16 @@ export class PromoCodeController {
     const existpromoCode = await PromoCode.findOne({ promoCode: promoCode });
 
     if (!existpromoCode) {
-      throw new CustomError(HttpStatus.NOT_FOUND, "This promo code doesn't exist.");
+      return next(new CustomError(HttpStatus.NOT_FOUND, "This promo code doesn't exist."));
     }
 
     try {
+      const userCart = req.session;
+      if (!userCart) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Session Not Found!'));
+      } else if (!userCart.cart) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'You must have Products add to the cart to use the promoCode!'));
+      }
     } catch (error) {
       next(Error(error));
     }
