@@ -3,7 +3,7 @@ import { IProduct, Product } from '@src/models/productModel';
 import { CustomError } from '@src/utils/customError';
 import { HttpStatus } from '@src/utils/constant';
 import { PromoCode, IPromoCode } from '@src/models/promoCodeMode';
-import { IUser, UserStatus } from '@src/models/userModel';
+import { IUser, User, UserStatus } from '@src/models/userModel';
 import { Error } from '@src/utils/errorCatch';
 
 export class PromoCodeController {
@@ -11,6 +11,12 @@ export class PromoCodeController {
 
   public usePromoCode = async (req: Request, res: Response, next: Function) => {
     const { promoCode } = req.body;
+    const user = req.user;
+    let id = user.id;
+
+    if (!user) {
+      return next(new CustomError(HttpStatus.NOT_FOUND, 'User not found'));
+    }
 
     const existpromoCode = await PromoCode.findOne({ promoCode: promoCode });
 
@@ -19,12 +25,8 @@ export class PromoCodeController {
     }
 
     try {
-      const userCart = req.session;
-      if (!userCart) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'Session Not Found!'));
-      } else if (!userCart.cart) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'You must have Products add to the cart to use the promoCode!'));
-      }
+      const user = User.findById({ id: id });
+      console.log(user);
     } catch (error) {
       next(Error(error));
     }

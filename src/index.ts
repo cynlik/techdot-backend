@@ -17,7 +17,7 @@ const hostname = String(process.env.HOST ?? '127.0.0.1');
 const port = Number(process.env.PORT ?? 3000);
 
 const limiter = slowDown({
-  delayAfter: 1,
+  delayAfter: 20,
   delayMs: (hits) => hits * 1000,
   maxDelayMs: 4000,
 });
@@ -36,7 +36,7 @@ app.use(
 for (const route of routes) {
   app.use(route.path, route.router);
 }
-app.use(errorHandler); // Tratamento de erros
+app.use(errorHandler);
 app.disable('x-powered-by');
 
 app.listen(port, hostname, () => {
