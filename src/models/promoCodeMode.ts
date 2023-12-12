@@ -25,8 +25,8 @@ const promoCodeSchema = new Schema({
   isActive: { type: Boolean, default: false },
   promoCode: { type: String, unique: true, sparse: true, required: true }, // Código promocional
   applicableProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }], // Produtos aplicáveis
-  usageLimit: { type: Number, default: null }, // Limite de uso do código promocional
-  minimumPurchaseValue: { type: Number, default: 0 }, // Valor mínimo de compra para aplicação do desconto
+  //usageLimit: { type: Number, default: null }, // Limite de uso do código promocional
+  //minimumPurchaseValue: { type: Number, default: 0 }, // Valor mínimo de compra para aplicação do desconto
 });
 
 export const PromoCode = model<IPromoCode>('PromoCode', promoCodeSchema);
