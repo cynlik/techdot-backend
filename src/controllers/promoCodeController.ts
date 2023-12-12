@@ -7,6 +7,24 @@ import { IUser, UserStatus } from '@src/models/userModel';
 import { Error } from '@src/utils/errorCatch';
 
 export class PromoCodeController {
+  // =================|USERS|=================
+
+  public usePromoCode = async (req: Request, res: Response, next: Function) => {
+    const { promoCode } = req.body;
+
+    const existpromoCode = await PromoCode.findOne({ promoCode: promoCode });
+
+    if (!existpromoCode) {
+      throw new CustomError(HttpStatus.NOT_FOUND, "This promo code doesn't exist.");
+    }
+
+    try {
+    } catch (error) {
+      next(Error(error));
+    }
+  };
+
+  // =================|ADMIN|=================
   public createPromoCode = async (req: Request, res: Response, next: Function) => {
     const { promoCode, applicableProducts, usageLimit, minimumPurchaseValue, description, discountType } = req.body;
 
