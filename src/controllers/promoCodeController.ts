@@ -25,7 +25,7 @@ export class PromoCodeController {
     }
 
     try {
-      const user = User.findById({ id: id });
+      const user = User.findOne({ _id: id });
       console.log(user);
     } catch (error) {
       next(Error(error));
