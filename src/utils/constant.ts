@@ -70,6 +70,8 @@ export enum HttpStatus {
 export const ERROR_MESSAGES = {
   INVALID_QUANTITY: 'Invalid quantity',
   PRODUCT_NOT_FOUND: 'Product not found.',
+  SALE_NOT_FOUND: 'Sale not found',
+  CART_NOT_FOUND: 'Cart not found',
   OUT_OF_STOCK: 'Out of stock.',
   USER_ALREADY_EXISTS: 'User already exists',
   USER_NOT_FOUND: 'User not found.',
