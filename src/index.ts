@@ -17,7 +17,7 @@ const hostname = String(process.env.HOST ?? '127.0.0.1');
 const port = Number(process.env.PORT ?? 3000);
 
 const limiter = slowDown({
-  delayAfter: 1,
+  delayAfter: 20,
   delayMs: (hits) => hits * 1000,
   maxDelayMs: 4000,
 });

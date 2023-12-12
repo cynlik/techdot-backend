@@ -50,7 +50,12 @@ export default class CartController {
     }
 
     if (!req.session.cart) {
-      req.session.cart = { items: [], total: 0 };
+      const cookieCart: ShoppingCart | null = req.session.cart || {
+        items: [],
+        total: 0,
+      };
+
+      req.session.cart = cookieCart;
     }
 
     const guestCart = req.session.cart;
