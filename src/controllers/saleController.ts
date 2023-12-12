@@ -76,8 +76,6 @@ export class SaleController {
     //    session.cart = null;
     //}
 
-      //estados da encomenda(fazer com que passado x tempo muda para tal)
-
       await newSale.save();
 
       const saleCart = await SaleModel.findById(newSale.id).populate('shoppingCart');
@@ -87,6 +85,30 @@ export class SaleController {
       }
 
       res.status(HttpStatus.CREATED).json(newSale);
+
+     //estados da encomenda(fazer com que passado x tempo muda para tal )
+     const timeToChange = 3600000 // 1 hora
+     const TotalTime = timeToChange * 2 // 2 horas
+
+     setTimeout(async () => {
+      console.log(newSale.id);
+      
+       // Atualiza a sale para o status "Registered" após o tempo definido
+       await SaleModel.findByIdAndUpdate(
+         newSale.id,
+         { status: 'Registered' },
+         { new: true }
+       );
+     }, timeToChange);
+
+     setTimeout(async () => {
+       // Atualiza a venda para o estado "Processing" após o tempo total definido
+       await SaleModel.findByIdAndUpdate(
+         newSale.id,
+         { status: 'Processing' },
+         { new: true }
+       );
+     }, TotalTime); 
     } catch (error) {
       console.log(error);
 
