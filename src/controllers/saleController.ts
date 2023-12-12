@@ -6,6 +6,7 @@ import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constan
 import { CustomError } from '@src/utils/customError';
 import { Request, Response } from 'express';
 import { SaleStatus } from '@src/models/saleModel';
+import { Error } from '@src/utils/errorCatch';
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -16,22 +17,31 @@ export class SaleController {
     try {
       const { userName, userEmail, userAdress, userPhone, paymentMethod } = req.body;
 
-      const user = await User.findOne({ userEmail });
+      const userMail = await User.findOne({ email: userEmail });
+      const userToken = req.user;
+
+      const user = await User.findById(userToken.id);
       const session = req.session;
 
-      // adicionar diferença entre user e guest
-
       if (!session) {
-        throw new CustomError(HttpStatus.BAD_REQUEST, 'No session!');
+        throw new CustomError(HttpStatus.BAD_REQUEST, 'sfa');
       }
 
-      const cart: ShoppingCart | null = session.cart || {
-        items: [],
-        total: 0,
-      };
+      let shoppingCart;
 
-      if (!cart) {
-        return res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMPTY_CART });
+      console.log(user);
+      // Guest
+      if (!user) {
+        if (session.cart.items.length < 1) {
+          return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.CART_NOT_FOUND));
+        }
+        shoppingCart = session.cart;
+      } else {
+        if (user.cart.items.length < 1) {
+          return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.CART_NOT_FOUND));
+        }
+
+        shoppingCart = user.cart;
       }
 
       const newSale = new SaleModel({
@@ -40,12 +50,12 @@ export class SaleController {
         userAdress,
         userPhone,
         paymentMethod,
-        shoppingCart: session.cart,
-      } as ISale);
+        shoppingCart,
+      } as unknown as ISale);
 
       // Subtrair a quantidade vendida do stock de cada produto
-      for (let i = 0; i < session.cart.items.length; i++) {
-        const productArray = session.cart.items[i];
+      for (let i = 0; i < shoppingCart.items.length; i++) {
+        const productArray = shoppingCart.items[i];
 
         let productId = productArray.product;
         const quantitySale = productArray.quantity;
@@ -66,33 +76,22 @@ export class SaleController {
       const saleCart = await SaleModel.findById(newSale.id).populate('shoppingCart');
 
       if (!saleCart) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.CART_NOT_FOUND));
+      }
+
+      if (!user) {
+        session.cart.items = [];
+      } else {
+        console.log(user);
+        user.cart.items = [];
+        user.cart.total = 0;
+
+        await user.save();
       }
 
       res.status(HttpStatus.CREATED).json(newSale);
-
-      const timeToChangeToRegistered = 5000; // 1 hora
-      setTimeout(async () => {
-        const updatedSale = await SaleModel.findByIdAndUpdate(newSale.id, { $set: { status: SaleStatus.Registered } });
-
-        if (!updatedSale) {
-          return 'cona';
-        }
-        if (!user) {
-          session.cart = [];
-        } else {
-          user.cart.items = [];
-          await user.save();
-        }
-
-        const timeToChangeToProcessing = 5000; // 1 hora
-        setTimeout(async () => {
-          await SaleModel.findByIdAndUpdate(newSale.id, { $set: { status: SaleStatus.Processing } });
-        }, timeToChangeToProcessing);
-      }, timeToChangeToRegistered);
     } catch (error) {
-      console.log(error);
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+      next(Error(error));
     }
   };
 
