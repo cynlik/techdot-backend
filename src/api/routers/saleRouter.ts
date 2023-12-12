@@ -13,6 +13,7 @@ const saleController = new SaleController();
 // Create Sale
 router.post(
   '/create',
+  validateToken(true),
   Validator.validateFields({
     required: ['userName', 'userEmail', 'userAdress', 'userPhone', 'paymentMethod'],
   }),

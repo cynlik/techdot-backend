@@ -1,10 +1,12 @@
-import { Request, Response } from 'express';
-import { SaleModel, ISale } from '@src/models/saleModel';
-import { IUser, User, UserStatus } from '@src/models/userModel';
-import { ERROR_MESSAGES, HttpStatus } from '@src/utils/constant';
-import { CustomError } from '@src/utils/customError';
-import { Product } from '@src/models/productModel';
 import { ShoppingCart } from '@src/models/cartModel';
+import { Product } from '@src/models/productModel';
+import { ISale, SaleModel } from '@src/models/saleModel';
+import { IUser, User, UserStatus } from '@src/models/userModel';
+import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant';
+import { CustomError } from '@src/utils/customError';
+import { Request, Response } from 'express';
+import { SaleStatus } from '@src/models/saleModel';
+import { Error } from '@src/utils/errorCatch';
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -14,23 +16,32 @@ export class SaleController {
   public create = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const { userName, userEmail, userAdress, userPhone, paymentMethod } = req.body;
-      const user = req.user;
-      const guest = req.session;
 
-      let shoppingCart: ShoppingCart;
+      const userMail = await User.findOne({ email: userEmail });
+      const userToken = req.user;
 
-      console.log('User:', user);
-      console.log('Guest:', guest);
+      const user = await User.findById(userToken.id);
+      const session = req.session;
 
-      if (user && user.cart && user.cart.items.length > 0) {
-        console.log('User Cart Found');
-        shoppingCart = user.cart;
-      } else if (guest && guest.cart && guest.cart.items.length > 0) {
-        console.log('Guest Cart Found');
-        shoppingCart = guest.cart;
+      if (!session) {
+        throw new CustomError(HttpStatus.BAD_REQUEST, 'sfa');
+      }
+
+      let shoppingCart;
+
+      console.log(user);
+      // Guest
+      if (!user) {
+        if (session.cart.items.length < 1) {
+          return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.CART_NOT_FOUND));
+        }
+        shoppingCart = session.cart;
       } else {
-        console.log('Cart Not Found');
-        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Cart Not Found'));
+        if (user.cart.items.length < 1) {
+          return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.CART_NOT_FOUND));
+        }
+
+        shoppingCart = user.cart;
       }
 
       const newSale = new SaleModel({
@@ -40,44 +51,51 @@ export class SaleController {
         userPhone,
         paymentMethod,
         shoppingCart,
-      } as ISale);
+      } as unknown as ISale);
 
       // Subtrair a quantidade vendida do stock de cada produto
-      for (const productItem of shoppingCart.items) {
-        const product = await Product.findOne({
-          name: productItem.product.name,
-        });
+      for (let i = 0; i < shoppingCart.items.length; i++) {
+        const productArray = shoppingCart.items[i];
+
+        let productId = productArray.product;
+        const quantitySale = productArray.quantity;
+
+        const product = await Product.findById(productId);
+
         if (product) {
-          product.stockQuantity -= productItem.quantity;
+          product.stockQuantity -= quantitySale;
+
           await product.save();
+        } else {
+          new CustomError(HttpStatus.NOT_FOUND, 'Product Id not found!');
         }
       }
-
-      // // Limpar o carrinho, dependendo se o user está autenticado ou não
-      // if (!user) {
-      //   req.session.cart = null;
-      // } else {
-      //   req.user.cart = { items: [], total: 0 };
-      //   await req.user.save();
-      // }
 
       await newSale.save();
 
       const saleCart = await SaleModel.findById(newSale.id).populate('shoppingCart');
 
       if (!saleCart) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.CART_NOT_FOUND));
+      }
+
+      if (!user) {
+        session.cart.items = [];
+      } else {
+        console.log(user);
+        user.cart.items = [];
+        user.cart.total = 0;
+
+        await user.save();
       }
 
       res.status(HttpStatus.CREATED).json(newSale);
     } catch (error) {
-      console.log(error);
-
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+      next(Error(error));
     }
   };
 
-  public getSalesByName = async (req: Request, res: Response, next: Function) => {
+  public getSalesByName = async (req: CustomRequest, res: Response, next: Function) => {
     const userEmail = req.user.email;
     try {
       const {
@@ -147,7 +165,7 @@ export class SaleController {
     }
   };
 
-  public deleteById = async (req: Request, res: Response, next: Function) => {
+  public deleteById = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const saleId = req.params.id;
       const deletedSale = await SaleModel.findByIdAndDelete(saleId);

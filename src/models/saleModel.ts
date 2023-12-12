@@ -20,9 +20,9 @@ export interface ISale extends Document {
   userAdress: String;
   userPhone: String;
   paymentMethod: String;
-  shoppingCart: ShoppingCart;
+  shoppingCart: typeof shoppingCartSchema;
   date: Date;
-  // status: SaleStatus;
+  status: SaleStatus;
 }
 
 export const saleSchema = new Schema<ISale>({
@@ -31,13 +31,9 @@ export const saleSchema = new Schema<ISale>({
   userAdress: { type: String, required: true },
   userPhone: { type: String, required: true },
   paymentMethod: { type: String, required: true },
-  shoppingCart: {
-    type: Schema.Types.ObjectId,
-    ref: 'ShoppingCart',
-    required: true,
-  },
-  date: { type: Date, default: Date.now() },
-  // status: { type: String, enum: Object.values(SaleStatus), default: SaleStatus.Pending },
+  shoppingCart: { type: shoppingCartSchema, required: true },
+  date: { type: Date, default: Date.now(), required: true },
+  status: { type: String, enum: Object.values(SaleStatus), default: SaleStatus.Pending, required: true },
 });
 
 export const SaleModel = model<ISale>('Sales', saleSchema);
