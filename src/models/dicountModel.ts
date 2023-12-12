@@ -16,7 +16,7 @@ const discountSchema = new Schema({
     required: true,
     min: [0, 'Minimo ultrapassado'],
     max: [100, 'Maximo ultrapassado'],
-  }, // Ex: 'percentual', 'valor fixo'
+  }, // Ex: 'valor fixo'
   //startDate: { type: Date, required: true },
   //endDate: { type: Date, required: true },
   isActive: { type: Boolean, default: false },

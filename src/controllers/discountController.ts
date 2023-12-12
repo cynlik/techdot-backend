@@ -13,13 +13,6 @@ interface CustomRequest extends Request {
 export class DiscountController {
   // =================|USERS|=================
 
-  public addPromoCode = async (req: Request, res: Response, next: Function) => {
-    try {
-    } catch (error) {
-      next(Error(error));
-    }
-  };
-
   // =================|ADMIN|=================
 
   private async updateProducts(discount: IDiscount, discountDecimal: number, lengthProducts: number, isActive: boolean) {
@@ -52,27 +45,6 @@ export class DiscountController {
 
     return updatedPrices;
   }
-
-  public createPromoCode = async (req: Request, res: Response, next: Function) => {
-    const { promoCode, applicableProducts, usageLimit, minimumPurchaseValue, description, discountType } = req.body;
-
-    try {
-      const newPromoCode = new Discount({
-        promoCode,
-        applicableProducts,
-        usageLimit,
-        minimumPurchaseValue,
-        description,
-        discountType,
-      });
-
-      const savedPromo = await newPromoCode.save();
-
-      return res.status(HttpStatus.CREATED).json(savedPromo);
-    } catch (error) {
-      next(Error(error));
-    }
-  };
 
   public createDiscount = async (req: Request, res: Response, next: Function) => {
     const { description, discountType, applicableProducts } = req.body;
@@ -161,39 +133,37 @@ export class DiscountController {
 
       const lenghtProducts = discount.applicableProducts.length;
 
-      if (!discount.isPromoCode) {
-        if (discount.applicableProducts.length < 1) {
-          return next(new CustomError(HttpStatus.LENGTH_REQUIRED, 'Para ativar o desconto é necessário adicionar produtos'));
+      if (discount.applicableProducts.length < 1) {
+        return next(new CustomError(HttpStatus.LENGTH_REQUIRED, 'Para ativar o desconto é necessário adicionar produtos'));
+      }
+
+      if (discount.isActive) {
+        if (isActive) {
+          return next(new CustomError(HttpStatus.CONFLICT, 'Já está ativo'));
+        } else if (isActive == false) {
+          try {
+            const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, false);
+
+            const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
+
+            return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
+          } catch (error) {
+            return next(error);
+          }
         }
+      } else {
+        if (isActive) {
+          try {
+            const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true);
 
-        if (discount.isActive) {
-          if (isActive) {
-            return next(new CustomError(HttpStatus.CONFLICT, 'Já está ativo'));
-          } else if (isActive == false) {
-            try {
-              const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, false);
+            const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
 
-              const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
-
-              return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
-            } catch (error) {
-              return next(error);
-            }
+            return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
+          } catch (error) {
+            return next(error);
           }
-        } else {
-          if (isActive) {
-            try {
-              const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true);
-
-              const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
-
-              return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
-            } catch (error) {
-              return next(error);
-            }
-          } else if (isActive == false) {
-            return res.status(HttpStatus.OK).send({ message: 'O Desconto já está desativado!' });
-          }
+        } else if (isActive == false) {
+          return res.status(HttpStatus.OK).send({ message: 'O Desconto já está desativado!' });
         }
       }
     } catch (error) {
