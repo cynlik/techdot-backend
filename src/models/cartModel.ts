@@ -10,7 +10,7 @@ export interface CartItem extends Document {
   promoCodeType: number;
 }
 
-const cartItemSchema = new Schema<CartItem>({
+export const cartItemSchema = new Schema<CartItem>({
   product: {
     type: Schema.Types.ObjectId,
     ref: 'Product',

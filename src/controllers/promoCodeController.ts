@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { IProduct, Product } from '@src/models/productModel';
 import { CustomError } from '@src/utils/customError';
 import { HttpStatus } from '@src/utils/constant';
-import { PromoCode, IPromoCode } from '@src/models/promoCodeMode';
-import { IUser, User, UserStatus } from '@src/models/userModel';
+import { PromoCode } from '@src/models/promoCodeMode';
+import { User } from '@src/models/userModel';
 import { Error } from '@src/utils/errorCatch';
 
 export class PromoCodeController {
@@ -11,8 +11,8 @@ export class PromoCodeController {
 
   public usePromoCode = async (req: Request, res: Response, next: Function) => {
     const { promoCode } = req.body;
-    const user = req.user;
-    let id = user.id;
+    const userId = req.user.id;
+    const user = await User.findOne({ _id: userId });
 
     if (!user) {
       return next(new CustomError(HttpStatus.NOT_FOUND, 'User not found'));
@@ -20,13 +20,34 @@ export class PromoCodeController {
 
     const existpromoCode = await PromoCode.findOne({ promoCode: promoCode });
 
-    if (!existpromoCode) {
+    if (!existpromoCode || !existpromoCode.isActive) {
       return next(new CustomError(HttpStatus.NOT_FOUND, "This promo code doesn't exist."));
     }
 
     try {
-      const user = User.findOne({ _id: id });
-      console.log(user);
+      for (let i = 0; i < user.cart.items.length; i++) {
+        let item = user.cart.items[i];
+
+        let product = await Product.findById(item.product);
+
+        if (!product?.onDiscount) {
+          if (!item.promoCodeActive) {
+            let discountDecimal = existpromoCode.discountType / 100;
+
+            item.originalTotalPrice = item.totalPrice;
+
+            let newPrice = item.totalPrice - item.totalPrice * discountDecimal;
+            item.totalPrice = newPrice;
+            item.promoCodeActive = true;
+            item.promoCodeType = existpromoCode.discountType;
+          }
+        } else {
+          continue;
+        }
+      }
+
+      await user.save();
+      return res.status(HttpStatus.OK).send('OLA');
     } catch (error) {
       next(Error(error));
     }
