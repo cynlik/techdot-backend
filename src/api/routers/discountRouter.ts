@@ -13,15 +13,25 @@ const discountController = new DiscountController();
 
 // =================|USER|=================
 
-// =================|ADMIN|=================
+// =================|ADMIN|=================~
 
 router.post(
-  '/',
+  '/create-promo',
+  validateToken(),
+  roleMiddleware(UserStatus.Manager),
+  Validator.validateFields({
+    required: ['discountType', 'description', 'promoCode'],
+    optional: ['applicableProducts', 'usageLimit', 'minimumPurchaseValue'],
+  }),
+  discountController.createPromoCode,
+);
+
+router.post(
+  '/create-discount',
   validateToken(),
   roleMiddleware(UserStatus.Manager),
   Validator.validateFields({
     required: ['description', 'discountType', 'applicableProducts'],
-    optional: ['isActive', 'promoCode', 'isPromoCode', 'usageLimit', 'minimumPurchaseValue'],
   }),
   discountController.createDiscount,
 );

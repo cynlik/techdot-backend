@@ -53,17 +53,34 @@ export class DiscountController {
     return updatedPrices;
   }
 
+  public createPromoCode = async (req: Request, res: Response, next: Function) => {
+    const { promoCode, applicableProducts, usageLimit, minimumPurchaseValue, description, discountType } = req.body;
+
+    try {
+      const newPromoCode = new Discount({
+        promoCode,
+        applicableProducts,
+        usageLimit,
+        minimumPurchaseValue,
+        description,
+        discountType,
+      });
+
+      const savedPromo = await newPromoCode.save();
+
+      return res.status(HttpStatus.CREATED).json(savedPromo);
+    } catch (error) {
+      next(Error(error));
+    }
+  };
+
   public createDiscount = async (req: Request, res: Response, next: Function) => {
-    const { description, discountType, promoCode, isPromoCode, applicableProducts, usageLimit, minimumPurchaseValue } = req.body;
+    const { description, discountType, applicableProducts } = req.body;
 
     try {
       const newDiscount = new Discount({
         description,
         discountType,
-        promoCode,
-        isPromoCode,
-        usageLimit,
-        minimumPurchaseValue,
         applicableProducts,
       });
 

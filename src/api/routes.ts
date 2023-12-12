@@ -5,6 +5,7 @@ import subcategoryRouter from './routers/subcategoryRouter';
 import cartRouter from './routers/cartRouter';
 import discountRouter from './routers/discountRouter';
 import saleRouter from './routers/saleRouter';
+import promoCodeRouter from './routers/promoCodeRouter';
 
 export const routes = [
   { path: '/api/user', router: userRouter },
@@ -14,4 +15,5 @@ export const routes = [
   { path: '/api/sale', router: saleRouter },
   { path: '/api/discount', router: discountRouter },
   { path: '/api/cart', router: cartRouter },
+  { path: '/api/promo-code', router: promoCodeRouter },
 ];
