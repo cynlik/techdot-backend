@@ -1,18 +1,11 @@
-import { Request, Response } from "express";
-import { SaleModel, ISale } from "@src/models/saleModel";
-import { IUser, User, UserStatus } from "@src/models/userModel";
-import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES} from "@src/utils/constant";
-import { CustomError } from "@src/utils/customError";
-import { Product } from "@src/models/productModel";
-import { CartItem, ShoppingCart } from "@src/models/cartModel";
-import { log } from "util";
-import { Request, Response } from 'express';
-import { SaleModel, ISale } from '@src/models/saleModel';
-import { IUser, User, UserStatus } from '@src/models/userModel';
-import { ERROR_MESSAGES, HttpStatus } from '@src/utils/constant';
-import { CustomError } from '@src/utils/customError';
-import { Product } from '@src/models/productModel';
 import { ShoppingCart } from '@src/models/cartModel';
+import { Product } from '@src/models/productModel';
+import { ISale, SaleModel } from '@src/models/saleModel';
+import { IUser, User, UserStatus } from '@src/models/userModel';
+import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant';
+import { CustomError } from '@src/utils/customError';
+import { Request, Response } from 'express';
+import { SaleStatus } from '@src/models/saleModel';
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -22,14 +15,14 @@ export class SaleController {
   public create = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const { userName, userEmail, userAdress, userPhone, paymentMethod } = req.body;
-      const user = req.user;
-      const guest = req.session;
 
       const user = await User.findOne({ userEmail });
       const session = req.session;
 
+      // adicionar diferença entre user e guest
+
       if (!session) {
-        throw new CustomError(HttpStatus.BAD_REQUEST, "No session!");
+        throw new CustomError(HttpStatus.BAD_REQUEST, 'No session!');
       }
 
       const cart: ShoppingCart | null = session.cart || {
@@ -38,9 +31,7 @@ export class SaleController {
       };
 
       if (!cart) {
-        return res
-          .status(HttpStatus.OK)
-          .json({ message: SUCCESS_MESSAGES.EMPTY_CART });
+        return res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.EMPTY_CART });
       }
 
       const newSale = new SaleModel({
@@ -66,15 +57,9 @@ export class SaleController {
 
           await product.save();
         } else {
-          new CustomError(HttpStatus.NOT_FOUND, "Product Id not found!");
+          new CustomError(HttpStatus.NOT_FOUND, 'Product Id not found!');
         }
       }
-
-      
-    // Se o status for "Registered", limpa o carrinho
-    // if (newSale.status === 'Registered') {
-    //    session.cart = null;
-    //}
 
       await newSale.save();
 
@@ -86,37 +71,32 @@ export class SaleController {
 
       res.status(HttpStatus.CREATED).json(newSale);
 
-     //estados da encomenda(fazer com que passado x tempo muda para tal )
-     const timeToChange = 3600000 // 1 hora
-     const TotalTime = timeToChange * 2 // 2 horas
+      const timeToChangeToRegistered = 5000; // 1 hora
+      setTimeout(async () => {
+        const updatedSale = await SaleModel.findByIdAndUpdate(newSale.id, { $set: { status: SaleStatus.Registered } });
 
-     setTimeout(async () => {
-      console.log(newSale.id);
-      
-       // Atualiza a sale para o status "Registered" após o tempo definido
-       await SaleModel.findByIdAndUpdate(
-         newSale.id,
-         { status: 'Registered' },
-         { new: true }
-       );
-     }, timeToChange);
+        if (!updatedSale) {
+          return 'cona';
+        }
+        if (!user) {
+          session.cart = [];
+        } else {
+          user.cart.items = [];
+          await user.save();
+        }
 
-     setTimeout(async () => {
-       // Atualiza a venda para o estado "Processing" após o tempo total definido
-       await SaleModel.findByIdAndUpdate(
-         newSale.id,
-         { status: 'Processing' },
-         { new: true }
-       );
-     }, TotalTime); 
+        const timeToChangeToProcessing = 5000; // 1 hora
+        setTimeout(async () => {
+          await SaleModel.findByIdAndUpdate(newSale.id, { $set: { status: SaleStatus.Processing } });
+        }, timeToChangeToProcessing);
+      }, timeToChangeToRegistered);
     } catch (error) {
       console.log(error);
-
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
     }
   };
 
-  public getSalesByName = async (req: Request, res: Response, next: Function) => {
+  public getSalesByName = async (req: CustomRequest, res: Response, next: Function) => {
     const userEmail = req.user.email;
     try {
       const {
@@ -186,11 +166,7 @@ export class SaleController {
     }
   };
 
-  public deleteById = async (
-    req: CustomRequest,
-    res: Response,
-    next: Function
-  ) => {
+  public deleteById = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const saleId = req.params.id;
       const deletedSale = await SaleModel.findByIdAndDelete(saleId);
