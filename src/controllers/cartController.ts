@@ -11,6 +11,34 @@ interface CustomRequest extends Request {
 }
 
 export default class CartController {
+  private async transformCartItemForResponse(cartItem: CartItem, includeAdditionalFields: boolean = false): Promise<any> {
+    const productDetails = await Product.findById(cartItem.product);
+
+    if (!productDetails) {
+      return null;
+    }
+
+    const transformedItem: any = {
+      product: {
+        id: productDetails._id,
+        name: productDetails.name,
+        price: productDetails.price,
+      },
+      quantity: cartItem.quantity,
+      totalPrice: cartItem.totalPrice,
+    };
+
+    if (includeAdditionalFields) {
+      transformedItem.promoCodeActive = cartItem.promoCodeActive || false;
+      if (cartItem.promoCodeActive) {
+        transformedItem.promoCodeType = cartItem.promoCodeType || 0;
+        transformedItem.originalTotalPrice = cartItem.originalTotalPrice || 0;
+      }
+    }
+
+    return transformedItem;
+  }
+
   private calculateCartTotal(items: CartItem[]): number {
     return items.reduce((total: number, cartItem: CartItem) => total + cartItem.totalPrice, 0);
   }
@@ -49,29 +77,49 @@ export default class CartController {
       return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.UNEXPECTED_ERROR));
     }
 
-    if (!req.session.cart) {
-      const cookieCart: ShoppingCart | null = req.session.cart || {
-        items: [],
-        total: 0,
-      };
+    const cookieCart: ShoppingCart | null = req.session.cart || {
+      items: [],
+      total: 0,
+    };
 
-      req.session.cart = cookieCart;
+    if (!cookieCart) {
+      return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.UNEXPECTED_ERROR));
     }
 
-    const guestCart = req.session.cart;
+    const updatedCartItems = await Promise.all(
+      cookieCart.items.map(async (cartItem: CartItem) => {
+        const updatedProduct = await Product.findById(cartItem.product);
 
-    this.addOrUpdateCartItem(guestCart.items, product.id, parsedQuantity, product.price);
+        if (updatedProduct) {
+          const newProductDetails = await Product.findById(cartItem.product);
 
-    const newCartTotal = this.calculateCartTotal(guestCart.items);
-    guestCart.total = newCartTotal;
+          if (newProductDetails) {
+            const newTotalPrice = newProductDetails.price * cartItem.quantity;
+            cartItem.totalPrice = newTotalPrice;
+          }
+
+          const newCartTotal = this.calculateCartTotal(cookieCart.items);
+          cookieCart.total = newCartTotal;
+
+          const transformedCartItem = this.transformCartItemForResponse(cartItem, true);
+
+          return transformedCartItem;
+        }
+        return null;
+      }),
+    );
+
+    const filteredCartItems = updatedCartItems.filter((item) => item !== null) as CartItem[];
+
+    this.addOrUpdateCartItem(cookieCart.items, product.id, parsedQuantity, product.price);
 
     res.status(HttpStatus.OK).json({
       message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
-      cart: guestCart.items || [],
-      cartTotal: guestCart.total || 0,
+      cart: filteredCartItems,
+      total: cookieCart.total,
     });
 
-    req.session.cart = guestCart;
+    req.session.cart = cookieCart;
   }
 
   private async handleUserCart(req: CustomRequest, res: Response, next: Function, product: IProduct, parsedQuantity: number): Promise<void> {
@@ -86,11 +134,34 @@ export default class CartController {
       total: 0,
     };
 
+    const updatedCartItems = await Promise.all(
+      userCart.items.map(async (cartItem: CartItem) => {
+        const updatedProduct = await Product.findById(cartItem.product);
+
+        if (updatedProduct) {
+          const newProductDetails = await Product.findById(cartItem.product);
+
+          if (newProductDetails) {
+            const newTotalPrice = newProductDetails.price * cartItem.quantity;
+            cartItem.totalPrice = newTotalPrice;
+          }
+
+          const newCartTotal = this.calculateCartTotal(userCart.items);
+          userCart.total = newCartTotal;
+
+          const transformedCartItem = this.transformCartItemForResponse(cartItem, true);
+
+          return transformedCartItem;
+        }
+        return null;
+      }),
+    );
+
+    const filteredCartItems = updatedCartItems.filter((item) => item !== null) as CartItem[];
+
     this.addOrUpdateCartItem(userCart.items, product.id, parsedQuantity, product.price);
 
-    const newCartTotal = this.calculateCartTotal(userCart.items);
-
-    userCart.total = newCartTotal;
+    await this.updateCartInDatabase(req.user.id, userCart.items, userCart.total);
 
     res.cookie('cart', JSON.stringify(userCart), {
       maxAge: 3600000, // 1 hora
@@ -98,18 +169,10 @@ export default class CartController {
       secure: true,
     });
 
-    await this.updateCartInDatabase(req.user.id, userCart.items, userCart.total);
-
-    const updatedUser = await User.findById(req.user.id).populate('cart.items');
-
-    if (!updatedUser) {
-      return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.USER_NOT_FOUND));
-    }
-
     res.status(HttpStatus.OK).json({
       message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
-      cart: updatedUser.cart.items,
-      cartTotal: updatedUser.cart.total,
+      cart: userCart.items,
+      total: userCart.total,
     });
   }
 
@@ -158,8 +221,10 @@ export default class CartController {
         const updatedCartItems = await Promise.all(
           savedCart.cart.items.map(async (cartItem: CartItem) => {
             const updatedProduct = await Product.findById(cartItem.product);
+
             if (updatedProduct) {
               const newProductDetails = await Product.findById(cartItem.product);
+
               if (newProductDetails) {
                 const newTotalPrice = newProductDetails.price * cartItem.quantity;
                 cartItem.totalPrice = newTotalPrice;
@@ -167,11 +232,10 @@ export default class CartController {
 
               const newCartTotal = this.calculateCartTotal(savedCart.cart.items);
               savedCart.cart.total = newCartTotal;
-              return {
-                product: updatedProduct,
-                quantity: cartItem.quantity,
-                total: cartItem.totalPrice,
-              } as unknown as CartItem;
+
+              const transformedCartItem = this.transformCartItemForResponse(cartItem, true);
+
+              return transformedCartItem;
             }
             return null;
           }),
@@ -181,7 +245,7 @@ export default class CartController {
 
         return res.status(HttpStatus.OK).json({
           cart: filteredCartItems,
-          cartTotal: savedCart.cart.total,
+          total: savedCart.cart.total,
         });
       }
 
@@ -196,6 +260,7 @@ export default class CartController {
           const updatedProduct = await Product.findById(cartItem.product);
           if (updatedProduct) {
             const newProductDetails = await Product.findById(cartItem.product);
+
             if (newProductDetails) {
               const newTotalPrice = newProductDetails.price * cartItem.quantity;
               cartItem.totalPrice = newTotalPrice;
@@ -203,11 +268,10 @@ export default class CartController {
 
             const newCartTotal = this.calculateCartTotal(user.cart.items);
             user.cart.total = newCartTotal;
-            return {
-              product: updatedProduct,
-              quantity: cartItem.quantity,
-              total: cartItem.totalPrice,
-            } as unknown as CartItem;
+
+            const transformedCartItem = this.transformCartItemForResponse(cartItem, req.user !== undefined);
+
+            return transformedCartItem;
           }
           return null;
         }),
@@ -356,7 +420,7 @@ export default class CartController {
         return res.status(HttpStatus.OK).json({
           message: SUCCESS_MESSAGES.UPDATED_SUCCESSFULLY,
           cart: updatedUser.cart.items,
-          cartTotal: updatedUser.cart.total,
+          total: updatedUser.cart.total,
         });
       }
     } catch (error) {
