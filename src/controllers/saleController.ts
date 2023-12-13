@@ -1,12 +1,11 @@
-import { ShoppingCart } from '@src/models/cartModel';
 import { Product } from '@src/models/productModel';
 import { ISale, SaleModel } from '@src/models/saleModel';
 import { IUser, User, UserStatus } from '@src/models/userModel';
 import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 import { Request, Response } from 'express';
-import { SaleStatus } from '@src/models/saleModel';
 import { Error } from '@src/utils/errorCatch';
+import statusChange from '@src/events/saleStatus';
 
 interface CustomRequest extends Request {
   user: IUser;
@@ -29,7 +28,6 @@ export class SaleController {
 
       let shoppingCart;
 
-      console.log(user);
       // Guest
       if (!user) {
         if (session.cart.items.length < 1) {
@@ -73,6 +71,8 @@ export class SaleController {
 
       await newSale.save();
 
+      statusChange.emit('changeToRegistered', newSale.id);
+
       const saleCart = await SaleModel.findById(newSale.id).populate('shoppingCart');
 
       if (!saleCart) {
@@ -82,7 +82,6 @@ export class SaleController {
       if (!user) {
         session.cart.items = [];
       } else {
-        console.log(user);
         user.cart.items = [];
         user.cart.total = 0;
 
@@ -170,19 +169,26 @@ export class SaleController {
       const saleId = req.params.id;
       const deletedSale = await SaleModel.findByIdAndDelete(saleId);
       if (!deletedSale) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'Not Found'));
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Sale not found'));
       }
-      res.status(HttpStatus.NO_CONTENT).send();
+      return res.status(HttpStatus.OK).json(SUCCESS_MESSAGES.SALE_DELETED_SUCCESSFUL);
     } catch (error) {
       return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
     }
   };
 
-  //   public cancel = async (req: Request,  res: Response, next: Function) => {
-  //   try{
+  public cancel = async (req: Request, res: Response, next: Function) => {
+    try {
+      const saleId = req.params.id;
+      const updatedSale = await SaleModel.findByIdAndUpdate(saleId, { $set: { status: 'Canceled' } }, { new: true });
 
-  //   }catch(error){
-  //     return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'))
-  //   }
-  // }
+      if (!updatedSale) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, 'Sale not found'));
+      }
+
+      res.status(HttpStatus.OK).json({ message: 'Sale successfully canceled', sale: updatedSale });
+    } catch (error) {
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+    }
+  };
 }

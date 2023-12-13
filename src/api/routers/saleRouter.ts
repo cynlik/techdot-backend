@@ -64,6 +64,6 @@ router.get('/all', validateToken(), saleController.getSalesByName);
 router.delete('/delete/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: SaleModel, type: Constant.Sale }]), roleMiddleware(UserStatus.Manager), saleController.deleteById);
 
 // Cancel Sale
-// router.put("/cancel/:id", validateToken(),Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale }]), saleController.cancel);
+router.put('/cancel/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: SaleModel, type: Constant.Sale }]), saleController.cancel);
 
 export default router;

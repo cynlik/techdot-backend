@@ -114,6 +114,7 @@ export const ERROR_MESSAGES = {
 };
 
 export const SUCCESS_MESSAGES = {
+  SALE_DELETED_SUCCESSFUL: 'Sale deleted successful',
   ACCOUNT_REGISTERED_SUCCESSFULLY: 'Account registered successfully. Please verify your account through the email sent to your email.',
   CREATED_SUCCESSFULLY: 'Created successfully',
   UPDATED_SUCCESSFULLY: 'Updated successfully',
