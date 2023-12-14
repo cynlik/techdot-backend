@@ -3,6 +3,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { version } from '../../package.json';
 import log from '@src/utils/logger';
+import { ProductType } from '@src/models/productModel';
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -237,6 +238,7 @@ const options: swaggerJsdoc.Options = {
             },
             productType: {
               type: 'string',
+              enum: Object.values(ProductType),
             },
             specifications: {
               type: 'object',
