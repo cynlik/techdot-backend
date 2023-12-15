@@ -1,9 +1,9 @@
 import { Document, Schema, model } from 'mongoose';
 
-export interface ICategory extends Document {
+export type ICategory = {
   name: string;
   visible: boolean;
-}
+} & Document
 
 const categorySchema = new Schema<ICategory>(
   {

@@ -41,29 +41,10 @@ router.post(
  *            schema:
  *              $ref: '#/components/schemas/Sale'
  */
-// Get all sales
+// Get all sales and by email
 router.get('/all', validateToken(), saleController.getSalesByName);
 
-/**
- * @openapi
- * /api/sale/delete/{id}:
- *   delete:
- *     tags:
- *       - Sale Routes
- *     summary: Delete a sale by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *     responses:
- *      204:
- *        description: Success
- */
-// Delete Sale By Id
-router.delete('/delete/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: SaleModel, type: Constant.Sale }]), roleMiddleware(UserStatus.Manager), saleController.deleteById);
-
 // Cancel Sale
-// router.put("/cancel/:id", validateToken(),Validator.validateIds([{ paramName: "id", model: SaleModel, type: Constant.Sale }]), saleController.cancel);
+router.put('/cancel/:id', validateToken(), Validator.validateIds([{ paramName: 'id', model: SaleModel, type: Constant.Sale }]), saleController.cancel);
 
 export default router;

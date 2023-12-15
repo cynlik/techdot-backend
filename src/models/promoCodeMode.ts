@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, model } from 'mongoose';
 
-export interface IPromoCode extends Document {
+export type IPromoCode = {
   description: string;
   discountType: number;
   //startDate: Date;
@@ -10,7 +10,7 @@ export interface IPromoCode extends Document {
   applicableProducts: mongoose.Types.ObjectId[];
   usageLimit: number;
   minimumPurchaseValue: number;
-}
+} & Document
 
 const promoCodeSchema = new Schema({
   description: { type: String, required: true },

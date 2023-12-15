@@ -6,9 +6,9 @@ import { Discount, IDiscount } from '@src/models/dicountModel';
 import { IUser, UserStatus } from '@src/models/userModel';
 import { Error } from '@src/utils/errorCatch';
 
-interface CustomRequest extends Request {
+type CustomRequest = {
   user: IUser;
-}
+} & Request
 
 export class DiscountController {
   // =================|USERS|=================
@@ -30,7 +30,7 @@ export class DiscountController {
         throw new CustomError(HttpStatus.CONFLICT, `O produto ${product.name} já tem um desconto aplicado.`);
       }
 
-      let newPrice = isActive ? product.price - product.price * discountDecimal : product.originalPrice;
+      const newPrice = isActive ? product.price - product.price * discountDecimal : product.originalPrice;
 
       const priceUpdated = await Product.findByIdAndUpdate(productId, {
         $set: {

@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { emailContent, EmailType } from '@src/utils/emailType';
 import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant';
 
-interface MailOptions {
+type MailOptions = {
   to: string;
   subject: string;
   html?: string;

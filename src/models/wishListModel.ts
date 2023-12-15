@@ -1,9 +1,9 @@
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
 import { IProduct } from './productModel';
 
-export interface WishListItem extends Document {
+export type WishListItem = {
   product: IProduct;
-}
+} & Document
 
 export const wishListItemSchema = new Schema({
   product: {

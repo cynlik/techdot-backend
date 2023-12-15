@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 
-export interface IMotherboardSpecifications {
+export type IMotherboardSpecifications = {
     manufacturer?: string;
     chipset?: string;
     formFactor?: string;

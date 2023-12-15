@@ -68,7 +68,10 @@ export enum HttpStatus {
 }
 
 export const ERROR_MESSAGES = {
+  INVALID_PAGINATION: 'Invalid pagination',
+  SALE_IN_ADVANCED_STATUS: 'Sale in advanced status',
   INVALID_QUANTITY: 'Invalid quantity',
+  SESSION_NOT_FOUND: 'Session not found',
   PRODUCT_NOT_FOUND: 'Product not found.',
   SALE_NOT_FOUND: 'Sale not found',
   CART_NOT_FOUND: 'Cart not found',
@@ -114,6 +117,8 @@ export const ERROR_MESSAGES = {
 };
 
 export const SUCCESS_MESSAGES = {
+  SALE_CANCELED_SUCCESSFUL: 'Sale canceled successful',
+  SALE_DELETED_SUCCESSFUL: 'Sale deleted successful',
   ACCOUNT_REGISTERED_SUCCESSFULLY: 'Account registered successfully. Please verify your account through the email sent to your email.',
   CREATED_SUCCESSFULLY: 'Created successfully',
   UPDATED_SUCCESSFULLY: 'Updated successfully',

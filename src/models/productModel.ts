@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 import { ICaseSpecifications, ICpuSpecifications, IGpuSpecifications, IMotherboardSpecifications, IRamSpecifications, cpuSpecificationsSchema, gpuSpecificationSchema, caseSpecificationSchema, motherboardSpecificationSchema, ramSpecificationSchema } from "./productSpecifications"
 
-interface ISpecifications {
+type ISpecifications = {
   cpu?: ICpuSpecifications;
   gpu?: IGpuSpecifications;
   motherboard?: IMotherboardSpecifications;
@@ -17,7 +17,7 @@ export enum ProductType {
   CASE = 'Case',
 }
 
-export interface IProduct extends Document {
+export type IProduct = {
   name: string;
   description: string;
   imageUrl: string;
@@ -32,7 +32,7 @@ export interface IProduct extends Document {
   onDiscount: boolean;
   specifications: ISpecifications;
   warranty: Date;
-}
+} & Document
 
 const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },

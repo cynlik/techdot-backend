@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { CustomError } from '@src/utils/customError';
 import { HttpStatus } from '@src/utils/constant';
 
-interface FieldValidationConfig {
+type FieldValidationConfig = {
   required?: string[];
   optional?: string[];
 }

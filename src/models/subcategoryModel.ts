@@ -1,10 +1,10 @@
 import mongoose, { Document, Schema, model } from 'mongoose';
 
-export interface ISubcategory extends Document {
+export type ISubcategory = {
   name: string;
   category: mongoose.Types.ObjectId;
   visible: boolean;
-}
+} & Document
 
 const subcategorySchema = new Schema<ISubcategory>(
   {

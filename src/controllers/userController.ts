@@ -14,9 +14,9 @@ import { Product } from '@src/models/productModel';
 import { WishListItem, WishListItemModel } from '@src/models/wishListModel';
 import { Error } from '@src/utils/errorCatch';
 
-interface CustomRequest extends Request {
+type CustomRequest = {
   user: IUser;
-}
+} & Request
 
 export default class UserController {
   public registerUser = async (req: Request, res: Response, next: Function) => {
@@ -519,7 +519,7 @@ export default class UserController {
   private static createToken(user: IUser, expiresIn = config.expiresIn) {
     const hashedEmail = this.encryptEmail(user.email);
 
-    let token = jwt.sign(
+    const token = jwt.sign(
       {
         id: user._id,
         name: user.name,

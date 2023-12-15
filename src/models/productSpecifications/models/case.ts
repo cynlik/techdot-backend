@@ -1,6 +1,6 @@
 import { Schema } from "mongoose";
 
-export interface ICaseSpecifications {
+export type ICaseSpecifications = {
     length?: number;
     width?: number;
     height?: number;

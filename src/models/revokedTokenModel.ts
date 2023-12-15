@@ -1,9 +1,9 @@
 import { model, Document, Schema } from 'mongoose';
 
-export interface RevokedToken extends Document {
+export type RevokedToken = {
   token: string;
   revocationDate: Date;
-}
+} & Document
 
 export const revokedTokenSchema = new Schema<RevokedToken>({
   token: { type: String, required: true },
