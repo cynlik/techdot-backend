@@ -1,34 +1,29 @@
 import { Product } from '@src/models/productModel';
-import { ISale, SaleModel } from '@src/models/saleModel';
+import { ISale, SaleModel, SaleStatus } from '@src/models/saleModel';
 import { IUser, User, UserStatus } from '@src/models/userModel';
 import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 import { Request, Response } from 'express';
 import { Error } from '@src/utils/errorCatch';
-import statusChange from '@src/events/saleStatus';
+import { statusChangeTimes, startStatusChangeDelayed } from '@src/events/saleStatus';
 
-interface CustomRequest extends Request {
+type CustomRequest = {
   user: IUser;
-}
+} & Request;
 
 export class SaleController {
   public create = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const { userName, userEmail, userAdress, userPhone, paymentMethod } = req.body;
-
-      const userMail = await User.findOne({ email: userEmail });
-      const userToken = req.user;
-
-      const user = await User.findById(userToken.id);
+      const user = await User.findById(req.user.id);
       const session = req.session;
 
       if (!session) {
-        throw new CustomError(HttpStatus.BAD_REQUEST, 'sfa');
+        throw new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.SESSION_NOT_FOUND);
       }
 
       let shoppingCart;
 
-      // Guest
       if (!user) {
         if (session.cart.items.length < 1) {
           return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.CART_NOT_FOUND));
@@ -51,11 +46,10 @@ export class SaleController {
         shoppingCart,
       } as unknown as ISale);
 
-      // Subtrair a quantidade vendida do stock de cada produto
       for (let i = 0; i < shoppingCart.items.length; i++) {
         const productArray = shoppingCart.items[i];
 
-        let productId = productArray.product;
+        const productId = productArray.product;
         const quantitySale = productArray.quantity;
 
         const product = await Product.findById(productId);
@@ -65,13 +59,16 @@ export class SaleController {
 
           await product.save();
         } else {
-          new CustomError(HttpStatus.NOT_FOUND, 'Product Id not found!');
+          return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.PRODUCT_NOT_FOUND));
         }
       }
 
       await newSale.save();
 
-      statusChange.emit('changeToRegistered', newSale.id);
+      const delay = statusChangeTimes[SaleStatus.Registered];
+      const delayToProcesing = statusChangeTimes[SaleStatus.Processing];
+      startStatusChangeDelayed(newSale.id, SaleStatus.Registered, delay);
+      startStatusChangeDelayed(newSale.id, SaleStatus.Processing, delayToProcesing);
 
       const saleCart = await SaleModel.findById(newSale.id).populate('shoppingCart');
 
@@ -95,45 +92,42 @@ export class SaleController {
   };
 
   public getSalesByName = async (req: CustomRequest, res: Response, next: Function) => {
-    const userEmail = req.user.email;
     try {
+      const user = await User.findById(req.user.id);
+
+      if (!user) {
+        return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.USER_NOT_FOUND));
+      }
+
       const {
         sort,
         page = '1',
         limit = '6',
+        userEmail,
       } = req.query as {
         sort?: string;
         page?: string;
         limit?: string;
+        userEmail?: string;
       };
+
+      const viewUser = req.user.view;
+      const conditions: any = {};
 
       const pageNumber = parseInt(page, 10);
       const limitNumber = parseInt(limit, 10);
 
       if (isNaN(pageNumber) || pageNumber <= 0 || isNaN(limitNumber) || limitNumber <= 0) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
-      }
-
-      const viewUser = req.user.view;
-      const userEmail = req.user.email;
-      const conditions: any = {};
-
-      if (viewUser === UserStatus.Admin) {
-        // Se for um admin, não há restrições de acesso
-      } else if (viewUser === UserStatus.Member) {
-        // Se for um member, só terá acesso às vendas associadas ao seu email
-        conditions.userEmail = userEmail;
-      } else {
-        // Caso o tipo de user não seja reconhecido
-        return next(new CustomError(HttpStatus.UNAUTHORIZED, 'Tipo de user não reconhecido.'));
+        return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.INVALID_PAGINATION));
       }
 
       if (viewUser !== UserStatus.Admin) {
+        const regex = new RegExp(user.email, 'i');
+        conditions.userEmail = regex;
+      } else if (viewUser === UserStatus.Admin) {
         if (userEmail) {
           const regex = new RegExp(userEmail, 'i');
           conditions.userEmail = regex;
-        } else {
-          console.error('userEmail is undefined');
         }
       }
 
@@ -154,41 +148,40 @@ export class SaleController {
       const sales = await query.limit(limitNumber).skip((pageNumber - 1) * limitNumber);
 
       if (sales.length === 0) {
-        next(new CustomError(HttpStatus.NOT_FOUND, 'Nenhuma sale encontrada.'));
+        next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.SALE_NOT_FOUND));
       } else {
         res.status(200).send({ sales, totalPages });
       }
     } catch (error) {
       console.error(error);
-      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Erro ao procurar produtos.'));
+      next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_SERVER_ERROR));
     }
   };
 
-  public deleteById = async (req: CustomRequest, res: Response, next: Function) => {
+  private calculateStatusOrder(status: SaleStatus) {
+    const statusList = Object.values(SaleStatus);
+    const statusIndex = statusList.indexOf(status);
+    return statusIndex === -1 ? -1 : statusList.length - statusIndex - 1;
+  }
+
+  public cancel = async (req: CustomRequest, res: Response, next: Function) => {
     try {
       const saleId = req.params.id;
-      const deletedSale = await SaleModel.findByIdAndDelete(saleId);
-      if (!deletedSale) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'Sale not found'));
+      const sale = await SaleModel.findById(saleId);
+
+      if (!sale) {
+        return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.SALE_NOT_FOUND));
+      } else {
+        const denyStatusChange = this.calculateStatusOrder(SaleStatus.Processing);
+        const saleStatusOrder = this.calculateStatusOrder(sale.status);
+        if (saleStatusOrder <= denyStatusChange) {
+          return next(new CustomError(HttpStatus.NOT_FOUND, ERROR_MESSAGES.SALE_IN_ADVANCED_STATUS));
+        }
       }
-      return res.status(HttpStatus.OK).json(SUCCESS_MESSAGES.SALE_DELETED_SUCCESSFUL);
+      const updatedSale = await SaleModel.findByIdAndUpdate(saleId, { $set: { status: SaleStatus.Canceled } }, { new: true });
+      res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.SALE_CANCELED_SUCCESSFUL, sale: updatedSale });
     } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
-    }
-  };
-
-  public cancel = async (req: Request, res: Response, next: Function) => {
-    try {
-      const saleId = req.params.id;
-      const updatedSale = await SaleModel.findByIdAndUpdate(saleId, { $set: { status: 'Canceled' } }, { new: true });
-
-      if (!updatedSale) {
-        return next(new CustomError(HttpStatus.NOT_FOUND, 'Sale not found'));
-      }
-
-      res.status(HttpStatus.OK).json({ message: 'Sale successfully canceled', sale: updatedSale });
-    } catch (error) {
-      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+      return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_MESSAGES.INTERNAL_SERVER_ERROR));
     }
   };
 }

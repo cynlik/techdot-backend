@@ -1,54 +1,48 @@
 import { EventEmitter } from 'events';
-import { SaleModel, SaleStatus, ISale } from '@src/models/saleModel';
+import { SaleModel, SaleStatus } from '@src/models/saleModel';
+import { setTimeout } from 'timers';
+import { CustomError } from '@src/utils/customError';
+import { ERROR_MESSAGES, HttpStatus } from '@src/utils/constant';
 
 const statusChange = new EventEmitter();
 
-const timeToChangeToRegistered = 10000; // 10 segundos
-const timeToChangeToProcessing = 20000; // 20 segundos
+export const statusChangeTimes: Record<SaleStatus, number> = {
+  [SaleStatus.Registered]: 10000, // 10 segundos
+  [SaleStatus.Processing]: 20000, // 20 segundos
+} as Record<SaleStatus, number>;
 
-async function changeToRegistered(saleId: string) {
+async function changeStatus(saleId: string, status: SaleStatus) {
   try {
     const sale = await SaleModel.findById(saleId);
 
     if (!sale) {
-      console.error('Sale not found Registered');
+      throw new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.SALE_NOT_FOUND);
     } else {
-      const updatedSaleRegistered = await SaleModel.findByIdAndUpdate(saleId, { $set: { status: SaleStatus.Registered } });
-      console.log(`Sale ${saleId} status changed to Registered`);
-
-      // Agora, inicie o temporizador para mudança de status para Processing
-      setTimeout(() => {
-        statusChange.emit('changeToProcessing', saleId);
-      }, timeToChangeToProcessing - timeToChangeToRegistered);
+      const updatedSale = await SaleModel.findByIdAndUpdate(saleId, { $set: { status: status } });
     }
   } catch (error) {
-    console.error('Error updating sale to Registered:', error);
+    console.error(`Error updating sale to ${status}:`, error);
   }
 }
 
-async function changeToProcessing(saleId: string) {
+export function startStatusChangeDelayed(newSaleId: string, newSaleStatus: SaleStatus, delay: number) {
+  return new Promise<void>((resolve, reject) => {
+    setTimeout(() => {
+      performStatusChange(newSaleId, newSaleStatus)
+        .then(() => resolve())
+        .catch((error) => reject(error));
+    }, delay);
+  });
+}
+
+async function performStatusChange(newSaleId: string, newSaleStatus: SaleStatus) {
   try {
-    const sale = await SaleModel.findById(saleId);
-
-    if (!sale) {
-      console.error('Sale not found Processing');
-    } else {
-      const updatedSaleProcessing = await SaleModel.findByIdAndUpdate(saleId, { $set: { status: SaleStatus.Processing } });
-      console.log(`Sale ${saleId} status changed to Processing`);
-    }
+    await changeStatus(newSaleId, newSaleStatus);
   } catch (error) {
-    console.error('Error updating sale to Processing:', error);
+    throw error;
   }
 }
 
-export function startStatusChange(newSaleId: string) {
-  // Use setTimeout para mudança de status para Registered após um tempo
-  setTimeout(() => {
-    statusChange.emit('changeToRegistered', newSaleId);
-  }, timeToChangeToRegistered);
-}
-
-statusChange.on('changeToRegistered', changeToRegistered);
-statusChange.on('changeToProcessing', changeToProcessing);
+statusChange.on('changeStatus', changeStatus);
 
 export default statusChange;

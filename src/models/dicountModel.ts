@@ -1,13 +1,13 @@
 import mongoose, { Document, Schema, model } from 'mongoose';
 
-export interface IDiscount extends Document {
+export type IDiscount = {
   description: string;
   discountType: number;
   //startDate: Date;
   //endDate: Date;
   isActive: boolean;
   applicableProducts: mongoose.Types.ObjectId[];
-}
+} & Document
 
 const discountSchema = new Schema({
   description: { type: String, required: true },

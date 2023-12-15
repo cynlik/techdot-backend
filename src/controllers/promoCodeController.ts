@@ -26,17 +26,17 @@ export class PromoCodeController {
 
     try {
       for (let i = 0; i < user.cart.items.length; i++) {
-        let item = user.cart.items[i];
+        const item = user.cart.items[i];
 
-        let product = await Product.findById(item.product);
+        const product = await Product.findById(item.product);
 
         if (!product?.onDiscount) {
           if (!item.promoCodeActive) {
-            let discountDecimal = existpromoCode.discountType / 100;
+            const discountDecimal = existpromoCode.discountType / 100;
 
             item.originalTotalPrice = item.totalPrice;
 
-            let newPrice = item.totalPrice - item.totalPrice * discountDecimal;
+            const newPrice = item.totalPrice - item.totalPrice * discountDecimal;
             item.totalPrice = newPrice;
             item.promoCodeActive = true;
             item.promoCodeType = existpromoCode.discountType;
