@@ -1,6 +1,6 @@
 import { Schema } from "mongoose";
 
-export interface IRamSpecifications {
+export type IRamSpecifications = {
     size?: number;
     frequency?: number;
     type?: string;

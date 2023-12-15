@@ -10,7 +10,7 @@ export enum UserStatus {
   NonMember = 'nonmember',
 }
 
-export interface IUser extends Document {
+export type IUser = {
   name: string;
   email: string;
   password: string;
@@ -32,7 +32,7 @@ export interface IUser extends Document {
   lastLoginIP: string | null;
   cart: ShoppingCart;
   wishList: WishListItem[];
-}
+} & Document
 
 export const UserSchema = new Schema<IUser>(
   {

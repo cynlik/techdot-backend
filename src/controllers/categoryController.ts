@@ -75,7 +75,7 @@ export class CategoryController {
 
       const subcategories = await Subcategory.find({ category: categoryId });
 
-      let conditions: any = {
+      const conditions: any = {
         subcategoryId: { $in: subcategories.map((sc) => sc._id) },
       };
 

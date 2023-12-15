@@ -5,9 +5,9 @@ import jwt from 'jsonwebtoken';
 import { ERROR_MESSAGES, HttpStatus } from '@src/utils/constant';
 import { CustomError } from '@src/utils/customError';
 
-interface CustomRequest extends Request {
+type CustomRequest = {
   user: IUser;
-}
+} & Request
 
 const validateToken = (isOptional: boolean = false) => {
   return async (req: CustomRequest, res: Response, next: NextFunction) => {

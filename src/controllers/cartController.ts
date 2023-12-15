@@ -6,9 +6,9 @@ import { User, IUser } from '@src/models/userModel';
 import { CartItem, ShoppingCart } from '@src/models/cartModel';
 import { Error } from '@src/utils/errorCatch';
 
-interface CustomRequest extends Request {
+type CustomRequest = {
   user: IUser;
-}
+} & Request
 
 export default class CartController {
   private calculateCartTotal(items: CartItem[]): number {
