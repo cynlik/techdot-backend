@@ -9,6 +9,15 @@ import { Error } from '@src/utils/errorCatch';
 export class PromoCodeController {
   // =================|USERS|=================
 
+  public removePromoCode = async (req: Request, res: Response, next: Function) => {
+    const { promoCodeId } = req.params;
+
+    try {
+    } catch (error) {
+      next(Error(error));
+    }
+  };
+
   public usePromoCode = async (req: Request, res: Response, next: Function) => {
     const { promoCode } = req.body;
     const userId = req.user.id;
@@ -20,8 +29,10 @@ export class PromoCodeController {
 
     const existpromoCode = await PromoCode.findOne({ promoCode: promoCode });
 
-    if (!existpromoCode || !existpromoCode.isActive) {
+    if (!existpromoCode) {
       return next(new CustomError(HttpStatus.NOT_FOUND, "This promo code doesn't exist."));
+    } else if (!existpromoCode.isActive) {
+      return next(new CustomError(HttpStatus.NOT_ACCEPTABLE, 'This promo code is not active!'));
     }
 
     try {
