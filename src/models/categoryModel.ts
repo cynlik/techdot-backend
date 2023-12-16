@@ -3,7 +3,7 @@ import { Document, Schema, model } from 'mongoose';
 export type ICategory = {
   name: string;
   visible: boolean;
-} & Document
+} & Document;
 
 const categorySchema = new Schema<ICategory>(
   {
