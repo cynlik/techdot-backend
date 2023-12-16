@@ -115,7 +115,7 @@ router.post(
  *  put:
  *    tags:
  *      - Product Routes
- *    summary: Create product
+ *    summary: Edit product
  *    parameters:
  *      - in: header
  *        name: authorization
@@ -165,7 +165,7 @@ router.put(
  *  delete:
  *    tags:
  *      - Product Routes
- *    summary: Create product
+ *    summary: Delete product
  *    parameters:
  *      - in: header
  *        name: authorization

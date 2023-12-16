@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import express from 'express';
 import { SubcategoryController } from '@src/controllers/subcategoryController';
 import validateToken from '@src/middlewares/validateToken';
 import Validator from '@src/middlewares/validator';

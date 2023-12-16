@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express';
 import { Category } from '@src/models/categoryModel';
 import { CustomError } from '@src/utils/customError';

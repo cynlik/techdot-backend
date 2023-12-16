@@ -14,6 +14,17 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
+        Category: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+            },
+            visible: {
+              type: 'boolean',
+            },
+          },
+        },
         CartPutRequest: {
           type: 'object',
           properties: {
