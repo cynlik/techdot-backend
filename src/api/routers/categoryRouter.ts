@@ -9,16 +9,19 @@ import { Category } from '@src/models/categoryModel';
 
 const router = express.Router();
 const categoryController = new CategoryController();
-
+/**
+ * @openapi
+ * tags:
+ *   name: Category
+ */
 // =================|USER|=================
 
 /**
  * @openapi
  * /api/category:
  *   get:
- *     tags:
- *      - Category Routes
  *     summary: Get all categories
+ *     tags: [Category]
  *     responses:
  *       200:
  *         description: An array of category objects
@@ -36,9 +39,8 @@ router.get('/', validateToken(true), categoryController.getAllCategory);
  * @openapi
  * /api/category/subcategory/{categoryId}:
  *   get:
- *     tags:
- *      - Category Routes
  *     summary: Get all subcategories of a category
+ *     tags: [Category]
  *     parameters:
  *       - in: path
  *         name: categoryId
@@ -63,9 +65,8 @@ router.get('/subcategory/:categoryId', validateToken(true), Validator.validateId
  * @openapi
  * /api/category/products/{categoryId}:
  *   get:
- *     tags:
- *      - Category Routes
  *     summary: Get all products of a category
+ *     tags: [Category]
  *     parameters:
  *       - in: path
  *         name: categoryId
@@ -92,9 +93,8 @@ router.get('/products/:categoryId', validateToken(true), Validator.validateIds([
  * @openapi
  * /api/category:
  *   post:
- *     tags:
- *      - Category Routes
  *     summary: Create a new category
+ *     tags: [Category]
  *     requestBody:
  *       required: true
  *       content:
@@ -119,9 +119,8 @@ router.post('/', validateToken(), roleMiddleware(UserStatus.Manager), Validator.
  * @openapi
  * /api/category/update/{id}:
  *   put:
- *     tags:
- *      - Category Routes
  *     summary: Update the name of a category
+ *     tags: [Category]
  *     parameters:
  *       - in: path
  *         name: id
@@ -160,9 +159,8 @@ router.put(
  * @openapi
  * /api/category/delete/{id}:
  *   delete:
- *     tags:
- *      - Category Routes
  *     summary: Delete a category
+ *     tags: [Category]
  *     parameters:
  *       - in: path
  *         name: id
@@ -185,9 +183,8 @@ router.delete('/delete/:id', validateToken(), roleMiddleware(UserStatus.Manager)
  * @openapi
  * /api/category/admin:
  *   get:
- *     tags:
- *      - Category Routes
  *     summary: Get all categories for the dashboard
+ *     tags: [Category]
  *     responses:
  *       200:
  *         description: An array of category objects

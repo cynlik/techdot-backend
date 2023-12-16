@@ -14,6 +14,20 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
+        Subcategory: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+            },
+            category: {
+              type: 'string',
+            },
+            visible: {
+              type: 'boolean',
+            },
+          },
+        },
         Category: {
           type: 'object',
           properties: {
