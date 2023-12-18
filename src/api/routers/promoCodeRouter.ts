@@ -10,9 +10,9 @@ const promoCodeController = new PromoCodeController();
 
 // =================|USER|=================
 
-router.post('/use-promo-code', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateFields({ required: ['promoCode'] }), promoCodeController.usePromoCode);
+router.post('/remove/r', validateToken(), promoCodeController.removePromoCode);
 
-router.post('/remove/:id', validateToken(), roleMiddleware(UserStatus.Manager), promoCodeController.removePromoCode);
+router.post('/use-promo-code', validateToken(), Validator.validateFields({ required: ['promoCode'] }), promoCodeController.usePromoCode);
 
 // =================|ADMIN|=================~
 
@@ -26,5 +26,7 @@ router.post(
   }),
   promoCodeController.createPromoCode,
 );
+
+router.put('/update/:id', validateToken(), promoCodeController.isActive);
 
 export default router;

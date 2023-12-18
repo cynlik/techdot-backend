@@ -10,25 +10,15 @@ export class PromoCodeController {
   // =================|USERS|=================
 
   public removePromoCode = async (req: Request, res: Response, next: Function) => {
-    const { promoCode } = req.params;
     const userId = req.user.id;
     const user = await User.findOne({ _id: userId });
-
-    if (!promoCode) {
-      return next(new CustomError(HttpStatus.NOT_FOUND, 'PromoCode not found!'));
-    }
-
-    const existpromoCode = await PromoCode.findOne({ promoCode: promoCode });
-    console.log(user?.cart);
 
     if (!user) {
       return next(new CustomError(HttpStatus.NOT_FOUND, 'User not found!'));
     }
 
-    if (!existpromoCode) {
-      return next(new CustomError(HttpStatus.NOT_FOUND, "This promo code doesn't exist."));
-    } else if (!existpromoCode.isActive) {
-      return next(new CustomError(HttpStatus.NOT_ACCEPTABLE, 'This promo code is not active!'));
+    if (!user.cart.promoCodeActive) {
+      return next(new CustomError(HttpStatus.CONFLICT, 'PromoCode already removed!'));
     }
 
     try {
@@ -39,6 +29,9 @@ export class PromoCodeController {
         item.promoCodeActive = false;
         item.promoCodeType = 0;
       }
+
+      user.cart.promoCode = null;
+      user.cart.promoCodeActive = false;
 
       await user.save();
       return res.status(HttpStatus.OK).json({ message: 'Promo code removed successfully from the cart' });
@@ -65,16 +58,18 @@ export class PromoCodeController {
     }
 
     try {
+      if (user.cart.promoCodeActive) {
+        return next(new CustomError(HttpStatus.CONFLICT, 'PromoCode active!'));
+      }
+
       if (user.cart.items.length < 1) {
         return next(new CustomError(HttpStatus.BAD_REQUEST, 'No cart!'));
       }
 
-      if (!user.cart.promoCodeID != null) {
-        return next(new CustomError(HttpStatus.BAD_GATEWAY, 'PromoCode just Active!'));
-      }
-
       for (let i = 0; i < user.cart.items.length; i++) {
         let item = user.cart.items[i];
+
+        console.log('oaldas');
 
         let product = await Product.findById(item.product);
 
@@ -93,7 +88,8 @@ export class PromoCodeController {
           continue;
         }
       }
-      user.cart.promoCodeID = existpromoCode.id;
+      user.cart.promoCode = existpromoCode.promoCode;
+      user.cart.promoCodeActive = true;
       await user.save();
 
       return res.status(HttpStatus.OK).send(user.cart);
@@ -119,6 +115,64 @@ export class PromoCodeController {
       const savedPromo = await newPromoCode.save();
 
       return res.status(HttpStatus.CREATED).json(savedPromo);
+    } catch (error) {
+      next(Error(error));
+    }
+  };
+
+  public isActive = async (req: Request, res: Response, next: Function) => {
+    const { id } = req.params;
+    const { isActive } = req.body;
+    const promoCode = await PromoCode.findById(id);
+
+    if (!promoCode) {
+      return next(new CustomError(HttpStatus.NOT_FOUND, 'PromoCode not found!'));
+    }
+
+    try {
+      if (isActive) {
+        if (promoCode.isActive) {
+          return next(new CustomError(HttpStatus.BAD_REQUEST, 'This promo code is already active'));
+        }
+
+        promoCode.isActive = true;
+        await promoCode.save();
+
+        return res.status(HttpStatus.OK).send(`PromoCode ${promoCode.promoCode} activate!`);
+      } else {
+        if (!promoCode.isActive) {
+          return next(new CustomError(HttpStatus.BAD_REQUEST, 'This promo code is already inactive'));
+        }
+        promoCode.isActive = false;
+
+        await promoCode.save();
+
+        const users = await User.find({ 'cart.promoCode': promoCode.promoCode });
+        console.log(users.length);
+        if (users) {
+          for (let i = 0; i < users.length; i++) {
+            let user = users[i];
+
+            for (let j = 0; j < user.cart.items.length; j++) {
+              let item = user.cart.items[j];
+
+              item.totalPrice = item.originalTotalPrice;
+              item.promoCodeActive = false;
+              item.promoCodeType = 0;
+            }
+            user.cart.promoCode = null;
+            user.cart.promoCodeActive = false;
+
+            console.log('user: ', user);
+            console.log(user);
+            await user.save();
+          }
+
+          return res.status(HttpStatus.OK).send({ message: 'Operation OK!, Users Updated: ' });
+        } else {
+          return next(new CustomError(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error!'));
+        }
+      }
     } catch (error) {
       next(Error(error));
     }
