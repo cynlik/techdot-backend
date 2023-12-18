@@ -12,6 +12,8 @@ const promoCodeController = new PromoCodeController();
 
 router.post('/use-promo-code', validateToken(), roleMiddleware(UserStatus.Manager), Validator.validateFields({ required: ['promoCode'] }), promoCodeController.usePromoCode);
 
+router.post('/remove/:id', validateToken(), roleMiddleware(UserStatus.Manager), promoCodeController.removePromoCode);
+
 // =================|ADMIN|=================~
 
 router.post(
