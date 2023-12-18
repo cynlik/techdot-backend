@@ -52,7 +52,8 @@ export const cartItemSchema = new Schema<CartItem>({
 export interface ShoppingCart extends Document {
   items: CartItem[];
   total: number;
-  promoCodeID: mongoose.Types.ObjectId;
+  promoCode: string | null;
+  promoCodeActive: boolean;
 }
 
 export const shoppingCartSchema = new Schema<ShoppingCart>({
@@ -61,11 +62,13 @@ export const shoppingCartSchema = new Schema<ShoppingCart>({
     type: Number,
     default: 0,
   },
-  promoCodeID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'PromoCode',
-    required: true,
-    default: null,
+  promoCode: {
+    type: String,
+    default: null as string | null,
+  },
+  promoCodeActive: {
+    type: Boolean,
+    default: false,
   },
 });
 
