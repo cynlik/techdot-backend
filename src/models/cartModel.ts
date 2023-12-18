@@ -1,14 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { IProduct, Product } from './productModel';
 
-export type CartItem = {
+export interface CartItem extends Document {
   product: IProduct;
   quantity: number;
   totalPrice: number;
   originalTotalPrice: number;
   promoCodeActive: boolean;
   promoCodeType: number;
-} & Document
+}
 
 export const cartItemSchema = new Schema<CartItem>({
   product: {
@@ -49,16 +49,23 @@ export const cartItemSchema = new Schema<CartItem>({
   },
 });
 
-export type ShoppingCart = {
+export interface ShoppingCart extends Document {
   items: CartItem[];
   total: number;
-} & Document
+  promoCodeID: mongoose.Types.ObjectId;
+}
 
 export const shoppingCartSchema = new Schema<ShoppingCart>({
   items: [cartItemSchema],
   total: {
     type: Number,
     default: 0,
+  },
+  promoCodeID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'PromoCode',
+    required: true,
+    default: null,
   },
 });
 
