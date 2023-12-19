@@ -56,21 +56,7 @@ router.post(
  *       - in: body
  *         name: body
  *         description: The discount to update
- *         schema:
- *           type: object
- *           properties:
- *             description:
- *               type: string
- *             discountType:
- *               type: string
- *             promoCode:
- *               type: string
- *             isPromoCode:
- *               type: boolean
- *             usageLimit:
- *               type: integer
- *             minimumPurchaseValue:
- *               type: number
+ *         schema: schemas.updateDiscount
  *     responses:
  *      200:
  *        description: Discount updated successfully

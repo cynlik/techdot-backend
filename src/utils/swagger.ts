@@ -34,6 +34,29 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        updateDiscount: {
+          type: 'object',
+          properties: {
+            description: {
+              type: 'string',
+            },
+            discountType: {
+              type: 'string',
+            },
+            promoCode: {
+              type: 'string',
+            },
+            isPromoCode: {
+              type: 'boolean',
+            },
+            usageLimit: {
+              type: 'integer',
+            },
+            minimumPurchaseValue: {
+              type: 'number',
+            },
+          },
+        },
         Subcategory: {
           type: 'object',
           properties: {
