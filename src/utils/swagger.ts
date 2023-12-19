@@ -14,6 +14,26 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
+        CreateDiscount: {
+          type: 'object',
+          required: ['description', 'discountType', 'applicableProducts'],
+          properties: {
+            description: {
+              type: 'string',
+            },
+            discountType: {
+              type: 'number',
+            },
+            applicableProducts: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of product IDs',
+              example: ['id_string_product1', 'id_string_product2'],
+            },
+          },
+        },
         Subcategory: {
           type: 'object',
           properties: {

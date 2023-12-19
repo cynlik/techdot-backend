@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express';
-import { IProduct, Product } from '@src/models/productModel';
+import { Product } from '@src/models/productModel';
 import { CustomError } from '@src/utils/customError';
 import { HttpStatus } from '@src/utils/constant';
-import { Discount, IDiscount } from '@src/models/dicountModel';
-import { IUser, UserStatus } from '@src/models/userModel';
+import { Discount, IDiscount } from '@src/models/discountModel';
+import { IUser } from '@src/models/userModel';
 import { Error } from '@src/utils/errorCatch';
 
 type CustomRequest = {
   user: IUser;
-} & Request
+} & Request;
 
 export class DiscountController {
   // =================|USERS|=================
