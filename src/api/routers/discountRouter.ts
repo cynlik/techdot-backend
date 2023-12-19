@@ -125,13 +125,12 @@ router.put(
  *         schema:
  *           type: string
  *         required: true
- *       - in: body
- *         name: body
- *         description: The product to add
- *         schema:
- *           type: object
- *           required:
- *             - productId
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AddProductRequestBody'
  *     responses:
  *      200:
  *        description: Product added successfully
@@ -162,13 +161,12 @@ router.put(
  *         schema:
  *           type: string
  *         required: true
- *       - in: body
- *         name: body
- *         description: The product to remove
- *         schema:
- *           type: object
- *           required:
- *             - productId
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RemoveProductRequestBody'
  *     responses:
  *      200:
  *        description: Product removed successfully
@@ -225,6 +223,10 @@ router.delete('/:id', validateToken(), roleMiddleware(UserStatus.Manager), Valid
  *     responses:
  *      200:
  *        description: Discount retrieved successfully
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Discount'
  *      400:
  *        description: Invalid ID supplied
  *      404:
@@ -273,6 +275,10 @@ router.get('/solo/:id', validateToken(), roleMiddleware(UserStatus.Manager), Val
  *     responses:
  *      200:
  *        description: Discounts retrieved successfully
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/DiscountArray'
  *      400:
  *        description: Invalid query parameters supplied
  */
