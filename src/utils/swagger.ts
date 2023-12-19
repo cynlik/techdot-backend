@@ -14,6 +14,97 @@ const options: swaggerJsdoc.Options = {
     },
     components: {
       schemas: {
+        Discount: {
+          type: 'object',
+          properties: {
+            description: {
+              type: 'string',
+            },
+            discountType: {
+              type: 'string',
+              description: 'Between 0 and 100% discount to be applied',
+            },
+            isActive: {
+              type: 'boolean',
+            },
+            applicableProducts: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of product IDs',
+              example: ['id_string_product1', 'id_string_product2'],
+            },
+          },
+        },
+        DiscountArray: {
+          type: 'array',
+          items: {
+            $ref: '#/components/schemas/Discount',
+          },
+        },
+        CreateDiscount: {
+          type: 'object',
+          required: ['description', 'discountType', 'applicableProducts'],
+          properties: {
+            description: {
+              type: 'string',
+            },
+            discountType: {
+              type: 'number',
+            },
+            applicableProducts: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of product IDs',
+              example: ['id_string_product1', 'id_string_product2'],
+            },
+          },
+        },
+        UpdateDiscount: {
+          type: 'object',
+          properties: {
+            description: {
+              type: 'string',
+            },
+            discountType: {
+              type: 'string',
+            },
+            promoCode: {
+              type: 'string',
+            },
+            isPromoCode: {
+              type: 'boolean',
+            },
+            usageLimit: {
+              type: 'integer',
+            },
+            minimumPurchaseValue: {
+              type: 'number',
+            },
+          },
+        },
+        AddProductRequestBody: {
+          type: 'object',
+          properties: {
+            productId: {
+              type: 'string',
+              description: 'The ID of the product to add',
+            },
+          },
+          required: ['productId'],
+        },
+        StateOfIsActiveRequestBody: {
+          type: 'object',
+          properties: {
+            isActive: {
+              type: 'boolean',
+              description: 'The new active state of the discount',
+            },
+          },
+        },
         Subcategory: {
           type: 'object',
           properties: {
@@ -208,16 +299,15 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
-        Me: {
+        RemoveProductRequestBody: {
           type: 'object',
           properties: {
-            newPassword: {
+            productId: {
               type: 'string',
-            },
-            confirmPassword: {
-              type: 'string',
+              description: 'The ID of the product to remove',
             },
           },
+          required: ['productId'],
         },
         ChangeView: {
           type: 'object',

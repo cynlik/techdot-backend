@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Request, Response } from 'express';
-import { IProduct, Product } from '@src/models/productModel';
+import { Product } from '@src/models/productModel';
 import { CustomError } from '@src/utils/customError';
 import { HttpStatus } from '@src/utils/constant';
-import { Discount, IDiscount } from '@src/models/dicountModel';
-import { IUser, UserStatus } from '@src/models/userModel';
+import { Discount, IDiscount } from '@src/models/discountModel';
+import { IUser } from '@src/models/userModel';
 import { Error } from '@src/utils/errorCatch';
 
 type CustomRequest = {
   user: IUser;
-} & Request
+} & Request;
 
 export class DiscountController {
   // =================|USERS|=================
@@ -140,7 +141,7 @@ export class DiscountController {
       if (discount.isActive) {
         if (isActive) {
           return next(new CustomError(HttpStatus.CONFLICT, 'Já está ativo'));
-        } else if (isActive == false) {
+        } else if (!isActive) {
           try {
             const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, false);
 
@@ -151,20 +152,18 @@ export class DiscountController {
             return next(error);
           }
         }
-      } else {
-        if (isActive) {
-          try {
-            const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true);
+      } else if (isActive) {
+        try {
+          const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true);
 
-            const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
+          const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
 
-            return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
-          } catch (error) {
-            return next(error);
-          }
-        } else if (isActive == false) {
-          return res.status(HttpStatus.OK).send({ message: 'O Desconto já está desativado!' });
+          return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
+        } catch (error) {
+          return next(error);
         }
+      } else if (!isActive) {
+        return res.status(HttpStatus.OK).send({ message: 'O Desconto já está desativado!' });
       }
     } catch (error) {
       next(Error(error));
@@ -234,8 +233,6 @@ export class DiscountController {
 
   public getDiscountByName = async (req: CustomRequest, res: Response, next: Function) => {
     try {
-      const user = req.user;
-
       const {
         description,
         sort,
@@ -259,6 +256,7 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const conditions: any = {};
 
       if (description) {
