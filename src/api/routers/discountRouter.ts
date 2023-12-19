@@ -1,12 +1,11 @@
-import express from 'express';
 import { DiscountController } from '@src/controllers/discountController';
+import { roleMiddleware } from '@src/middlewares/roleMiddleware';
 import validateToken from '@src/middlewares/validateToken';
 import Validator from '@src/middlewares/validator';
 import { Discount } from '@src/models/discountModel';
-import { Constant } from '@src/utils/constant';
-import { Product } from '@src/models/productModel';
-import { roleMiddleware } from '@src/middlewares/roleMiddleware';
 import { UserStatus } from '@src/models/userModel';
+import { Constant } from '@src/utils/constant';
+import express from 'express';
 
 const router = express.Router();
 const discountController = new DiscountController();
@@ -53,10 +52,11 @@ router.post(
  *         schema:
  *           type: string
  *         required: true
- *       - in: body
- *         name: body
- *         description: The discount to update
- *         schema: schemas.updateDiscount
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *             $ref: '#/components/schemas/UpdateDiscount'
  *     responses:
  *      200:
  *        description: Discount updated successfully
@@ -78,38 +78,26 @@ router.put(
 
 /**
  * @openapi
- * /update/{id}:
+ * /stateOfIsActive/{id}:
  *   put:
  *     tags:
  *       - Discount Routes
- *     summary: Update a specific discount by ID
+ *     summary: Update the active state of a specific discount by ID
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *       - in: body
- *         name: body
- *         description: The discount to update
- *         schema:
- *           type: object
- *           properties:
- *             description:
- *               type: string
- *             discountType:
- *               type: string
- *             promoCode:
- *               type: string
- *             isPromoCode:
- *               type: boolean
- *             usageLimit:
- *               type: integer
- *             minimumPurchaseValue:
- *               type: number
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/StateOfIsActiveRequestBody'
  *     responses:
  *      200:
- *        description: Discount updated successfully
+ *        description: Active state updated successfully
  *      400:
  *        description: Invalid ID or data supplied
  *      404:

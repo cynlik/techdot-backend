@@ -141,7 +141,7 @@ export class DiscountController {
       if (discount.isActive) {
         if (isActive) {
           return next(new CustomError(HttpStatus.CONFLICT, 'Já está ativo'));
-        } else if (isActive == false) {
+        } else if (!isActive) {
           try {
             const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, false);
 
@@ -152,20 +152,18 @@ export class DiscountController {
             return next(error);
           }
         }
-      } else {
-        if (isActive) {
-          try {
-            const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true);
+      } else if (isActive) {
+        try {
+          const updatedPrices = await this.updateProducts(discount, discountDecimal, lenghtProducts, true);
 
-            const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
+          const updateDiscount = await Discount.findByIdAndUpdate(id, { isActive: isActive }, { new: true, runValidators: true });
 
-            return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
-          } catch (error) {
-            return next(error);
-          }
-        } else if (isActive == false) {
-          return res.status(HttpStatus.OK).send({ message: 'O Desconto já está desativado!' });
+          return res.status(HttpStatus.OK).send({ updatedPrices, updateDiscount });
+        } catch (error) {
+          return next(error);
         }
+      } else if (!isActive) {
+        return res.status(HttpStatus.OK).send({ message: 'O Desconto já está desativado!' });
       }
     } catch (error) {
       next(Error(error));
@@ -235,8 +233,6 @@ export class DiscountController {
 
   public getDiscountByName = async (req: CustomRequest, res: Response, next: Function) => {
     try {
-      const user = req.user;
-
       const {
         description,
         sort,
@@ -260,6 +256,7 @@ export class DiscountController {
         return next(new CustomError(HttpStatus.BAD_REQUEST, 'Parâmetros de paginação inválidos.'));
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const conditions: any = {};
 
       if (description) {

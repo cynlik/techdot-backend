@@ -34,7 +34,7 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
-        updateDiscount: {
+        UpdateDiscount: {
           type: 'object',
           properties: {
             description: {
@@ -54,6 +54,15 @@ const options: swaggerJsdoc.Options = {
             },
             minimumPurchaseValue: {
               type: 'number',
+            },
+          },
+        },
+        StateOfIsActiveRequestBody: {
+          type: 'object',
+          properties: {
+            isActive: {
+              type: 'boolean',
+              description: 'The new active state of the discount',
             },
           },
         },
