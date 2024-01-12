@@ -8,6 +8,45 @@ import { SaleModel } from '@src/models/saleModel';
 const router = express.Router();
 const saleController = new SaleController();
 
+/**
+ * @openapi
+ * /api/sale/create:
+ *   post:
+ *     tags:
+ *       - Sale Routes
+ *     summary: Create a new sale
+ *     description: This route is used to create a new sale. It requires a valid token and certain fields in the request body.
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userName:
+ *                 type: string
+ *               userEmail:
+ *                 type: string
+ *               userAdress:
+ *                 type: string
+ *               userPhone:
+ *                 type: string
+ *               paymentMethod:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: The details of the newly created sale.
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       400:
+ *         description: Bad Request. Some required fields are missing or invalid.
+ */
 // Create Sale
 router.post(
   '/create',
