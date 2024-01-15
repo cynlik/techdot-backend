@@ -216,6 +216,7 @@ router.get('/me', validateToken(), userController.me);
 // Update my information
 router.put(
   '/me',
+  upload.single('picture'),
   validateToken(),
   Validator.validateFields({
     optional: ['name', 'password', 'picture', 'address', 'country'],

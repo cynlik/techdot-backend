@@ -193,26 +193,24 @@ export default class UserController {
 
   public meUpdate = async (req: CustomRequest, res: Response, next: Function) => {
     try {
-      const newUser = req.body;
-      const user = req.user;
+      const newUser: Partial<IUser> = req.body;
+      const picture = req.file;
+      const { id } = req.user;
+      const user = (await User.findOne({ _id: id })) as IUser;
 
-      if (newUser.name === user.name) {
+      if (newUser.name && newUser.name === user.name) {
         return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.NAME_SAME_AS_CURRENT));
       }
 
-      if (await bcrypt.compare(newUser.password, user.password)) {
+      if (newUser.password && (await bcrypt.compare(newUser.password, user.password))) {
         return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.PASSWORD_SAME_AS_CURRENT));
       }
 
-      if (newUser.picture === user.picture) {
-        return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.PICTURE_SAME_AS_CURRENT));
-      }
-
-      if (newUser.address === user.address) {
+      if (newUser.address && newUser.address === user.address) {
         return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.ADDRESS_SAME_AS_CURRENT));
       }
 
-      if (newUser.country === user.country) {
+      if (newUser.country && newUser.country === user.country) {
         return next(new CustomError(HttpStatus.BAD_REQUEST, ERROR_MESSAGES.COUNTRY_SAME_AS_CURRENT));
       }
 
@@ -224,7 +222,20 @@ export default class UserController {
         updateFields.password = hashedNewPassword;
       }
 
-      if (newUser.picture) updateFields.picture = newUser.picture;
+      if (picture) {
+        await fs.rm(path.join(picture.destination, user.picture));
+
+        const newFileName = user.id + path.extname(picture.originalname);
+        console.log('\n new file name:', newFileName);
+        const oldPath = path.join(picture.destination, picture.originalname);
+        console.log(oldPath);
+        const newPath = path.join(picture.destination, newFileName);
+        console.log(newPath);
+        await fs.rename(oldPath, newPath);
+
+        updateFields.picture = newFileName;
+      }
+
       if (newUser.address) updateFields.address = newUser.address;
       if (newUser.country) updateFields.country = newUser.country;
 
@@ -237,6 +248,7 @@ export default class UserController {
         user: updatedUser,
       });
     } catch (error) {
+      console.error(error);
       next(Error(error));
     }
   };

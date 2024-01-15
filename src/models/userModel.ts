@@ -1,4 +1,4 @@
-import mongoose, { model, Document, Schema } from 'mongoose';
+import { model, Document, Schema } from 'mongoose';
 import { ShoppingCart, shoppingCartSchema } from './cartModel';
 import { WishListItem, wishListItemSchema } from './wishListModel';
 
@@ -28,11 +28,11 @@ export type IUser = {
   verifyAccountTokenExpires: Date | null;
   resetPasswordToken: string | null;
   resetPasswordExpires: Date | null;
-  isVerified: boolean | false;
+  isVerified: boolean;
   lastLoginIP: string | null;
   cart: ShoppingCart;
   wishList: WishListItem[];
-} & Document
+} & Document;
 
 export const UserSchema = new Schema<IUser>(
   {

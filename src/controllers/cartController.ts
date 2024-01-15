@@ -8,7 +8,7 @@ import { Error } from '@src/utils/errorCatch';
 
 type CustomRequest = {
   user: IUser;
-} & Request
+} & Request;
 
 export default class CartController {
   private calculateCartTotal(items: CartItem[]): number {

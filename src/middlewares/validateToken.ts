@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from 'express';
 import { IUser } from '@src/models/userModel';
 import { RevokedToken } from '@src/models/revokedTokenModel';
@@ -7,11 +8,11 @@ import { CustomError } from '@src/utils/customError';
 
 type CustomRequest = {
   user: IUser;
-} & Request
+} & Request;
 
 const validateToken = (isOptional: boolean = false) => {
   return async (req: CustomRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization || req.headers.Authorization;
+    const authHeader = req.headers.authorization ?? req.headers.Authorization;
 
     if (!authHeader) {
       if (isOptional) {
