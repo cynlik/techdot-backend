@@ -223,16 +223,15 @@ export default class UserController {
       }
 
       if (picture) {
+        //remove old picture
         await fs.rm(path.join(picture.destination, user.picture));
 
         const newFileName = user.id + path.extname(picture.originalname);
-        console.log('\n new file name:', newFileName);
         const oldPath = path.join(picture.destination, picture.originalname);
-        console.log(oldPath);
         const newPath = path.join(picture.destination, newFileName);
-        console.log(newPath);
-        await fs.rename(oldPath, newPath);
 
+        //rename new picture
+        await fs.rename(oldPath, newPath);
         updateFields.picture = newFileName;
       }
 
