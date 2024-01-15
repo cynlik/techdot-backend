@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import * as _ from 'lodash';
+import fs from 'fs/promises';
 import { Request, Response } from 'express';
 import { config } from '@src/config';
 import { User, IUser, UserStatus } from '@src/models/userModel';
@@ -13,15 +15,17 @@ import { HttpStatus, ERROR_MESSAGES, SUCCESS_MESSAGES } from '@src/utils/constan
 import { Product } from '@src/models/productModel';
 import { WishListItem, WishListItemModel } from '@src/models/wishListModel';
 import { Error } from '@src/utils/errorCatch';
+import path from 'path';
 
 type CustomRequest = {
   user: IUser;
-} & Request
+} & Request;
 
 export default class UserController {
   public registerUser = async (req: Request, res: Response, next: Function) => {
     try {
       const { name, email, password, address } = req.body;
+      const picture = req.file;
 
       const userExists = await User.findOne({ email });
       if (userExists) {
@@ -40,7 +44,18 @@ export default class UserController {
       user.verifyAccountToken = token.token;
       user.verifyAccountTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-      await user.save();
+      const newUser = await user.save();
+
+      if (picture) {
+        const newFileName = newUser._id + path.extname(picture.originalname);
+        const oldPath = path.join(picture.destination, picture.originalname);
+        const newPath = path.join(picture.destination, newFileName);
+        await fs.rename(oldPath, newPath);
+
+        newUser.picture = newFileName;
+
+        await newUser.save();
+      }
 
       sendMail(EmailType.Welcome, user.email, res, token.token);
       sendMail(EmailType.VerifyAccount, user.email, res, token.token);
@@ -79,7 +94,7 @@ export default class UserController {
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (passwordMatch) {
-        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const ip = req.headers['x-forwarded-for'] ?? req.connection.remoteAddress;
         if (typeof ip === 'string') {
           if (user.lastLoginIP !== ip) {
             sendMail(EmailType.NewLocation, user.email, res, ip);

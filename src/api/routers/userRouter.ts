@@ -6,9 +6,22 @@ import Validator from '@src/middlewares/validator';
 import { Constant } from '@src/utils/constant';
 import { User, UserStatus } from '@src/models/userModel';
 import { Product } from '@src/models/productModel';
+import multer from 'multer';
+import path from 'path';
 
 const router = express.Router();
 const userController = new UserController();
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(process.cwd(), 'public/images/users/'));
+    },
+    filename: (req, file, cb) => {
+      cb(null, file.originalname);
+    },
+  }),
+});
 
 ///  -- USER ROUTES --
 /**
@@ -35,9 +48,10 @@ const userController = new UserController();
 // Register user
 router.post(
   '/register',
+  upload.single('picture'),
   Validator.validateFields({
     required: ['name', 'email', 'password'],
-    optional: ['address'],
+    optional: ['address', 'picture'],
   }),
   userController.registerUser,
 );
