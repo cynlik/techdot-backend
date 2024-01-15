@@ -52,7 +52,7 @@ export const emailContent = {
 						  <p style="color: #666666; margin: 20px 0; line-height: 1.6; text-align: center;">Olá,</p>
 						  <p style="color: #666666; margin: 20px 0; line-height: 1.6; text-align: center;">Para repor a password, clique no botão abaixo:</p>
 						  <p style="margin: 20px 0; text-align: center;">
-							<a href="http://${process.env.HOST}:${process.env.PORT}/api/user/reset-password?token=${token}" style="display: inline-block; padding: 15px 35px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 25px; font-size: 18px; border: 2px solid #007bff; transition: background-color 0.3s ease;">Repor Password</a>
+							<a href="http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}/api/user/reset-password?token=${token}" style="display: inline-block; padding: 15px 35px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 25px; font-size: 18px; border: 2px solid #007bff; transition: background-color 0.3s ease;">Repor Password</a>
 						  </p>
 						  <p style="color: #666666; margin: 20px 0; line-height: 1.6; text-align: center;">Se o botão não funcionar, você também pode clicar <a href="http://${process.env.HOST}:${process.env.PORT}/api/user/reset-password?token=${token}" style="color: #007bff; text-decoration: none;">aqui</a></p>
 						  <p style="color: #999999; padding: 20px 0; text-align: center;">Atenciosamente, Equipe Techdot</p>
@@ -82,7 +82,7 @@ export const emailContent = {
 						  <p style="color: #666666; margin: 20px 0; line-height: 1.6; text-align: center;">Olá,</p>
 						  <p style="color: #666666; margin: 20px 0; line-height: 1.6; text-align: center;">Clique no botão abaixo para verificar sua conta:</p>
 						  <p style="margin: 20px 0; text-align: center;">
-							<a href="http://${process.env.HOST}:${process.env.PORT}/api/user/verify?token=${token}" style="display: inline-block; padding: 15px 35px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 25px; font-size: 18px; border: 2px solid #007bff; transition: background-color 0.3s ease;">Verificar Conta</a>
+							<a href="http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}/api/user/verify?token=${token}" style="display: inline-block; padding: 15px 35px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 25px; font-size: 18px; border: 2px solid #007bff; transition: background-color 0.3s ease;">Verificar Conta</a>
 						  </p>
 						  <p style="color: #666666; margin: 20px 0; line-height: 1.6; text-align: center;">Se o botão não funcionar, você também pode clicar <a href="http://${process.env.HOST}:${process.env.PORT}/api/user/verify?token=${token}" style="color: #007bff; text-decoration: none;">aqui</a></p>
 						  <p style="color: #999999; padding: 20px 0; text-align: center;">Atenciosamente, Equipe Techdot</p>

@@ -266,8 +266,8 @@ const options: swaggerJsdoc.Options = {
             token: {
               type: 'string',
             },
-            user: {
-              $ref: '#/components/schemas/User',
+            message: {
+              type: 'string',
             },
           },
         },
