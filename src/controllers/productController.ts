@@ -5,6 +5,8 @@ import { hasPermission } from '@src/middlewares/roleMiddleware';
 import { CustomError } from '@src/utils/customError';
 import { HttpStatus } from '@src/utils/constant';
 import { Error } from '@src/utils/errorCatch';
+import fs from 'fs/promises';
+import path from 'path';
 
 export class ProductController {
   // =================|USERS|=================
@@ -102,13 +104,13 @@ export class ProductController {
   // =================|ADMIN|=================
 
   public createProduct = async (req: Request, res: Response, next: Function) => {
-    const { name, description, imageUrl, manufacturer, stockQuantity, price, subcategoryId, productType, specifications, warranty }: Partial<IProduct> = req.body;
+    const { name, description, manufacturer, stockQuantity, price, subcategoryId, productType, specifications, warranty }: Partial<IProduct> = req.body;
+    const image = req.file;
 
     try {
       const newProduct = new Product({
         name,
         description,
-        imageUrl,
         manufacturer,
         stockQuantity,
         price,
@@ -119,6 +121,17 @@ export class ProductController {
       });
 
       const savedProduct = await newProduct.save();
+
+      if (image) {
+        const newFileName = savedProduct._id + path.extname(image.originalname);
+        const oldPath = path.join(image.destination, image.originalname);
+        const newPath = path.join(image.destination, newFileName);
+        await fs.rename(oldPath, newPath);
+
+        savedProduct.imageUrl = newFileName;
+
+        await savedProduct.save();
+      }
 
       return res.status(HttpStatus.CREATED).json(savedProduct);
     } catch (error) {

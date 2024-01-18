@@ -7,9 +7,22 @@ import Validator from '@src/middlewares/validator';
 import { Constant } from '@src/utils/constant';
 import { Subcategory } from '@src/models/subcategoryModel';
 import { Product, ProductType } from '@src/models/productModel';
+import multer from 'multer';
+import path from 'path';
 
 const router = express.Router();
 const productController = new ProductController();
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(process.cwd(), 'public/images/products/'));
+    },
+    filename: (req, file, cb) => {
+      cb(null, file.originalname);
+    },
+  }),
+});
 // =================|USER|=================
 
 /**
@@ -93,9 +106,10 @@ router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id'
 router.post(
   '/',
   validateToken(),
+  upload.single('imageUrl'),
   roleMiddleware(UserStatus.Manager),
   Validator.validateFields({
-    required: ['name', 'description', 'imageUrl', 'manufacturer', 'stockQuantity', 'price', 'subcategoryId', 'specifications', 'productType'],
+    required: ['name', 'description', 'manufacturer', 'stockQuantity', 'price', 'subcategoryId', 'specifications', 'productType'],
     optional: ['warranty'],
   }),
   Validator.validateEnums([{ enumObject: ProductType, fieldName: 'productType' }]),
