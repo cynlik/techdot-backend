@@ -323,6 +323,43 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        ProductCreate: {
+          type: 'object',
+          required: ['name', 'description', 'imageUrl', 'manufacturer', 'stockQuantity', 'price', 'visible', 'subcategoryId', 'productType', 'specifications'],
+          properties: {
+            name: {
+              type: 'string',
+            },
+            description: {
+              type: 'string',
+            },
+            image: {
+              type: 'string',
+            },
+            manufacturer: {
+              type: 'string',
+            },
+            stockQuantity: {
+              type: 'number',
+            },
+            price: {
+              type: 'number',
+            },
+            visible: {
+              type: 'boolean',
+            },
+            subcategoryId: {
+              type: 'string',
+            },
+            productType: {
+              type: 'string',
+              enum: Object.values(ProductType),
+            },
+            specifications: {
+              type: 'object',
+            },
+          },
+        },
         Product: {
           type: 'object',
           required: ['name', 'description', 'imageUrl', 'manufacturer', 'stockQuantity', 'price', 'visible', 'subcategoryId', 'productType', 'specifications'],

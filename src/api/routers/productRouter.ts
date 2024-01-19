@@ -82,7 +82,7 @@ router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id'
  *  post:
  *    tags:
  *      - Product Routes
- *    summary: Create product
+ *    summary: Create product - Send image file in 'image' field
  *    parameters:
  *      - in: header
  *        name: authorization
@@ -93,7 +93,7 @@ router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id'
  *      content:
  *        application/json:
  *           schema:
- *              $ref: '#/components/schemas/Product'
+ *              $ref: '#/components/schemas/ProductCreate'
  *    responses:
  *      201:
  *        description: Success
@@ -106,7 +106,7 @@ router.get('/:id', validateToken(true), Validator.validateIds([{ paramName: 'id'
 router.post(
   '/',
   validateToken(),
-  upload.single('imageUrl'),
+  upload.single('image'),
   roleMiddleware(UserStatus.Manager),
   Validator.validateFields({
     required: ['name', 'description', 'manufacturer', 'stockQuantity', 'price', 'subcategoryId', 'specifications', 'productType'],
