@@ -1,3 +1,4 @@
+.env
 pnpm-lock.yaml
 # Logs
 logs
